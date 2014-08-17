@@ -186,8 +186,6 @@
 
         <mkdir dir="${site.dir}"/>
         <mkdir dir="${site.dir}/features"/>
-        <mkdir dir="${site.dir}/features-candidate"/>
-        <mkdir dir="${site.dir}/features-daily"/>
         <mkdir dir="${site.dir}/plugins"/>
 
         <!-- plugin.jar: can't rename the .zip file from the 'dist' target because of the prefix -->
@@ -206,38 +204,10 @@
         <move file="${site.dir}/feature.xml" tofile="${site.dir}/.feature.xml"/>
 
 
-        <!-- feature.jar  for release candidates -->
-        <copy file="${fbeclipse.dir}/plugin_feature-candidate.xml" toFile="${site.dir}/feature.xml">
-          <filterset refid="sitevars"/>
-        </copy>
-        <!-- use zip task, not jar task, since we don't want a manifest -->
-        <zip destfile="${site.dir}/features-candidate/${plugin.id}_${plugin.version}.jar" compress="false">
-            <fileset file="${site.dir}/feature.xml"/>
-        </zip>
-        <move file="${site.dir}/feature.xml" tofile="${site.dir}/.feature.xml"/>
-
-
-        <!-- feature.jar  for daily release-->
-        <copy file="${fbeclipse.dir}/plugin_feature-daily.xml" toFile="${site.dir}/feature.xml">
-          <filterset refid="sitevars"/>
-        </copy>
-        <!-- use zip task, not jar task, since we don't want a manifest -->
-        <zip destfile="${site.dir}/features-daily/${plugin.id}_${plugin.version}.jar" compress="false">
-            <fileset file="${site.dir}/feature.xml"/>
-        </zip>
-        <move file="${site.dir}/feature.xml" tofile="${site.dir}/.feature.xml"/>
-
-
         <!-- site.xml -->
         <echo level="info" message="copying site.xml to ${site.dir}"/>
 
         <copy file="${fbeclipse.dir}/plugin_site.xml" toFile="${site.dir}/site.xml">
-          <filterset refid="sitevars"/>
-        </copy>
-        <copy file="${fbeclipse.dir}/plugin_site-candidate.xml" toFile="${site.dir}/site-candidate.xml">
-          <filterset refid="sitevars"/>
-        </copy>
-        <copy file="${fbeclipse.dir}/plugin_site-daily.xml" toFile="${site.dir}/site-daily.xml">
           <filterset refid="sitevars"/>
         </copy>
     </target>
