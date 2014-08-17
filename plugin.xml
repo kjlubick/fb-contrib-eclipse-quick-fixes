@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="edu.umd.cs.findbugs.plugin.eclipse.findbugsQuickFixes">
+      <quickFix
+            class="quickfix.LiteralStringComparisonResolution"
+            label="Swap string variable and string literal"
+            pattern="LSC_LITERAL_STRING_COMPARISON">
+      </quickFix>
+   </extension>
+
+</plugin>

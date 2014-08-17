@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="@FEATURE_ID@"
+      label="fb-contrib quickfixes feature"
+      version="@FEATURE_VERSION@"
+      provider-name="fb-contrib Project"
+      plugin="@PLUGIN_ID@">
+
+   <description url="http://fb-contrib.sourceforge.net">
+      This feature adds additional quickfixes to the FindBugs Eclipse Plugin for bug patterns listed by fb-contrib.
+   </description>
+
+   <copyright>
+      (c) 2014 Kevin Lubick
+   </copyright>
+
+   <license url="http://findbugs.sourceforge.net/manual/license.html">
+      FindBugs is free software distributed under the terms of the Lesser GNU Public License.
+http://www.gnu.org/licenses/lgpl.html
+
+   </license>
+
+   <url>
+      <update label="fb-contrib Eclipse update site" url="http://kjlubick.github.io/fb-contrib-eclipse/"/>
+   </url>
+
+   <requires>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.core.runtime" version="3.6.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jdt"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+      <import plugin="org.eclipse.jdt.ui"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+	  <import plugin="edu.umd.cs.findbugs.plugin.eclipse" version="3.0.1" match="greaterOrEqual" />
+   </requires>
+
+   <!--TODO update -->
+   <plugin
+         id="@PLUGIN_ID@"
+         download-size="5676"
+         install-size="5800"
+         version="@PLUGIN_VERSION@"/>
+
+</feature>
