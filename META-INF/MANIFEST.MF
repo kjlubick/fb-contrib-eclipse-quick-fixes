@@ -25,3 +25,5 @@ Require-Bundle: org.eclipse.ui.workbench.texteditor,
  edu.umd.cs.findbugs.plugin.eclipse;bundle-version="3.0.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: fb-contrib-eclipse-plugin.jar,
+ .

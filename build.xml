@@ -130,7 +130,7 @@
     <target name="dist" depends="clean,classes,version"
         description="Build a plugin distributable">
         <echo message="Creating FindBugs Eclipse plugin binary distribution"/>
-        <jar destfile="${dist.dir}/findbugs-plugin.jar" >
+        <jar destfile="${dist.dir}/fb-contrib-eclipse-plugin.jar" >
             <fileset dir="${bin.dir}" excludes="de/tobject/findbugs/tools/**" />
         </jar>
         <copy todir="${dist.dir}" >
