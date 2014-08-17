@@ -107,17 +107,7 @@
     <target name="version" description="Extract the plugin id and version">
         <echo message="Verifying and creating FindBugs Eclipse plugin version info"/>
 
-        <!-- 1) read FB version from ${bin.dir}/version.properties (copied from core) to ${release.base} -->
-        <loadproperties srcFile="${bin.dir}/version.properties" >
-          <filterchain><linecontains><contains value="release.base"/></linecontains></filterchain>
-        </loadproperties>
-        <loadproperties srcFile="${bin.dir}/version.properties" >
-          <filterchain><linecontains><contains value="findbugs.git.revision"/></linecontains></filterchain>
-        </loadproperties>
-
-        <echo>gitversion ${findbugs.git.revision}</echo>
-
-        <!-- 2) read plugin base version from META-INF/MANIFEST.MF to ${eclipse.release.base} -->
+        <!-- 1) read plugin base version from META-INF/MANIFEST.MF to ${eclipse.release.base} -->
         <loadfile srcFile="META-INF/MANIFEST.MF" property="eclipse.release.base">
           <filterchain>
               <tokenfilter><containsregex pattern="Bundle-Version: (.*)\.qualifier" replace="\1"/></tokenfilter>
@@ -125,24 +115,13 @@
           </filterchain>
         </loadfile>
 
-        <!-- 3) check if plugin base version matches FB core version -->
-        <condition property="version-match">
-          <!--<equals arg1="${eclipse.release.base}" arg2="${release.base}"/> -->
-        	<equals arg1="${eclipse.release.base}" arg2="${eclipse.release.base}"/>
-        </condition>
-        <fail unless="version-match">
-            Findbugs plugin and Findbugs core versions doesn't match!
-            Plugin MANIFEST.MF version is ${eclipse.release.base},
-            FindBugs version is           ${release.base}
-        </fail>
-
-        <!-- 4) set the values for plugin.version -->
-        <property name="plugin.qualifier" value="${plugin.date}-${findbugs.git.revision}" />
+        <!-- 1) set the values for plugin.version -->
+        <property name="plugin.qualifier" value="${plugin.date}" />
         <property name="plugin.version" value="${eclipse.release.base}.${plugin.qualifier}" />
 
-        <echo>plugin qualifier  ${plugin.qualifier}</echo>
         <echo>plugin version  ${plugin.version}</echo>
-        <!-- 5) Copy META-INF/MANIFEST.MF to ${dist.dir}, "qualifier" to current date -->
+    	
+        <!-- 3) Copy META-INF/MANIFEST.MF to ${dist.dir}, update "qualifier" to current date/time -->
         <copy file="META-INF/MANIFEST.MF" toFile="${dist.dir}/META-INF/MANIFEST.MF" overwrite="true">
           <filterset begintoken="q" endtoken="r"><filter token="ualifie" value="${plugin.qualifier}"/></filterset>
         </copy>
