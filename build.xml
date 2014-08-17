@@ -4,8 +4,6 @@
     Use the dist target to build a distributable plugin zip file.
 
     Use the site target to build an update site.
-
-    Use the all target to build the update site, binary and source packages.
 -->
 
 <project name="fbcontribeclipse" default="site">
@@ -29,7 +27,7 @@
 
     <property file="build.properties" />
 
-    <property name="fbeclipse.dir" value="."/>
+    <property name="fbcontrib.dir" value="."/>
 	
     <property name="src.dir" value="src"/>
     <property name="zip.dir" value="zips"/>
@@ -48,7 +46,6 @@
         <fileset dir="${eclipsePlugin.dir}">
             <include name="**/*.jar"/>
             <exclude name="**/datanucleus-enhancer*.jar"/>
-          <!--  <exclude name="edu.umd.cs.findbugs.**/*.jar"/> -->
         	<exclude name="fb-contrib-eclipse-quick-fixes/*.jar"/>
         </fileset>
     </path>
@@ -69,15 +66,15 @@
     </target>
 
     <target name="classes" depends="init" description="Compile java source files">
-        <echo message="Compiling FindBugs Eclipse plugin"/>
-        <echo>Requires JDK 7.x (not 8!), using: ${ant.java.version}</echo>
+        <echo message="Compiling fb-contrib Eclipse quickfixes plugin"/>
+        <echo>Requires JDK 1.7.x (not 1.8!), using: ${ant.java.version}</echo>
         <fail message="Requires JDK 7.x (not 8!), using: ${ant.java.version}">
              <condition>
                  <equals arg1="1.8" arg2="${ant.java.version}"/>
              </condition>
          </fail>
         <fail unless="eclipsePlugin.dir"
-            message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file, like: eclipsePlugin.dir=F:\\java\\eclipse33\\plugins"/>
+            message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file.  See local.properties.example"/>
         <!-- Compile Java source files. -->
         <javac srcdir="${src.dir}"
                   includeantruntime="false"
@@ -104,7 +101,7 @@
     </target>
 
     <target name="version" description="Extract the plugin id and version">
-        <echo message="Verifying and creating FindBugs Eclipse plugin version info"/>
+        <echo message="Verifying and creating fb-contrib Eclipse quickfixes plugin version info"/>
 
         <!-- 1) read plugin base version from META-INF/MANIFEST.MF to ${eclipse.release.base} -->
         <loadfile srcFile="META-INF/MANIFEST.MF" property="eclipse.release.base">
@@ -129,12 +126,12 @@
     <!-- per default, FB core classes are not recompiled if already available -->
     <target name="dist" depends="clean,classes,version"
         description="Build a plugin distributable">
-        <echo message="Creating FindBugs Eclipse plugin binary distribution"/>
+        <echo message="Creating fb-contrib Eclipse quickfixes plugin binary distribution"/>
         <jar destfile="${dist.dir}/fb-contrib-eclipse-plugin.jar" >
             <fileset dir="${bin.dir}" excludes="de/tobject/findbugs/tools/**" />
         </jar>
         <copy todir="${dist.dir}" >
-            <fileset dir="${fbeclipse.dir}" >
+            <fileset dir="${fbcontrib.dir}" >
                 <!-- content is invalid right now
                 <include name="welcome.xml"/>
                 -->
@@ -159,7 +156,7 @@
 
     <!-- Build source distribution. -->
     <target name="srcdist" depends="clean,classes,version,dist" unless="doNotExportSrc">
-        <echo message="Creating FindBugs Eclipse plugin source distribution"/>
+        <echo message="Creating fb-contrib Eclipse quickfixes plugin source distribution"/>
 
         <property file="${bin.dir}/plugininfo.properties"/>
 
@@ -175,7 +172,7 @@
     </target>
 
     <target name="site" depends="srcdist" description="create files for eclipse auto-update site">
-        <echo message="Creating FindBugs Eclipse plugin update sites"/>
+        <echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
 
         <filterset id="sitevars">
               <filter token="PLUGIN_ID" value="${plugin.id}"/>
@@ -194,7 +191,7 @@
         </zip>
 
         <!-- feature.jar -->
-        <copy file="${fbeclipse.dir}/plugin_feature.xml" toFile="${site.dir}/feature.xml">
+        <copy file="${fbcontrib.dir}/plugin_feature.xml" toFile="${site.dir}/feature.xml">
           <filterset refid="sitevars"/>
         </copy>
         <!-- use zip task, not jar task, since we don't want a manifest -->
@@ -207,9 +204,11 @@
         <!-- site.xml -->
         <echo level="info" message="copying site.xml to ${site.dir}"/>
 
-        <copy file="${fbeclipse.dir}/plugin_site.xml" toFile="${site.dir}/site.xml">
+        <copy file="${fbcontrib.dir}/plugin_site.xml" toFile="${site.dir}/site.xml">
           <filterset refid="sitevars"/>
         </copy>
+    	
+    	<echo>Built site for plugin version ${plugin.version}</echo>
     </target>
 
 </project>
