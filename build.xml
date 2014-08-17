@@ -48,7 +48,7 @@
         <fileset dir="${eclipsePlugin.dir}">
             <include name="**/*.jar"/>
             <exclude name="**/datanucleus-enhancer*.jar"/>
-            <exclude name="edu.umd.cs.findbugs.**/*.jar"/>
+          <!--  <exclude name="edu.umd.cs.findbugs.**/*.jar"/> -->
         	<exclude name="fb-contrib-eclipse-quick-fixes/*.jar"/>
         </fileset>
     </path>
@@ -63,7 +63,6 @@
         <delete includeemptydirs="true" >
             <fileset dir="${bin.dir}"  includes="**/*"/>
             <fileset dir="${zip.dir}"  includes="**/*"/>
-            <fileset dir="${lib.dir}"  includes="**/*"/>
             <!-- defaultexcludes is required to delete .svn and .cvsignore -->
             <fileset dir="${dist.dir}" includes="**/*" defaultexcludes="false"/>
         </delete>
@@ -149,12 +148,8 @@
                 and disabled because of bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=256361
                 <include name="META-INF/p2.inf" />  -->
             </fileset>
-            <fileset dir="${findbugs.dir}" includes="plugin/**"/>
         </copy>
 
-        <copy todir="${dist.dir}/lib">
-            <fileset dir="${lib.dir}" includes="${jars.required}"/>
-        </copy>
 
         <!-- Create plugin zipfile. -->
         <zip destfile="${zip.dir}/${plugin.id}_${plugin.version}.zip">

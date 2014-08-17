@@ -37,3 +37,6 @@ Icon
 
 
 bin/
+bin_build/
+dist/
+zips/
