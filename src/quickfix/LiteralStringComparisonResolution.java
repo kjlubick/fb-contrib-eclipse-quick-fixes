@@ -1,4 +1,4 @@
-package fb.contrib;
+package quickfix;
 
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
+import util.Debug;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
@@ -65,7 +66,7 @@ public class LiteralStringComparisonResolution extends BugResolution {
             if ("equals".equals(node.getName().toString())) {
                 Debug.println("was equals");
 
-                List<Expression> arguments = node.arguments();
+                List<Expression> arguments = (List<Expression>) node.arguments();
                 if (arguments.size() == 1) {        // I doubt this could be anything other than 1
                     Debug.println(arguments.get(0).resolveConstantExpressionValue());
                     //if this was a constant string, resolveConstantExpressionValue() will be nonnull
