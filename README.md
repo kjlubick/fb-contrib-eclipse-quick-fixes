@@ -19,7 +19,7 @@ This project isn't quite ready for release yet.  But, if you really want, check 
 3. [Fork/Clone](https://help.github.com/articles/fork-a-repo) this git repo. [GitHub for Windows](https://windows.github.com/) or [GitHub for Mac](https://mac.github.com/) are good clients if you don't already have one.
 4. Open Eclipse.  File>Import and then choose "Existing projects into workspace", and find the fb-contrib folder you just created.
 5. (optional) Run [build.xml](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/blob/master/build.xml) as an Ant Build, which should build and create an update site under /bin_build/site.
-6. (optional) Run MANIFEST.MF as an Eclipse Application.  Under the default configuration, the plugin should work just fine.  Make sure the `edu.umd.cs.findbugs.plugin.eclipse (3.0.1.20140817-dd3f35c)` plugin is activated under Run Configurations.
+6. (optional) Run MANIFEST.MF as an Eclipse Application.  Under one of the included launch configurations, the plugin should work just fine.  Launch 3.x was tested on Indigo and Launch 4.x was tested on Kepler.
 
 ##License##
 [FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html) and fb-contrib are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
