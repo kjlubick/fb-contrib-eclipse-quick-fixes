@@ -10,6 +10,9 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
+import util.Debug;
+
+import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
@@ -29,7 +32,7 @@ public class CharsetIssuesResolution extends BugResolution {
 		// TODO Auto-generated method stub
 		//CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET 
 		
-		
+		Debug.println(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
 	
 //		CSIVisitor lscFinder = findLSCOccurrence(workingUnit, bug);	
 //
