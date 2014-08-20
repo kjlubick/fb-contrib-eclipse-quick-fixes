@@ -14,6 +14,10 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
+import util.Debug;
+
+import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
+
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.ASTNodeNotFoundException;
@@ -29,7 +33,7 @@ public class LiteralStringComparisonResolution extends BugResolution {
 
 	@Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
-        
+		Debug.println(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
     	LSCVisitor lscFinder = findLSCOccurrence(workingUnit, bug);	
 
         MethodInvocation badMethodInvocation = lscFinder.lscMethodInvocation;

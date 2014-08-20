@@ -8,14 +8,16 @@
 
 <project name="fbcontribeclipse" default="site">
 
-    <!-- Eclipse plugin id, will never change -->
-    <property name="plugin.id" value="fb-contrib-eclipse-quick-fixes" />
-    <!-- Plugin id suffix which is the build date -->
-    <tstamp><format property="plugin.date" pattern="yyyyMMdd-HHmm" /></tstamp>
-	
+	<!-- Eclipse plugin id, will never change -->
+	<property name="plugin.id" value="fb-contrib-eclipse-quick-fixes" />
+	<!-- Plugin id suffix which is the build date -->
+	<tstamp>
+		<format property="plugin.date" pattern="yyyyMMdd-HHmm" />
+	</tstamp>
+
 	<echo>"${plugin.date}"</echo>
 
-<!--
+	<!--
     The local.properties file must contain the location of
        - Eclipse platform (key is "eclipsePlugin.dir", value is the 3.3+ Eclipse plugins folder)
     This values are likely to be different for each checkout of the plugin,
@@ -23,192 +25,216 @@
     
     See local.properties.example for an example setup file
 -->
-    <property file="local.properties" />
+	<property file="local.properties" />
 
-    <property file="build.properties" />
+	<property file="build.properties" />
 
-    <property name="fbcontrib.dir" value="."/>
+	<property name="fbcontrib.dir" value="."/>
+
+	<property name="src.dir" value="src"/>
+	<property name="zip.dir" value="zips"/>
+	<property name="dist.dir" value="dist"/>
+
+	<!-- the binaries/classes, built by javac -->
+	<property name="bin.dir" value="bin_build" />
+
+	<!-- the binaries/classes, built by eclipse -->
+	<property name="binEclipse.dir" value="bin_eclipse" />
+
+	<!-- update site destination directory -->
+	<property name="site.dir" value="${bin.dir}/site" />
 	
-    <property name="src.dir" value="src"/>
-    <property name="zip.dir" value="zips"/>
-    <property name="dist.dir" value="dist"/>
+	<!-- fb-contrib core package name in slashed notation -->
+	<property name="fbcontribpackage" value="com/mebigfatguy/fbcontrib" />
+	
+	<!-- Location of fb-contrib.jar to extract and include in this build -->
+	<property name="fb-contrib.jar" value="${fb-contrib.dir}/fb-contrib-${fb-contrib.version}.jar" />
 
-    <!-- the binaries/classes, built by javac -->
-    <property name="bin.dir" value="bin_build" />
+	<path id="plugin.classpath">
+		<fileset dir="${eclipsePlugin.dir}">
+			<include name="**/*.jar"/>
+			<exclude name="**/datanucleus-enhancer*.jar"/>
+			<exclude name="fb-contrib-eclipse-quick-fixes/*.jar"/>
+		</fileset>
+	</path>
 
-    <!-- the binaries/classes, built by eclipse -->
-    <property name="binEclipse.dir" value="bin_eclipse" />
+	<target name="init">
+		<mkdir dir="${dist.dir}"/>
+		<mkdir dir="${bin.dir}"/>
+		<mkdir dir="${zip.dir}"/>
+	</target>
 
-    <!-- update site destination directory -->
-    <property name="site.dir" value="${bin.dir}/site" />
+	<target name="clean" depends="init" description="Clean up temporary files">
+		<delete includeemptydirs="true" >
+			<fileset dir="${bin.dir}"  includes="**/*"/>
+			<fileset dir="${zip.dir}"  includes="**/*"/>
+			<!-- defaultexcludes is required to delete .svn and .cvsignore -->
+			<fileset dir="${dist.dir}" includes="**/*" defaultexcludes="false"/>
+		</delete>
+	</target>
 
-    <path id="plugin.classpath">
-        <fileset dir="${eclipsePlugin.dir}">
-            <include name="**/*.jar"/>
-            <exclude name="**/datanucleus-enhancer*.jar"/>
-        	<exclude name="fb-contrib-eclipse-quick-fixes/*.jar"/>
-        </fileset>
-    </path>
+	<target name="extractJar" depends="init">
+		<echo message="Copying fb-contrib classes to Eclipse plugin"/>
+		<unzip src="${fb-contrib.jar}" dest="${bin.dir}">
+			<patternset>
+				<include name="**/*.*" />
+				<exclude name="${fbcontribpackage}/collect/*.*" />
+				<exclude name="*.xml" />
+				<exclude name="bugrank.txt" />
+				<exclude name="META-INF/*.*" />
+			</patternset>
+		</unzip>
+	</target>
 
-    <target name="init">
-        <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${bin.dir}"/>
-        <mkdir dir="${zip.dir}"/>
-    </target>
-
-    <target name="clean" depends="init" description="Clean up temporary files">
-        <delete includeemptydirs="true" >
-            <fileset dir="${bin.dir}"  includes="**/*"/>
-            <fileset dir="${zip.dir}"  includes="**/*"/>
-            <!-- defaultexcludes is required to delete .svn and .cvsignore -->
-            <fileset dir="${dist.dir}" includes="**/*" defaultexcludes="false"/>
-        </delete>
-    </target>
-
-    <target name="classes" depends="init" description="Compile java source files">
-        <echo message="Compiling fb-contrib Eclipse quickfixes plugin"/>
-        <echo>Requires JDK 1.7.x (not 1.8!), using: ${ant.java.version}</echo>
-        <fail message="Requires JDK 7.x (not 8!), using: ${ant.java.version}">
-             <condition>
-                 <equals arg1="1.8" arg2="${ant.java.version}"/>
-             </condition>
-         </fail>
-        <fail unless="eclipsePlugin.dir"
+	<target name="classes" depends="init, extractJar" description="Compile java source files">
+		<echo message="Compiling fb-contrib Eclipse quickfixes plugin" />
+		<echo>Requires JDK 1.7.x (not 1.8!), using: ${ant.java.version}</echo>
+		<fail message="Requires JDK 7.x (not 8!), using: ${ant.java.version}">
+			<condition>
+				<equals arg1="1.8" arg2="${ant.java.version}"/>
+			</condition>
+		</fail>
+		<fail unless="eclipsePlugin.dir"
             message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file.  See local.properties.example"/>
-        <!-- Compile Java source files. -->
-        <javac srcdir="${src.dir}"
+		<!-- Compile Java source files. -->
+		<javac srcdir="${src.dir}"
                   includeantruntime="false"
           destdir="${bin.dir}"
                 source="1.7"
                 target="1.7"
                 debug="on">
-            <classpath refid="plugin.classpath"/>
-            <compilerarg value="-Xlint:all,-path,-unchecked"/>
-        </javac>
-        <!-- Copy the .properties files from the source directory. -->
-        <copy todir="${bin.dir}">
-            <fileset dir="${src.dir}">
-                <include name="**/*.properties"/>
-                <include name="**/*.xml"/>
-            </fileset>
-        </copy>
-        <copy todir="${binEclipse.dir}">
-            <fileset dir="${src.dir}">
-                <include name="**/*.properties"/>
-                <include name="**/*.xml"/>
-            </fileset>
-        </copy>
-    </target>
+			<classpath refid="plugin.classpath"/>
+			<compilerarg value="-Xlint:all,-path,-unchecked"/>
+		</javac>
+		<!-- Copy the .properties files from the source directory. -->
+		<copy todir="${bin.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.properties"/>
+				<include name="**/*.xml"/>
+			</fileset>
+		</copy>
+		<copy todir="${binEclipse.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.properties"/>
+				<include name="**/*.xml"/>
+			</fileset>
+		</copy>
+	</target>
 
-    <target name="version" description="Extract the plugin id and version">
-        <echo message="Verifying and creating fb-contrib Eclipse quickfixes plugin version info"/>
+	<target name="version" description="Extract the plugin id and version">
+		<echo message="Verifying and creating fb-contrib Eclipse quickfixes plugin version info"/>
 
-        <!-- 1) read plugin base version from META-INF/MANIFEST.MF to ${eclipse.release.base} -->
-        <loadfile srcFile="META-INF/MANIFEST.MF" property="eclipse.release.base">
-          <filterchain>
-              <tokenfilter><containsregex pattern="Bundle-Version: (.*)\.qualifier" replace="\1"/></tokenfilter>
-              <deletecharacters chars=" \n\r"/>
-          </filterchain>
-        </loadfile>
+		<!-- 1) read plugin base version from META-INF/MANIFEST.MF to ${eclipse.release.base} -->
+		<loadfile srcFile="META-INF/MANIFEST.MF" property="eclipse.release.base">
+			<filterchain>
+				<tokenfilter>
+					<containsregex pattern="Bundle-Version: (.*)\.qualifier" replace="\1"/>
+				</tokenfilter>
+				<deletecharacters chars=" \n\r"/>
+			</filterchain>
+		</loadfile>
 
-        <!-- 1) set the values for plugin.version -->
-        <property name="plugin.qualifier" value="${plugin.date}" />
-        <property name="plugin.version" value="${eclipse.release.base}.${plugin.qualifier}" />
+		<!-- 1) set the values for plugin.version -->
+		<property name="plugin.qualifier" value="${plugin.date}" />
+		<property name="plugin.version" value="${eclipse.release.base}.${plugin.qualifier}" />
 
-        <echo>plugin version  ${plugin.version}</echo>
-    	
-        <!-- 3) Copy META-INF/MANIFEST.MF to ${dist.dir}, update "qualifier" to current date/time -->
-        <copy file="META-INF/MANIFEST.MF" toFile="${dist.dir}/META-INF/MANIFEST.MF" overwrite="true">
-          <filterset begintoken="q" endtoken="r"><filter token="ualifie" value="${plugin.qualifier}"/></filterset>
-        </copy>
-    </target>
+		<echo>plugin version  ${plugin.version}</echo>
 
-    <!-- per default, FB core classes are not recompiled if already available -->
-    <target name="dist" depends="clean,classes,version"
+		<!-- 3) Copy META-INF/MANIFEST.MF to ${dist.dir}, update "qualifier" to current date/time -->
+		<copy file="META-INF/MANIFEST.MF" toFile="${dist.dir}/META-INF/MANIFEST.MF" overwrite="true">
+			<filterset begintoken="q" endtoken="r">
+				<filter token="ualifie" value="${plugin.qualifier}"/>
+			</filterset>
+		</copy>
+	</target>
+
+	<!-- per default, FB core classes are not recompiled if already available -->
+	<target name="dist" depends="clean,classes,version"
         description="Build a plugin distributable">
-        <echo message="Creating fb-contrib Eclipse quickfixes plugin binary distribution"/>
-        <jar destfile="${dist.dir}/fb-contrib-eclipse-plugin.jar" >
-            <fileset dir="${bin.dir}" excludes="de/tobject/findbugs/tools/**" />
-        </jar>
-        <copy todir="${dist.dir}" >
-            <fileset dir="${fbcontrib.dir}" >
-                <!-- content is invalid right now
+		<echo message="Creating fb-contrib Eclipse quickfixes plugin binary distribution"/>
+		<jar destfile="${dist.dir}/fb-contrib-eclipse-plugin.jar" >
+			<fileset dir="${bin.dir}" excludes="de/tobject/findbugs/tools/**" />
+		</jar>
+		<copy todir="${dist.dir}" >
+			<fileset dir="${fbcontrib.dir}" >
+				<!-- content is invalid right now
                 <include name="welcome.xml"/>
                 -->
-                <include name="RELEASENOTES"/>
-                <include name="plugin.xml"/>
-                <include name=".options"/>
-                <include name="plugin*.properties"/> <!--match plugin.properties and plugin_ja.properties -->
-                <include name="about.*"/>
-                <include name="plugin/*.*" />
-                <!-- p2 installation instructions, added because of bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=265525#c18
+				<include name="RELEASENOTES"/>
+				<include name="plugin.xml"/>
+				<include name=".options"/>
+				<include name="plugin*.properties"/>
+				<!--match plugin.properties and plugin_ja.properties -->
+				<include name="about.*"/>
+				<include name="plugin/*.*" />
+				<!-- p2 installation instructions, added because of bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=265525#c18
                 and disabled because of bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=256361
                 <include name="META-INF/p2.inf" />  -->
-            </fileset>
-        </copy>
+			</fileset>
+		</copy>
 
 
-        <!-- Create plugin zipfile. -->
-        <zip destfile="${zip.dir}/${plugin.id}_${plugin.version}.zip">
-            <zipfileset prefix="${plugin.id}_${plugin.version}" dir="${dist.dir}" includes="**"/>
-        </zip>
-    </target>
+		<!-- Create plugin zipfile. -->
+		<zip destfile="${zip.dir}/${plugin.id}_${plugin.version}.zip">
+			<zipfileset prefix="${plugin.id}_${plugin.version}" dir="${dist.dir}" includes="**"/>
+		</zip>
+	</target>
 
-    <!-- Build source distribution. -->
-    <target name="srcdist" depends="clean,classes,version,dist" unless="doNotExportSrc">
-        <echo message="Creating fb-contrib Eclipse quickfixes plugin source distribution"/>
+	<!-- Build source distribution. -->
+	<target name="srcdist" depends="clean,classes,version,dist" unless="doNotExportSrc">
+		<echo message="Creating fb-contrib Eclipse quickfixes plugin source distribution"/>
 
-        <property file="${bin.dir}/plugininfo.properties"/>
+		<property file="${bin.dir}/plugininfo.properties"/>
 
-        <mkdir dir="${dist.dir}/src"/>
-        <delete dir="${dist.dir}/src/eclipsePlugin-${plugin.version}"/>
+		<mkdir dir="${dist.dir}/src"/>
+		<delete dir="${dist.dir}/src/eclipsePlugin-${plugin.version}"/>
 
-        <exec executable="git" spawn="false" dir="${basedir}"  failonerror="true">
-                <arg value="archive"/>
-                <arg value="-o"/>
-                <arg value="${zip.dir}/${plugin.id}_${plugin.version}-source.zip"/>
-                <arg value="HEAD"/>
-        </exec>
-    </target>
+		<exec executable="git" spawn="false" dir="${basedir}"  failonerror="true">
+			<arg value="archive"/>
+			<arg value="-o"/>
+			<arg value="${zip.dir}/${plugin.id}_${plugin.version}-source.zip"/>
+			<arg value="HEAD"/>
+		</exec>
+	</target>
 
-    <target name="site" depends="srcdist" description="create files for eclipse auto-update site">
-        <echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
+	<target name="site" depends="srcdist" description="create files for eclipse auto-update site">
+		<echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
 
-        <filterset id="sitevars">
-              <filter token="PLUGIN_ID" value="${plugin.id}"/>
-              <filter token="PLUGIN_VERSION" value="${plugin.version}"/>
-              <filter token="FEATURE_ID" value="${plugin.id}"/>
-              <filter token="FEATURE_VERSION" value="${plugin.version}"/>
-        </filterset>
+		<filterset id="sitevars">
+			<filter token="PLUGIN_ID" value="${plugin.id}"/>
+			<filter token="PLUGIN_VERSION" value="${plugin.version}"/>
+			<filter token="FEATURE_ID" value="${plugin.id}"/>
+			<filter token="FEATURE_VERSION" value="${plugin.version}"/>
+		</filterset>
 
-        <mkdir dir="${site.dir}"/>
-        <mkdir dir="${site.dir}/features"/>
-        <mkdir dir="${site.dir}/plugins"/>
+		<mkdir dir="${site.dir}"/>
+		<mkdir dir="${site.dir}/features"/>
+		<mkdir dir="${site.dir}/plugins"/>
 
-        <!-- plugin.jar: can't rename the .zip file from the 'dist' target because of the prefix -->
-        <zip destfile="${site.dir}/plugins/${plugin.id}_${plugin.version}.jar">
-            <fileset dir="${dist.dir}" includes="**"/>
-        </zip>
+		<!-- plugin.jar: can't rename the .zip file from the 'dist' target because of the prefix -->
+		<zip destfile="${site.dir}/plugins/${plugin.id}_${plugin.version}.jar">
+			<fileset dir="${dist.dir}" includes="**"/>
+		</zip>
 
-        <!-- feature.jar -->
-        <copy file="${fbcontrib.dir}/plugin_feature.xml" toFile="${site.dir}/feature.xml">
-          <filterset refid="sitevars"/>
-        </copy>
-        <!-- use zip task, not jar task, since we don't want a manifest -->
-        <zip destfile="${site.dir}/features/${plugin.id}_${plugin.version}.jar" compress="false">
-            <fileset file="${site.dir}/feature.xml"/>
-        </zip>
-        <move file="${site.dir}/feature.xml" tofile="${site.dir}/.feature.xml"/>
+		<!-- feature.jar -->
+		<copy file="${fbcontrib.dir}/plugin_feature.xml" toFile="${site.dir}/feature.xml">
+			<filterset refid="sitevars"/>
+		</copy>
+		<!-- use zip task, not jar task, since we don't want a manifest -->
+		<zip destfile="${site.dir}/features/${plugin.id}_${plugin.version}.jar" compress="false">
+			<fileset file="${site.dir}/feature.xml"/>
+		</zip>
+		<move file="${site.dir}/feature.xml" tofile="${site.dir}/.feature.xml"/>
 
 
-        <!-- site.xml -->
-        <echo level="info" message="copying site.xml to ${site.dir}"/>
+		<!-- site.xml -->
+		<echo level="info" message="copying site.xml to ${site.dir}"/>
 
-        <copy file="${fbcontrib.dir}/plugin_site.xml" toFile="${site.dir}/site.xml">
-          <filterset refid="sitevars"/>
-        </copy>
-    	
-    	<echo>Built site for plugin version ${plugin.version}</echo>
-    </target>
+		<copy file="${fbcontrib.dir}/plugin_site.xml" toFile="${site.dir}/site.xml">
+			<filterset refid="sitevars"/>
+		</copy>
+
+		<echo>Built site for plugin version ${plugin.version}</echo>
+	</target>
 
 </project>
