@@ -16,10 +16,14 @@ This project isn't quite ready for release yet.  But, if you really want, check 
 ##Setting up the project for development##
 1. Download/install [Eclipse](https://www.eclipse.org/home/index.php), ideally 4.3 (Kepler) or newer.  The standard release (for Java) will work fine.
 2. Install findbugs-eclipse-plugin-3.0.1.zip, following the above instructions.
+3. Clone findbugs.  
+4. Import findbugs.
+4. Clone and import fb-contrib.  Follow the readme to get it setup to build.
+5. Build fb-contrib using ant
 3. [Fork/Clone](https://help.github.com/articles/fork-a-repo) this git repo. [GitHub for Windows](https://windows.github.com/) or [GitHub for Mac](https://mac.github.com/) are good clients if you don't already have one.
 4. Open Eclipse.  File>Import and then choose "Existing projects into workspace", and find the fb-contrib folder you just created.
 5. (optional) Run [build.xml](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/blob/master/build.xml) as an Ant Build, which should build and create an update site under /bin_build/site.
-6. (optional) Run MANIFEST.MF as an Eclipse Application.  Under one of the included launch configurations, the plugin should work just fine.  Launch 3.x was tested on Indigo and Launch 4.x was tested on Kepler.
+6. (optional) Run MANIFEST.MF as an Eclipse Application.  Under one of the included launch configurations, the plugin should work just fine.  If you don't see the included Launch Configurations under the green Run button, you may need to refresh the projects, or browse Run Configurations.  Launch 3.x was tested on Indigo and Launch 4.x was tested on Kepler.
 
 ##License##
 [FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html) and fb-contrib are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
