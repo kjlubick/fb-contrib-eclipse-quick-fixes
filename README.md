@@ -15,15 +15,17 @@ This project isn't quite ready for release yet.  But, if you really want, check 
 
 ##Setting up the project for development##
 1. Download/install [Eclipse](https://www.eclipse.org/home/index.php), ideally 4.3 (Kepler) or newer.  The standard release (for Java) will work fine.
-2. Install findbugs-eclipse-plugin-3.0.1.zip, following the above instructions.
-3. Clone findbugs.  
-4. Import findbugs.
-4. Clone and import fb-contrib.  Follow the readme to get it setup to build.
-5. Build fb-contrib using ant
-3. [Fork/Clone](https://help.github.com/articles/fork-a-repo) this git repo. [GitHub for Windows](https://windows.github.com/) or [GitHub for Mac](https://mac.github.com/) are good clients if you don't already have one.
-4. Open Eclipse.  File>Import and then choose "Existing projects into workspace", and find the fb-contrib folder you just created.
-5. (optional) Run [build.xml](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/blob/master/build.xml) as an Ant Build, which should build and create an update site under /bin_build/site.
-6. (optional) Run MANIFEST.MF as an Eclipse Application.  Under one of the included launch configurations, the plugin should work just fine.  If you don't see the included Launch Configurations under the green Run button, you may need to refresh the projects, or browse Run Configurations.  Launch 3.x was tested on Indigo and Launch 4.x was tested on Kepler.
+2. Install findbugs-eclipse-plugin-3.0.1.zip, following the above instructions.  Don't install the compiled fb-contrib-quick-fixes unless you want to unlock the optional step 11.
+3. Clone findbugs : `git clone https://code.google.com/p/findbugs/`  [GitHub for Windows](https://windows.github.com/) or [GitHub for Mac](https://mac.github.com/) are good clients if you don't already have one.  There are a lot of folders associated with that project, but you only need the `findbugs` folder.
+4. Open Eclipse.  File>Import and then choose "Existing projects into workspace", and find the `findbugs` folder you just cloned.
+5. Clone and import [fb-contrib](https://github.com/mebigfatguy/fb-contrib) into Eclipse.  Follow the readme to get it setup to build.
+6. Build fb-contrib by running the ant script `build.xml`.
+7. Copy `fb-contrib-6.1.0.jar` (or later) to `[Eclipse folder]\plugins\edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20140817-dd3f35c\plugin` where [Eclipse folder] is wherever you installed/extracted Eclipse to.
+8. [Fork/Clone](https://help.github.com/articles/fork-a-repo) this git repo. Import this project into Eclipse.  There should be no compile errors
+9. (optional) Run [build.xml](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/blob/master/build.xml) as an Ant Build, which should build and create an update site under /bin_build/site.
+11. (optional) Run MANIFEST.MF as an Eclipse Application.  Under one of the included launch configurations, the plugin should work just fine, but you might need to make sure both findbugs plugins are selected.
+![image](https://cloud.githubusercontent.com/assets/6819944/4005374/9bd7dfa8-2990-11e4-81d2-a6ce8ed75452.png)If you don't see the included Launch Configurations under the green Run button, you may need to refresh the projects, or browse Run Configurations.  Launch 3.x was tested on Indigo and Launch 4.x was tested on Kepler.
+10. (optional, see step 2) As step 10, just make sure the Run Configuration is setup such that fb-contrib-quick-fixes is not selected under **Target Platform**
 
 ##License##
 [FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html) and fb-contrib are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
