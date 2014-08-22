@@ -8,6 +8,20 @@
             label="Swap string variable and string literal"
             pattern="LSC_LITERAL_STRING_COMPARISON">
       </quickFix>
+      
+      <quickFix
+      		arguments="isName=false"
+            class="quickfix.CharsetIssuesResolution"
+            label="Replace with a StandardCharset"
+            pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET">
+      </quickFix>
+      
+      <quickFix
+            arguments="isName=true"
+            class="quickfix.CharsetIssuesResolution"
+            label="Replace with StandardCharset.XXX.name()"
+            pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME">
+      </quickFix>
    </extension>
 
 </plugin>
