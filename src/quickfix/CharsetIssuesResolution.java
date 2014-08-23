@@ -24,7 +24,6 @@ import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.ASTNodeNotFoundException;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 
@@ -46,8 +45,9 @@ public class CharsetIssuesResolution extends BugResolution {
 	protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug)
 			throws BugResolutionException {
 		// TODO Auto-generated method stub
-
-		CSIVisitor csiFinder = findCSIOccurrence(workingUnit, bug);	
+		ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
+		CSIVisitor csiFinder = new CSIVisitor(isName, rewrite);
+        node.accept(csiFinder);
 
         ASTNode badMethodInvocation = csiFinder.getBadInvocation();
 
@@ -55,77 +55,34 @@ public class CharsetIssuesResolution extends BugResolution {
 
         rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
 	}
-	
-//	@SuppressWarnings("unchecked")
-//	private ConstructorInvocation createFixedConstructorInvocation(ASTRewrite rewrite, CSIVisitor csiFinder) {
-//		AST ast = rewrite.getAST();
-//        ConstructorInvocation fixedMethodInvocation = ast.newConstructorInvocation();
-//        
-////        fixedMethodInvocation.t
-////        
-////        String invokedMethodName = csiFinder.lscMethodInvocation.getName().toString();
-////		fixedMethodInvocation.setName(ast.newSimpleName(invokedMethodName));
-////        
-////		List<Expression> oldArgs = csiFinder.lscMethodInvocation.arguments();
-////		
-////		for(int i = 0; i< oldArgs.size(); i++) {
-////			if (i != csiFinder.argumentIndex) {
-////				fixedMethodInvocation.arguments().add(rewrite.createCopyTarget(oldArgs.get(i)));
-////			} else {
-////				fixedMethodInvocation.arguments().add(makeReplacedArgument(ast, csiFinder.stringLiteralExpression));
-////			}
-////		}
-//		
-//		return fixedMethodInvocation;
-//	}
-
-	private Expression makeReplacedArgument(AST ast, String stringLiteralExpression) {
-		
-		if (isName) {
-			return ast.newQualifiedName(ast.newName("StandardCharsets"), 
-					ast.newSimpleName(stringLiteralExpression));
-		}
-		return ast.newQualifiedName(ast.newName("StandardCharsets"), 
-				ast.newSimpleName(stringLiteralExpression));
-	}
-
-	private CSIVisitor findCSIOccurrence(CompilationUnit workingUnit, BugInstance bug) throws ASTNodeNotFoundException {
-		ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
-		CSIVisitor lscFinder = new CSIVisitor(isName);
-        node.accept(lscFinder);
-		return lscFinder;
-	}
 
 	private static class CSIVisitor extends ASTVisitor {
 	
 		private Map<QTypeAndArgs, Object> csiConstructors;
 		private Map<QTypeAndArgs, Object> csiMethods;
 		
-	    private ClassInstanceCreation csiConstructorInvocation;
-	    private MethodInvocation csiMethodInvocation;
-	    private String stringLiteralExpression;
-	    
 	    private ASTNode fixedAstNode = null;
 	    
-	    public int argumentIndex;
-	
 		private boolean needsToInvokeName;  //should use StandardCharsets.UTF_8.name() instead of StandardCharsets
+		private AST rootAstNode;
+		private ASTRewrite rewrite;
+		private ASTNode csiConstructorInvocation;
+		private ASTNode csiMethodInvocation;
 		
 	
-	    public CSIVisitor(boolean needsToInvokeName) {
+	    public CSIVisitor(boolean needsToInvokeName, ASTRewrite rewrite) {
 			if (needsToInvokeName) {
 				parseToTypeArgs(CharsetIssues.UNREPLACEABLE_ENCODING_METHODS);
 			} else {
 				parseToTypeArgs(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
 			}
 			this.needsToInvokeName = needsToInvokeName;
+			this.rootAstNode = rewrite.getAST();
+			this.rewrite = rewrite;
 		}
 	    
 		public ASTNode createFixedInvocation(ASTRewrite rewrite) {
-			if (needsToInvokeName) {
-				
-			}
-			return null;
+			return fixedAstNode;
 		}
 
 		public ASTNode getBadInvocation() {
@@ -159,7 +116,7 @@ public class CharsetIssuesResolution extends BugResolution {
 	        }
 	        QTypeAndArgs key = new QTypeAndArgs(node);
 			
-			if (csiConstructors.containsKey(key)) {
+			if (csiMethods.containsKey(key)) {
 				List<Expression> arguments = (List<Expression>) node.arguments();		
 				int indexOfArgumentToReplace = getIndexOfArgument(key, arguments); 
 	
@@ -167,15 +124,37 @@ public class CharsetIssuesResolution extends BugResolution {
 				Expression argument = arguments.get(indexOfArgumentToReplace);
 				if (null != argument.resolveConstantExpressionValue()) {
 					this.csiMethodInvocation = node;
-					this.stringLiteralExpression = (String) argument.resolveConstantExpressionValue();
-					this.argumentIndex = indexOfArgumentToReplace;
-					return false;
+					MethodInvocation newNode = rootAstNode.newMethodInvocation();
+					newNode.setName(rootAstNode.newSimpleName(node.getName().getIdentifier()));
+					
+					List<Expression> newArgs = newNode.arguments();
+					
+					for(int i = 0;i< arguments.size(); i++) {
+						if (i != indexOfArgumentToReplace) {
+							newArgs.add((Expression) rewrite.createCopyTarget(arguments.get(i)));
+						} else {
+							newArgs.add(makeCharsetReplacement(argument));
+						}
+					}
+					fixedAstNode = newNode;
+					return false;  //don't keep parsing
 				}
 	
 			}
 	        return true;
 		}
 		
+		private Expression makeCharsetReplacement(Expression argument) {
+			String stringLiteral = (String) argument.resolveConstantExpressionValue();
+			
+			if (needsToInvokeName) {
+				return rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"), 
+						rootAstNode.newSimpleName(stringLiteral));
+			}
+			return rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"), 
+					rootAstNode.newSimpleName(stringLiteral));
+		}
+
 		@SuppressWarnings("unchecked")
 		@Override
 	    public boolean visit(ClassInstanceCreation node) {
@@ -191,10 +170,8 @@ public class CharsetIssuesResolution extends BugResolution {
 				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
 				Expression argument = arguments.get(indexOfArgumentToReplace);
 				if (null != argument.resolveConstantExpressionValue()) {
-					this.csiConstructorInvocation = node;
-					this.stringLiteralExpression = (String) argument.resolveConstantExpressionValue();
-					this.argumentIndex = indexOfArgumentToReplace;
-					return false;
+
+
 				}
 	
 			}
@@ -202,7 +179,7 @@ public class CharsetIssuesResolution extends BugResolution {
 	    }
 
 		private boolean foundThingToReplace() {
-			return this.csiConstructorInvocation != null || this.csiMethodInvocation != null;
+			return this.fixedAstNode != null;
 		}
 	
 		private int getIndexOfArgument(QTypeAndArgs key, List<Expression> arguments) {
@@ -250,7 +227,7 @@ public class CharsetIssuesResolution extends BugResolution {
 		
 		@SuppressWarnings("unchecked")
 		public QTypeAndArgs(MethodInvocation node) {
-			this(node.resolveTypeBinding().getQualifiedName(),
+			this(node.getExpression().resolveTypeBinding().getQualifiedName(),
 					node.arguments());
 			wasConstructor = false;
 		}
