@@ -1,6 +1,6 @@
 package quickfix;
 
-import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
+import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +44,6 @@ public class CharsetIssuesResolution extends BugResolution {
 	@Override
 	protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug)
 			throws BugResolutionException {
-		// TODO Auto-generated method stub
 		ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
 		CSIVisitor csiFinder = new CSIVisitor(isName, rewrite);
         node.accept(csiFinder);
@@ -54,6 +53,7 @@ public class CharsetIssuesResolution extends BugResolution {
         ASTNode fixedMethodInvocation = csiFinder.createFixedInvocation(rewrite);
 
         rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
+        addImports(rewrite, workingUnit, "java.nio.charset.StandardCharsets");
 	}
 
 	private static class CSIVisitor extends ASTVisitor {
@@ -126,6 +126,7 @@ public class CharsetIssuesResolution extends BugResolution {
 				if (null != argument.resolveConstantExpressionValue()) {
 					this.csiMethodInvocation = node;
 					MethodInvocation newNode = rootAstNode.newMethodInvocation();
+					newNode.setExpression((Expression) rewrite.createCopyTarget(node.getExpression()));
 					newNode.setName(rootAstNode.newSimpleName(node.getName().getIdentifier()));
 					
 					List<Expression> newArgs = newNode.arguments();
