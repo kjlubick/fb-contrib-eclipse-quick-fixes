@@ -16,15 +16,11 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ConstructorInvocation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
-import util.Debug;
-
 import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
-import com.mebigfatguy.fbcontrib.detect.CharsetIssues.CSI_Pair;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
@@ -50,41 +46,38 @@ public class CharsetIssuesResolution extends BugResolution {
 	protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug)
 			throws BugResolutionException {
 		// TODO Auto-generated method stub
-		//CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET 
-		
-		Debug.println(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
-	
+
 		CSIVisitor csiFinder = findCSIOccurrence(workingUnit, bug);	
 
-        ClassInstanceCreation badMethodInvocation = csiFinder.csiConstructorInvocation;
+        ASTNode badMethodInvocation = csiFinder.getBadInvocation();
 
-        ConstructorInvocation fixedMethodInvocation = createFixedConstructorInvocation(rewrite, csiFinder);
+        ASTNode fixedMethodInvocation = csiFinder.createFixedInvocation(rewrite);
 
         rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
 	}
 	
-	@SuppressWarnings("unchecked")
-	private ConstructorInvocation createFixedConstructorInvocation(ASTRewrite rewrite, CSIVisitor csiFinder) {
-		AST ast = rewrite.getAST();
-        ConstructorInvocation fixedMethodInvocation = ast.newConstructorInvocation();
-        
-//        fixedMethodInvocation.t
+//	@SuppressWarnings("unchecked")
+//	private ConstructorInvocation createFixedConstructorInvocation(ASTRewrite rewrite, CSIVisitor csiFinder) {
+//		AST ast = rewrite.getAST();
+//        ConstructorInvocation fixedMethodInvocation = ast.newConstructorInvocation();
 //        
-//        String invokedMethodName = csiFinder.lscMethodInvocation.getName().toString();
-//		fixedMethodInvocation.setName(ast.newSimpleName(invokedMethodName));
-//        
-//		List<Expression> oldArgs = csiFinder.lscMethodInvocation.arguments();
+////        fixedMethodInvocation.t
+////        
+////        String invokedMethodName = csiFinder.lscMethodInvocation.getName().toString();
+////		fixedMethodInvocation.setName(ast.newSimpleName(invokedMethodName));
+////        
+////		List<Expression> oldArgs = csiFinder.lscMethodInvocation.arguments();
+////		
+////		for(int i = 0; i< oldArgs.size(); i++) {
+////			if (i != csiFinder.argumentIndex) {
+////				fixedMethodInvocation.arguments().add(rewrite.createCopyTarget(oldArgs.get(i)));
+////			} else {
+////				fixedMethodInvocation.arguments().add(makeReplacedArgument(ast, csiFinder.stringLiteralExpression));
+////			}
+////		}
 //		
-//		for(int i = 0; i< oldArgs.size(); i++) {
-//			if (i != csiFinder.argumentIndex) {
-//				fixedMethodInvocation.arguments().add(rewrite.createCopyTarget(oldArgs.get(i)));
-//			} else {
-//				fixedMethodInvocation.arguments().add(makeReplacedArgument(ast, csiFinder.stringLiteralExpression));
-//			}
-//		}
-		
-		return fixedMethodInvocation;
-	}
+//		return fixedMethodInvocation;
+//	}
 
 	private Expression makeReplacedArgument(AST ast, String stringLiteralExpression) {
 		
@@ -112,22 +105,36 @@ public class CharsetIssuesResolution extends BugResolution {
 	    private MethodInvocation csiMethodInvocation;
 	    private String stringLiteralExpression;
 	    
+	    private ASTNode fixedAstNode = null;
 	    
 	    public int argumentIndex;
 	
-		private boolean isName;
-
+		private boolean needsToInvokeName;  //should use StandardCharsets.UTF_8.name() instead of StandardCharsets
 		
 	
-	    public CSIVisitor(boolean isName) {
-			if (isName) {
+	    public CSIVisitor(boolean needsToInvokeName) {
+			if (needsToInvokeName) {
 				parseToTypeArgs(CharsetIssues.UNREPLACEABLE_ENCODING_METHODS);
 			} else {
 				parseToTypeArgs(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
 			}
-			this.isName = isName;
+			this.needsToInvokeName = needsToInvokeName;
 		}
 	    
+		public ASTNode createFixedInvocation(ASTRewrite rewrite) {
+			if (needsToInvokeName) {
+				
+			}
+			return null;
+		}
+
+		public ASTNode getBadInvocation() {
+			if (csiConstructorInvocation != null) {
+				return csiConstructorInvocation;
+			}
+			return csiMethodInvocation;
+		}
+
 		private void parseToTypeArgs(Map<String, ? extends Object> map) {
 			this.csiConstructors = new HashMap<>();
 			this.csiMethods = new HashMap<>();
@@ -144,11 +151,28 @@ public class CharsetIssuesResolution extends BugResolution {
 			
 		}
 		
+		@SuppressWarnings("unchecked")
 		@Override
 		public boolean visit(MethodInvocation node) {
 	        if (foundThingToReplace()) {
 	            return false;
 	        }
+	        QTypeAndArgs key = new QTypeAndArgs(node);
+			
+			if (csiConstructors.containsKey(key)) {
+				List<Expression> arguments = (List<Expression>) node.arguments();		
+				int indexOfArgumentToReplace = getIndexOfArgument(key, arguments); 
+	
+				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
+				Expression argument = arguments.get(indexOfArgumentToReplace);
+				if (null != argument.resolveConstantExpressionValue()) {
+					this.csiMethodInvocation = node;
+					this.stringLiteralExpression = (String) argument.resolveConstantExpressionValue();
+					this.argumentIndex = indexOfArgumentToReplace;
+					return false;
+				}
+	
+			}
 	        return true;
 		}
 		
@@ -161,15 +185,15 @@ public class CharsetIssuesResolution extends BugResolution {
 			QTypeAndArgs key = new QTypeAndArgs(node);
 			
 			if (csiConstructors.containsKey(key)) {
-				List<Expression> arguments = (List<Expression>) node.arguments();
-				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
-				int indexOfArgument = getIndexOfArgument(key);
+				List<Expression> arguments = (List<Expression>) node.arguments();		
+				int indexOfArgumentToReplace = getIndexOfArgument(key, arguments); 
 	
-				Expression argument = arguments.get(indexOfArgument);
+				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
+				Expression argument = arguments.get(indexOfArgumentToReplace);
 				if (null != argument.resolveConstantExpressionValue()) {
 					this.csiConstructorInvocation = node;
 					this.stringLiteralExpression = (String) argument.resolveConstantExpressionValue();
-					this.argumentIndex = indexOfArgument;
+					this.argumentIndex = indexOfArgumentToReplace;
 					return false;
 				}
 	
@@ -181,15 +205,11 @@ public class CharsetIssuesResolution extends BugResolution {
 			return this.csiConstructorInvocation != null || this.csiMethodInvocation != null;
 		}
 	
-		private int getIndexOfArgument(QTypeAndArgs key) {
-			Object indexVal = csiConstructors.get(key);
-			if (isName && indexVal instanceof Integer) {
-				return (Integer) indexVal;
-			}
-			else if (indexVal instanceof CSI_Pair){
-				return ((CSI_Pair) indexVal).indexOfStringSig;
-			}
-			return -1;	//shouldn't happen
+		private int getIndexOfArgument(QTypeAndArgs key, List<Expression> arguments) {
+			Integer indexVal = (Integer) csiConstructors.get(key);
+			// indexVal is nth to last argument, so we convert to index
+			return (arguments.size() - indexVal) - 1;
+
 		}
 	}
 
@@ -228,6 +248,7 @@ public class CharsetIssuesResolution extends BugResolution {
 			wasConstructor = true;
 		}
 		
+		@SuppressWarnings("unchecked")
 		public QTypeAndArgs(MethodInvocation node) {
 			this(node.resolveTypeBinding().getQualifiedName(),
 					node.arguments());
