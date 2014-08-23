@@ -117,8 +117,9 @@ public class CharsetIssuesResolution extends BugResolution {
 	        QTypeAndArgs key = new QTypeAndArgs(node);
 			
 			if (csiMethods.containsKey(key)) {
-				List<Expression> arguments = (List<Expression>) node.arguments();		
-				int indexOfArgumentToReplace = getIndexOfArgument(key, arguments); 
+				List<Expression> arguments = (List<Expression>) node.arguments();
+				Integer indexVal = (Integer) csiMethods.get(key);		
+				int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1; 
 	
 				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
 				Expression argument = arguments.get(indexOfArgumentToReplace);
@@ -146,7 +147,7 @@ public class CharsetIssuesResolution extends BugResolution {
 		
 		private Expression makeCharsetReplacement(Expression argument) {
 			String stringLiteral = (String) argument.resolveConstantExpressionValue();
-			
+			stringLiteral = stringLiteral.replace('-', '_');
 			if (needsToInvokeName) {
 				return rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"), 
 						rootAstNode.newSimpleName(stringLiteral));
@@ -164,8 +165,9 @@ public class CharsetIssuesResolution extends BugResolution {
 			QTypeAndArgs key = new QTypeAndArgs(node);
 			
 			if (csiConstructors.containsKey(key)) {
-				List<Expression> arguments = (List<Expression>) node.arguments();		
-				int indexOfArgumentToReplace = getIndexOfArgument(key, arguments); 
+				List<Expression> arguments = (List<Expression>) node.arguments();
+				Integer indexVal = (Integer) csiConstructors.get(key);		
+				int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1; 
 	
 				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
 				Expression argument = arguments.get(indexOfArgumentToReplace);
@@ -180,13 +182,6 @@ public class CharsetIssuesResolution extends BugResolution {
 
 		private boolean foundThingToReplace() {
 			return this.fixedAstNode != null;
-		}
-	
-		private int getIndexOfArgument(QTypeAndArgs key, List<Expression> arguments) {
-			Integer indexVal = (Integer) csiConstructors.get(key);
-			// indexVal is nth to last argument, so we convert to index
-			return (arguments.size() - indexVal) - 1;
-
 		}
 	}
 
@@ -227,7 +222,7 @@ public class CharsetIssuesResolution extends BugResolution {
 		
 		@SuppressWarnings("unchecked")
 		public QTypeAndArgs(MethodInvocation node) {
-			this(node.getExpression().resolveTypeBinding().getQualifiedName(),
+			this(node.getExpression().resolveTypeBinding().getQualifiedName() + '.' + node.getName().getIdentifier(),
 					node.arguments());
 			wasConstructor = false;
 		}
