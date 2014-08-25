@@ -27,6 +27,9 @@ This project isn't quite ready for release yet.  But, if you really want, check 
 ![image](https://cloud.githubusercontent.com/assets/6819944/4005374/9bd7dfa8-2990-11e4-81d2-a6ce8ed75452.png)If you don't see the included Launch Configurations under the green Run button, you may need to refresh the projects, or browse Run Configurations.  Launch 3.x was tested on Indigo and Launch 4.x was tested on Kepler.
 10. (optional, see step 2) As step 10, just make sure the Run Configuration is setup such that fb-contrib-quick-fixes is not selected under **Target Platform**
 
+###Troubleshooting dev environment setup###
+`Execute failed: java.io.IOException: Cannot run program "git"`: Assuming you have installed git, you may have to [add git to your External Tools Configurations](http://stackoverflow.com/a/3196633/1447621)
+
 ##License##
 [FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html) and fb-contrib are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
 
