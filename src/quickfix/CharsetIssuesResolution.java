@@ -117,35 +117,78 @@ public class CharsetIssuesResolution extends BugResolution {
 	        QTypeAndArgs key = new QTypeAndArgs(node);
 			
 			if (csiMethods.containsKey(key)) {
-				List<Expression> arguments = (List<Expression>) node.arguments();
+				List<Expression> arguments = node.arguments();
 				Integer indexVal = (Integer) csiMethods.get(key);		
 				int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1; 
 	
 				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
-				Expression argument = arguments.get(indexOfArgumentToReplace);
-				if (null != argument.resolveConstantExpressionValue()) {
+				if (null != arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue()) {
 					this.csiMethodInvocation = node;
-					MethodInvocation newNode = rootAstNode.newMethodInvocation();
-					newNode.setExpression((Expression) rewrite.createCopyTarget(node.getExpression()));
-					newNode.setName(rootAstNode.newSimpleName(node.getName().getIdentifier()));
-					
-					List<Expression> newArgs = newNode.arguments();
-					
-					for(int i = 0;i< arguments.size(); i++) {
-						if (i != indexOfArgumentToReplace) {
-							newArgs.add((Expression) rewrite.createCopyTarget(arguments.get(i)));
-						} else {
-							newArgs.add(makeCharsetReplacement(argument));
-						}
-					}
-					fixedAstNode = newNode;
+					fixedAstNode = makeFixedMethodInvocation(node, indexOfArgumentToReplace);
 					return false;  //don't keep parsing
 				}
-	
 			}
 	        return true;
 		}
+
+		@SuppressWarnings("unchecked")
+		private MethodInvocation makeFixedMethodInvocation(MethodInvocation node, int indexOfArgumentToReplace) {
+			MethodInvocation newNode = rootAstNode.newMethodInvocation();
+			newNode.setExpression((Expression) rewrite.createCopyTarget(node.getExpression()));
+			newNode.setName(rootAstNode.newSimpleName(node.getName().getIdentifier()));
+
+			List<Expression> newArgs = newNode.arguments();
+			List<Expression> oldArgs = node.arguments();
+
+			copyArgsAndReplaceWithCharset(oldArgs, newArgs, indexOfArgumentToReplace);
+			return newNode;
+		}
 		
+		@SuppressWarnings("unchecked")
+		@Override
+	    public boolean visit(ClassInstanceCreation node) {
+	        if (foundThingToReplace()) {
+	            return false;
+	        }
+			QTypeAndArgs key = new QTypeAndArgs(node);
+			
+			if (csiConstructors.containsKey(key)) {
+				List<Expression> arguments = node.arguments();
+				Integer indexVal = (Integer) csiConstructors.get(key);		
+				int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1; 
+	
+				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
+				if (null != arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue()) {
+					this.csiMethodInvocation = node;
+					fixedAstNode = makeFixedConstructorInvocation(node, indexOfArgumentToReplace);
+					return false;  //don't keep parsing
+				}
+			}
+	        return true;
+	    }
+
+		@SuppressWarnings("unchecked")
+		private ASTNode makeFixedConstructorInvocation(ClassInstanceCreation node, int indexOfArgumentToReplace) {
+			ClassInstanceCreation newNode = rootAstNode.newClassInstanceCreation();
+			newNode.setType((org.eclipse.jdt.core.dom.Type) rewrite.createCopyTarget(node.getType()));
+			
+			List<Expression> newArgs = newNode.arguments();
+			List<Expression> oldArgs = node.arguments();
+
+			copyArgsAndReplaceWithCharset(oldArgs, newArgs, indexOfArgumentToReplace);
+			return newNode;
+		}
+
+		private void copyArgsAndReplaceWithCharset(List<Expression> oldArgs, List<Expression> newArgs, int indexOfArgumentToReplace) {
+			for (int i = 0; i < oldArgs.size(); i++) {
+				if (i != indexOfArgumentToReplace) {
+					newArgs.add((Expression) rewrite.createCopyTarget(oldArgs.get(i)));
+				} else {
+					newArgs.add(makeCharsetReplacement(oldArgs.get(indexOfArgumentToReplace)));
+				}
+			}
+		}
+
 		private Expression makeCharsetReplacement(Expression argument) {
 			String stringLiteral = (String) argument.resolveConstantExpressionValue();
 			stringLiteral = stringLiteral.replace('-', '_');
@@ -156,30 +199,6 @@ public class CharsetIssuesResolution extends BugResolution {
 			return rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"), 
 					rootAstNode.newSimpleName(stringLiteral));
 		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-	    public boolean visit(ClassInstanceCreation node) {
-	        if (foundThingToReplace()) {
-	            return false;
-	        }
-			QTypeAndArgs key = new QTypeAndArgs(node);
-			
-			if (csiConstructors.containsKey(key)) {
-				List<Expression> arguments = (List<Expression>) node.arguments();
-				Integer indexVal = (Integer) csiConstructors.get(key);		
-				int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1; 
-	
-				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
-				Expression argument = arguments.get(indexOfArgumentToReplace);
-				if (null != argument.resolveConstantExpressionValue()) {
-
-
-				}
-	
-			}
-	        return true;
-	    }
 
 		private boolean foundThingToReplace() {
 			return this.fixedAstNode != null;
