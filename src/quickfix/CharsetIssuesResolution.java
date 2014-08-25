@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
@@ -192,12 +193,15 @@ public class CharsetIssuesResolution extends BugResolution {
 		private Expression makeCharsetReplacement(Expression argument) {
 			String stringLiteral = (String) argument.resolveConstantExpressionValue();
 			stringLiteral = stringLiteral.replace('-', '_');
-			if (needsToInvokeName) {
-				return rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"), 
-						rootAstNode.newSimpleName(stringLiteral));
-			}
-			return rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"), 
+			QualifiedName qualifiedCharset = rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"), 
 					rootAstNode.newSimpleName(stringLiteral));
+			if (needsToInvokeName) {
+				MethodInvocation charsetName = rootAstNode.newMethodInvocation();
+				charsetName.setExpression(qualifiedCharset);
+				charsetName.setName(rootAstNode.newSimpleName("name"));
+				return charsetName;
+			}
+			return qualifiedCharset;
 		}
 
 		private boolean foundThingToReplace() {
