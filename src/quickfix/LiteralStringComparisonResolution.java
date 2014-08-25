@@ -26,10 +26,9 @@ public class LiteralStringComparisonResolution extends BugResolution {
         return true;
     }
 
-
-	@Override
+    @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
-    	LSCVisitor lscFinder = findLSCOccurrence(workingUnit, bug);	
+        LSCVisitor lscFinder = findLSCOccurrence(workingUnit, bug);
 
         MethodInvocation badMethodInvocation = lscFinder.lscMethodInvocation;
 
@@ -38,38 +37,40 @@ public class LiteralStringComparisonResolution extends BugResolution {
         rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
     }
 
-	private LSCVisitor findLSCOccurrence(CompilationUnit workingUnit, BugInstance bug) throws ASTNodeNotFoundException {
-		ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
+    private LSCVisitor findLSCOccurrence(CompilationUnit workingUnit, BugInstance bug) throws ASTNodeNotFoundException {
+        ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         LSCVisitor lscFinder = new LSCVisitor();
         node.accept(lscFinder);
-		return lscFinder;
-	}
+        return lscFinder;
+    }
 
     @SuppressWarnings("unchecked")
-	private MethodInvocation createFixedMethodInvocation(ASTRewrite rewrite, LSCVisitor lscFinder) {
-		AST ast = rewrite.getAST();
+    private MethodInvocation createFixedMethodInvocation(ASTRewrite rewrite, LSCVisitor lscFinder) {
+        AST ast = rewrite.getAST();
         MethodInvocation fixedMethodInvocation = ast.newMethodInvocation();
         String invokedMethodName = lscFinder.lscMethodInvocation.getName().toString();
-		fixedMethodInvocation.setName(ast.newSimpleName(invokedMethodName));
-        //can't simply use visitor.stringLiteralExpression because an IllegalArgumentException
-        //will be thrown because it belongs to another AST.  So, we use a moveTarget to eventually
-        //move the literal into the right place
-        fixedMethodInvocation.setExpression((Expression) rewrite.createMoveTarget(lscFinder.stringLiteralExpression));  //thing the method is called on
+        fixedMethodInvocation.setName(ast.newSimpleName(invokedMethodName));
+        // can't simply use visitor.stringLiteralExpression because an IllegalArgumentException
+        // will be thrown because it belongs to another AST. So, we use a moveTarget to eventually
+        // move the literal into the right place
+        fixedMethodInvocation.setExpression((Expression) rewrite.createMoveTarget(lscFinder.stringLiteralExpression)); // thing the method is called on
         fixedMethodInvocation.arguments().add((Expression) rewrite.createMoveTarget(lscFinder.stringVariableExpression));
-		return fixedMethodInvocation;
-	}
+        return fixedMethodInvocation;
+    }
 
     private static class LSCVisitor extends ASTVisitor {
 
-    	private static Set<String> comparisonMethods = new HashSet<String>(3);
-    	static {
-    		comparisonMethods.add("equals");
-    		comparisonMethods.add("compareTo");
-    		comparisonMethods.add("equalsIgnoreCase");
-    	}
-    	
+        private static Set<String> comparisonMethods = new HashSet<String>(3);
+        static {
+            comparisonMethods.add("equals");
+            comparisonMethods.add("compareTo");
+            comparisonMethods.add("equalsIgnoreCase");
+        }
+
         public MethodInvocation lscMethodInvocation;
+
         public Expression stringLiteralExpression;
+
         public Expression stringVariableExpression;
 
         @Override
@@ -78,13 +79,13 @@ public class LiteralStringComparisonResolution extends BugResolution {
                 return false;
             }
             if (comparisonMethods.contains(node.getName().toString())) {
-            	
+
                 @SuppressWarnings("unchecked")
-				List<Expression> arguments = (List<Expression>) node.arguments();
-                if (arguments.size() == 1) {        // I doubt this could be anything other than 1
-                    //if this was a constant string, resolveConstantExpressionValue() will be nonnull
+                List<Expression> arguments = (List<Expression>) node.arguments();
+                if (arguments.size() == 1) { // I doubt this could be anything other than 1
+                    // if this was a constant string, resolveConstantExpressionValue() will be nonnull
                     Expression argument = arguments.get(0);
-					if (null != argument.resolveConstantExpressionValue()) {
+                    if (null != argument.resolveConstantExpressionValue()) {
                         this.lscMethodInvocation = node;
                         this.stringLiteralExpression = argument;
                         this.stringVariableExpression = node.getExpression();

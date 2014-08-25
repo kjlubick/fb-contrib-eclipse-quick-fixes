@@ -27,45 +27,42 @@ import java.nio.charset.StandardCharsets;
  */
 public class Debug {
 
+    private static PrintStream out;
 
-	private static PrintStream out;
+    static {
+        try {
+            out = new PrintStream(new FileOutputStream("/tmp/eclipse-debug.txt"), true, StandardCharsets.UTF_8.name());
+            out.println("Hello findbugs");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	static {
-		try {
-			out = new PrintStream(new FileOutputStream("/tmp/eclipse-debug.txt"),true, StandardCharsets.UTF_8.name());
-			out.println("Hello findbugs");
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    private Debug() {
+    }
 
-	private Debug(){}
+    public static void println() {
+        out.println();
+    }
 
-	public static void println() {
-		out.println();
-	}
+    public static void println(Object x) {
+        out.println(x);
+    }
 
-	public static void println(Object x) {
-		out.println(x);
-	}
-
-	/**
-	 * Like println, but will print PC, if it's passed in
-	 *
-	 * e.g. Debug.println(getPC(), "Hello world");
-	 * will print
-	 * [PC:42] Hello world
-	 *
-	 * @param pc
-	 * @param obj
-	 */
-	public static void println(int pc, Object obj) {
-		out.printf("[PC:%d] %s%n", pc,obj);
-	}
-
-
-
+    /**
+     * Like println, but will print PC, if it's passed in
+     * 
+     * e.g. Debug.println(getPC(), "Hello world");
+     * will print
+     * [PC:42] Hello world
+     * 
+     * @param pc
+     * @param obj
+     */
+    public static void println(int pc, Object obj) {
+        out.printf("[PC:%d] %s%n", pc, obj);
+    }
 
 }
