@@ -43,21 +43,19 @@ public class CharsetIssuesResolution extends BugResolution {
 	}
 
 	@Override
-	protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug)
-			throws BugResolutionException {
+	protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
 		ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
-		CSIVisitor csiFinder = new CSIVisitor(isName, rewrite);
-        node.accept(csiFinder);
+		CSIVisitorAndFixer visitor = new CSIVisitorAndFixer(isName, rewrite);
+        node.accept(visitor);
 
-        ASTNode badMethodInvocation = csiFinder.getBadInvocation();
+        ASTNode badUseOfLiteral = visitor.getBadInvocation();
+        ASTNode fixedUseOfStandardCharset = visitor.getFixedInvocation();
 
-        ASTNode fixedMethodInvocation = csiFinder.createFixedInvocation(rewrite);
-
-        rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
+        rewrite.replace(badUseOfLiteral, fixedUseOfStandardCharset, null);
         addImports(rewrite, workingUnit, "java.nio.charset.StandardCharsets");
 	}
 
-	private static class CSIVisitor extends ASTVisitor {
+	private final static class CSIVisitorAndFixer extends ASTVisitor {
 	
 		private Map<QTypeAndArgs, Object> csiConstructors;
 		private Map<QTypeAndArgs, Object> csiMethods;
@@ -67,11 +65,11 @@ public class CharsetIssuesResolution extends BugResolution {
 		private boolean needsToInvokeName;  //should use StandardCharsets.UTF_8.name() instead of StandardCharsets
 		private AST rootAstNode;
 		private ASTRewrite rewrite;
-		private ASTNode csiConstructorInvocation;
-		private ASTNode csiMethodInvocation;
+		private ASTNode badConstructorInvocation;
+		private ASTNode badMethodInvocation;
 		
 	
-	    public CSIVisitor(boolean needsToInvokeName, ASTRewrite rewrite) {
+	    public CSIVisitorAndFixer(boolean needsToInvokeName, ASTRewrite rewrite) {
 			if (needsToInvokeName) {
 				parseToTypeArgs(CharsetIssues.UNREPLACEABLE_ENCODING_METHODS);
 			} else {
@@ -82,15 +80,15 @@ public class CharsetIssuesResolution extends BugResolution {
 			this.rewrite = rewrite;
 		}
 	    
-		public ASTNode createFixedInvocation(ASTRewrite rewrite) {
+		public ASTNode getFixedInvocation() {
 			return fixedAstNode;
 		}
 
 		public ASTNode getBadInvocation() {
-			if (csiConstructorInvocation != null) {
-				return csiConstructorInvocation;
+			if (badConstructorInvocation != null) {
+				return badConstructorInvocation;
 			}
-			return csiMethodInvocation;
+			return badMethodInvocation;
 		}
 
 		private void parseToTypeArgs(Map<String, ? extends Object> map) {
@@ -124,7 +122,7 @@ public class CharsetIssuesResolution extends BugResolution {
 	
 				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
 				if (null != arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue()) {
-					this.csiMethodInvocation = node;
+					this.badMethodInvocation = node;
 					fixedAstNode = makeFixedMethodInvocation(node, indexOfArgumentToReplace);
 					return false;  //don't keep parsing
 				}
@@ -160,7 +158,7 @@ public class CharsetIssuesResolution extends BugResolution {
 	
 				//if this was a constant string, resolveConstantExpressionValue() will be nonnull
 				if (null != arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue()) {
-					this.csiMethodInvocation = node;
+					this.badConstructorInvocation = node;
 					fixedAstNode = makeFixedConstructorInvocation(node, indexOfArgumentToReplace);
 					return false;  //don't keep parsing
 				}
@@ -253,7 +251,8 @@ public class CharsetIssuesResolution extends BugResolution {
 	
 		@Override
 		public String toString() {
-			return "QTypeAndArgs [qualifiedType=" + qualifiedType + ", argumentTypes=" + argumentTypes + "]";
+			return "QTypeAndArgs [wasConstructor=" + wasConstructor + ", qualifiedType=" + qualifiedType
+					+ ", argumentTypes=" + argumentTypes + "]";
 		}
 	
 		@Override
@@ -262,8 +261,7 @@ public class CharsetIssuesResolution extends BugResolution {
 			int result = 1;
 			result = prime * result + ((argumentTypes == null) ? 0 : argumentTypes.hashCode());
 			result = prime * result + ((qualifiedType == null) ? 0 : qualifiedType.hashCode());
-			result = prime * result + (wasConstructor ? 1231 : 1237);
-			return result;
+			return prime * result + (wasConstructor ? 1231 : 1237);
 		}
 	
 		@Override
