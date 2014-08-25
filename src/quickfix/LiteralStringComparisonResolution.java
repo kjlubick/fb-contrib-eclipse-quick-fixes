@@ -29,7 +29,6 @@ public class LiteralStringComparisonResolution extends BugResolution {
 
 	@Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
-        
     	LSCVisitor lscFinder = findLSCOccurrence(workingUnit, bug);	
 
         MethodInvocation badMethodInvocation = lscFinder.lscMethodInvocation;
