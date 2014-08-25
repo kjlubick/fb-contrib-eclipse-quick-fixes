@@ -1,9 +1,15 @@
 ##fb-contrib Eclipse quick fix plugin (fb-contrib quickfixes, for short)##
-This repository extends the quick-fixes offered by the [FindBugs](http://findbugs.sourceforge.net/) [Eclipse Plugin](http://findbugs.cs.umd.edu/eclipse/) to cover the bugs detected by [fb-contrib](http://fb-contrib.sourceforge.net/).
+This repository extends the quick-fixes offered by the [FindBugs](http://findbugs.sourceforge.net/) [Eclipse Plugin](http://findbugs.sourceforge.net/downloads.html) to cover the bugs detected by [fb-contrib](http://fb-contrib.sourceforge.net/).
 
 Currently, the FindBugs Eclipse Plugin only has support for extension in the nightly builds, but the public feature will be released soon.  Thus, I'm getting a head start on preparing custom quick-fixes.
 
 Because the aforementioned extension point is [only in dev](https://code.google.com/p/findbugs/source/detail?r=491d7f9cae6cef8919f0d76104dd567d8489db06), I've included an unofficial release of the plugin (through revision dd3f35c74eb8) under [releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  I've dubbed this release 3.0.1, and it is the current minimum version required for fb-contrib quickfixes.  This prereq will be updated when the official release happens.
+
+##Supported quickfixes##
+See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb-contrib](http://fb-contrib.sourceforge.net/bugdescriptions.html) bug description pages for more info
+- CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
+- CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
+- LSC_LITERAL_STRING_COMPARISON
 
 
 ##Installing the plugin##
@@ -29,6 +35,9 @@ This project isn't quite ready for release yet.  But, if you really want, check 
 
 ###Troubleshooting dev environment setup###
 `Execute failed: java.io.IOException: Cannot run program "git"`: Assuming you have installed git, you may have to [add git to your External Tools Configurations](http://stackoverflow.com/a/3196633/1447621)
+
+###Development notes###
+This project comes with a preconfigured Eclipse formatter setting.  These are the same settings used in the FindBugs Eclipse project.  Try not to mix feature additions with formatting corrections - make a standalone "Formatting" commit.
 
 ##License##
 [FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html) and fb-contrib are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
