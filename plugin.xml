@@ -22,6 +22,18 @@
             label="Replace with StandardCharset.XXX.name()"
             pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME">
       </quickFix>
+      
+      <quickFix
+            class="quickfix.IsNANResolution"
+            label="Replace with call to isNAN()"
+            pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME">
+      </quickFix>
+      
+      <quickFix
+            class="quickfix.IsNANResolution"
+            label="Replace with call to isNAN()"
+            pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME">
+      </quickFix>
    </extension>
 
 </plugin>
