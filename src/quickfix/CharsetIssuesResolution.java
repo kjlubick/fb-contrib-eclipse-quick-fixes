@@ -13,35 +13,29 @@ import javax.annotation.Nonnull;
 
 import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
 
-import de.tobject.findbugs.reporter.MarkerUtil;
-
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.apache.bcel.generic.Type;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
-import org.eclipse.jface.text.Document;
 
+import util.CustomLabelBugResolution;
 import util.CustomLabelUtil;
 import util.CustomLabelVisitor;
 
-public class CharsetIssuesResolution extends BugResolution {
+public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
     private boolean isName;
-    
-    private String customizedLabel = null;
+   
 
     @Override
     protected boolean resolveBindings() {
@@ -53,14 +47,10 @@ public class CharsetIssuesResolution extends BugResolution {
         isName = Boolean.parseBoolean(options.get("isName"));
     }
     
+   
     @Override
-    public String getLabel() {
-        if (customizedLabel == null) {
-            IMarker marker = getMarker();
-            String labelReplacement = CustomLabelUtil.findLabelReplacement(marker, new CSIVisitorAndFixer(isName));
-            customizedLabel = super.getLabel().replace(CustomLabelUtil.PLACEHOLDER_STRING, labelReplacement);
-        }
-       return customizedLabel;
+    protected CustomLabelVisitor getLabelFixingVisitor() {
+        return new CSIVisitorAndFixer(isName);
     }
 
     @Override
