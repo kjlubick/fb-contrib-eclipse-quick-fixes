@@ -1,6 +1,7 @@
 package quickfix;
 
-import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.*;
+import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.addImports;
+import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +11,18 @@ import java.util.Map.Entry;
 
 import javax.annotation.Nonnull;
 
+import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
+
+import de.tobject.findbugs.reporter.MarkerUtil;
+
+import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
+
 import org.apache.bcel.generic.Type;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -20,16 +32,16 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.eclipse.jface.text.Document;
 
-import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
-
-import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
+import util.CustomLabelUtil;
+import util.CustomLabelVisitor;
 
 public class CharsetIssuesResolution extends BugResolution {
 
     private boolean isName;
+    
+    private String customizedLabel = null;
 
     @Override
     protected boolean resolveBindings() {
@@ -39,6 +51,16 @@ public class CharsetIssuesResolution extends BugResolution {
     @Override
     public void setOptions(@Nonnull Map<String, String> options) {
         isName = Boolean.parseBoolean(options.get("isName"));
+    }
+    
+    @Override
+    public String getLabel() {
+        if (customizedLabel == null) {
+            IMarker marker = getMarker();
+            String labelReplacement = CustomLabelUtil.findLabelReplacement(marker, new CSILabelVisitor(isName));
+            customizedLabel = super.getLabel().replace(CustomLabelUtil.PLACEHOLDER_STRING, labelReplacement);
+        }
+       return customizedLabel;
     }
 
     @Override
@@ -52,6 +74,19 @@ public class CharsetIssuesResolution extends BugResolution {
 
         rewrite.replace(badUseOfLiteral, fixedUseOfStandardCharset, null);
         addImports(rewrite, workingUnit, "java.nio.charset.StandardCharsets");
+    }
+    
+    private final static class CSILabelVisitor extends CustomLabelVisitor {
+
+        public CSILabelVisitor(boolean isName) {
+            // TODO Auto-generated constructor stub
+        }
+
+        @Override
+        public String getLabelReplacement() {
+            return CustomLabelUtil.DEFAULT_REPLACEMENT;
+        }
+        
     }
 
     private final static class CSIVisitorAndFixer extends ASTVisitor {
@@ -82,6 +117,7 @@ public class CharsetIssuesResolution extends BugResolution {
             this.rootAstNode = rewrite.getAST();
             this.rewrite = rewrite;
         }
+
 
         public ASTNode getFixedInvocation() {
             return fixedAstNode;
