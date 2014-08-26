@@ -155,6 +155,7 @@ public class CharsetIssuesResolution extends BugResolution {
                 Object literalString = arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue();
                 if (null != literalString) {
                     this.literalValue = literalString.toString();
+                    this.badMethodInvocation = node;
                     fixedAstNode = makeFixedMethodInvocation(node, indexOfArgumentToReplace);
                     return false; // don't keep parsing
                 }
