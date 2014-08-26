@@ -14,11 +14,9 @@ import javax.annotation.Nonnull;
 import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
 
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.apache.bcel.generic.Type;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
@@ -215,23 +213,25 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
                 if (i != indexOfArgumentToReplace) {
                     newArgs.add((Expression) rewrite.createCopyTarget(oldArgs.get(i)));
                 } else {
-                    newArgs.add(makeCharsetReplacement(oldArgs.get(indexOfArgumentToReplace)));
+                    newArgs.add(makeCharsetReplacement());
                 }
             }
         }
 
-        private Expression makeCharsetReplacement(Expression argument) {
-            String stringLiteral = (String) argument.resolveConstantExpressionValue();
-            stringLiteral = stringLiteral.replace('-', '_');
-            QualifiedName qualifiedCharset = rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"),
-                    rootAstNode.newSimpleName(stringLiteral));
-            if (needsToInvokeName) {
-                MethodInvocation charsetName = rootAstNode.newMethodInvocation();
-                charsetName.setExpression(qualifiedCharset);
-                charsetName.setName(rootAstNode.newSimpleName("name"));
-                return charsetName;
+        private Expression makeCharsetReplacement() {
+            if (literalValue != null) {
+                String stringLiteral = literalValue.replace('-', '_');
+                QualifiedName qualifiedCharset = rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"),
+                        rootAstNode.newSimpleName(stringLiteral));
+                if (needsToInvokeName) {
+                    MethodInvocation charsetName = rootAstNode.newMethodInvocation();
+                    charsetName.setExpression(qualifiedCharset);
+                    charsetName.setName(rootAstNode.newSimpleName("name"));
+                    return charsetName;
+                }
+                return qualifiedCharset;
             }
-            return qualifiedCharset;
+            throw new RuntimeException("No String literal in CSI quickfix");
         }
 
         private boolean foundThingToReplace() {
