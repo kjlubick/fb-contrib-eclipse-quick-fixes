@@ -57,7 +57,7 @@ public class CharsetIssuesResolution extends BugResolution {
     public String getLabel() {
         if (customizedLabel == null) {
             IMarker marker = getMarker();
-            String labelReplacement = CustomLabelUtil.findLabelReplacement(marker, new CSILabelVisitor(isName));
+            String labelReplacement = CustomLabelUtil.findLabelReplacement(marker, new CSIVisitorAndFixer(isName));
             customizedLabel = super.getLabel().replace(CustomLabelUtil.PLACEHOLDER_STRING, labelReplacement);
         }
        return customizedLabel;
@@ -75,21 +75,8 @@ public class CharsetIssuesResolution extends BugResolution {
         rewrite.replace(badUseOfLiteral, fixedUseOfStandardCharset, null);
         addImports(rewrite, workingUnit, "java.nio.charset.StandardCharsets");
     }
-    
-    private final static class CSILabelVisitor extends CustomLabelVisitor {
 
-        public CSILabelVisitor(boolean isName) {
-            // TODO Auto-generated constructor stub
-        }
-
-        @Override
-        public String getLabelReplacement() {
-            return CustomLabelUtil.DEFAULT_REPLACEMENT;
-        }
-        
-    }
-
-    private final static class CSIVisitorAndFixer extends ASTVisitor {
+    private final static class CSIVisitorAndFixer extends CustomLabelVisitor {
 
         private Map<QTypeAndArgs, Object> csiConstructors;
 
@@ -106,18 +93,23 @@ public class CharsetIssuesResolution extends BugResolution {
         private ASTNode badConstructorInvocation;
 
         private ASTNode badMethodInvocation;
+        
+        private String literalValue = CustomLabelUtil.DEFAULT_REPLACEMENT;
 
         public CSIVisitorAndFixer(boolean needsToInvokeName, ASTRewrite rewrite) {
+            this(needsToInvokeName);
+            this.rootAstNode = rewrite.getAST();
+            this.rewrite = rewrite;
+        }
+        
+        public CSIVisitorAndFixer(boolean needsToInvokeName) { //for label traversing
             if (needsToInvokeName) {
                 parseToTypeArgs(CharsetIssues.UNREPLACEABLE_ENCODING_METHODS);
             } else {
                 parseToTypeArgs(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
             }
             this.needsToInvokeName = needsToInvokeName;
-            this.rootAstNode = rewrite.getAST();
-            this.rewrite = rewrite;
         }
-
 
         public ASTNode getFixedInvocation() {
             return fixedAstNode;
@@ -160,8 +152,9 @@ public class CharsetIssuesResolution extends BugResolution {
                 int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1;
 
                 // if this was a constant string, resolveConstantExpressionValue() will be nonnull
-                if (null != arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue()) {
-                    this.badMethodInvocation = node;
+                Object literalString = arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue();
+                if (null != literalString) {
+                    this.literalValue = literalString.toString();
                     fixedAstNode = makeFixedMethodInvocation(node, indexOfArgumentToReplace);
                     return false; // don't keep parsing
                 }
@@ -171,6 +164,9 @@ public class CharsetIssuesResolution extends BugResolution {
 
         @SuppressWarnings("unchecked")
         private MethodInvocation makeFixedMethodInvocation(MethodInvocation node, int indexOfArgumentToReplace) {
+            if (rootAstNode == null || rewrite == null) {
+                return null;
+            }
             MethodInvocation newNode = rootAstNode.newMethodInvocation();
             newNode.setExpression((Expression) rewrite.createCopyTarget(node.getExpression()));
             newNode.setName(rootAstNode.newSimpleName(node.getName().getIdentifier()));
@@ -196,7 +192,9 @@ public class CharsetIssuesResolution extends BugResolution {
                 int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1;
 
                 // if this was a constant string, resolveConstantExpressionValue() will be nonnull
-                if (null != arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue()) {
+                Object literalString = arguments.get(indexOfArgumentToReplace).resolveConstantExpressionValue();
+                if (null != literalString) {
+                    this.literalValue = literalString.toString();
                     this.badConstructorInvocation = node;
                     fixedAstNode = makeFixedConstructorInvocation(node, indexOfArgumentToReplace);
                     return false; // don't keep parsing
@@ -207,6 +205,9 @@ public class CharsetIssuesResolution extends BugResolution {
 
         @SuppressWarnings("unchecked")
         private ASTNode makeFixedConstructorInvocation(ClassInstanceCreation node, int indexOfArgumentToReplace) {
+            if (rootAstNode == null || rewrite == null) {
+                return null;
+            }
             ClassInstanceCreation newNode = rootAstNode.newClassInstanceCreation();
             newNode.setType((org.eclipse.jdt.core.dom.Type) rewrite.createCopyTarget(node.getType()));
 
@@ -244,6 +245,11 @@ public class CharsetIssuesResolution extends BugResolution {
 
         private boolean foundThingToReplace() {
             return this.fixedAstNode != null;
+        }
+        
+        @Override
+        public String getLabelReplacement() {
+            return literalValue.replace('-', '_');
         }
     }
 

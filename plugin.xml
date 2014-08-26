@@ -12,27 +12,27 @@
       <quickFix
       		arguments="isName=false"
             class="quickfix.CharsetIssuesResolution"
-            label="Replace with a StandardCharset"
+            label="Replace with StandardCharset.YYY"
             pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET">
       </quickFix>
       
       <quickFix
             arguments="isName=true"
             class="quickfix.CharsetIssuesResolution"
-            label="Replace with StandardCharset.XXX.name()"
+            label="Replace with StandardCharset.YYY.name()"
             pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME">
       </quickFix>
       
       <quickFix
             class="quickfix.IsNANResolution"
             label="Replace with call to isNAN()"
-            pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME">
+            pattern=" FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER">
       </quickFix>
       
       <quickFix
             class="quickfix.IsNANResolution"
             label="Replace with call to isNAN()"
-            pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME">
+            pattern="SPP_USE_ISNAN">
       </quickFix>
    </extension>
 

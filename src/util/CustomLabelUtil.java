@@ -23,7 +23,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 public class CustomLabelUtil {
     public static final String DEFAULT_REPLACEMENT = "XXX";
-    public static final CharSequence PLACEHOLDER_STRING = "YYY";
+    public static final String PLACEHOLDER_STRING = "YYY";
     
     
   //from BugResolution.java in findBugsEclipsePlugin
@@ -47,7 +47,7 @@ public class CustomLabelUtil {
         unit.becomeWorkingCopy(null);
         ASTParser parser = ASTParser.newParser(AST.JLS3);
         parser.setSource(unit);
-        parser.setResolveBindings(false);
+        parser.setResolveBindings(true);
         return (CompilationUnit) parser.createAST(null);
     }
 
