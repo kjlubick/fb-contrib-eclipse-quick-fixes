@@ -7,9 +7,15 @@ Because the aforementioned extension point is [only in dev](https://code.google.
 
 ##Supported quickfixes##
 See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb-contrib](http://fb-contrib.sourceforge.net/bugdescriptions.html) bug description pages for more info
+
+**fb-contrib**
 - CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
 - CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
+- SPP_USE_ISNAN
 - LSC_LITERAL_STRING_COMPARISON
+
+**FindBugs**
+- FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER
 
 
 ##Installing the plugin##
