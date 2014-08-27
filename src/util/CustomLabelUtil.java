@@ -1,9 +1,6 @@
 package util;
 
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
-
-import javax.xml.soap.Node;
-
 import de.tobject.findbugs.reporter.MarkerUtil;
 
 import edu.umd.cs.findbugs.BugInstance;
@@ -43,6 +40,7 @@ public class CustomLabelUtil {
     }
     
     //from BugResolution.java in findBugsEclipsePlugin
+    @SuppressWarnings("deprecation")
     private static CompilationUnit createWorkingCopy(ICompilationUnit unit) throws JavaModelException {
         unit.becomeWorkingCopy(null);
         ASTParser parser = ASTParser.newParser(AST.JLS3);
@@ -71,7 +69,9 @@ public class CustomLabelUtil {
                 node.accept(labelVisitor);
                 return labelVisitor.getLabelReplacement();
             }
-        } catch (Exception e) {
+            //Catch all exceptions (explicit) so that the label creation won't fail
+            //FindBugs prefers this being explicit
+        } catch (JavaModelException | ASTNodeNotFoundException | RuntimeException e) { 
             return DEFAULT_REPLACEMENT;
         }
         return DEFAULT_REPLACEMENT;

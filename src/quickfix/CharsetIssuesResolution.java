@@ -244,6 +244,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
         }
     }
 
+    //basically adds a bridge between fb-contrib's representation of this and the AST's view of them.
     private static class QTypeAndArgs {
         public boolean wasConstructor;
 
