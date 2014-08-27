@@ -20,10 +20,10 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 public class CustomLabelUtil {
     public static final String DEFAULT_REPLACEMENT = "XXX";
+
     public static final String PLACEHOLDER_STRING = "YYY";
-    
-    
-  //from BugResolution.java in findBugsEclipsePlugin
+
+    // from BugResolution.java in findBugsEclipsePlugin
     private static ASTNode getNodeForMarker(IMarker marker) throws JavaModelException, ASTNodeNotFoundException {
         BugInstance bug = MarkerUtil.findBugInstanceForMarker(marker);
         if (bug == null) {
@@ -35,11 +35,11 @@ public class CustomLabelUtil {
         }
 
         CompilationUnit workingUnit = createWorkingCopy(originalUnit);
-        
+
         return getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
     }
-    
-    //from BugResolution.java in findBugsEclipsePlugin
+
+    // from BugResolution.java in findBugsEclipsePlugin
     @SuppressWarnings("deprecation")
     private static CompilationUnit createWorkingCopy(ICompilationUnit unit) throws JavaModelException {
         unit.becomeWorkingCopy(null);
@@ -49,7 +49,7 @@ public class CustomLabelUtil {
         return (CompilationUnit) parser.createAST(null);
     }
 
-  //from BugResolution.java in findBugsEclipsePlugin
+    // from BugResolution.java in findBugsEclipsePlugin
     private static ICompilationUnit getCompilationUnit(IMarker marker) {
         IResource res = marker.getResource();
         if (res instanceof IFile && res.isAccessible()) {
@@ -61,7 +61,6 @@ public class CustomLabelUtil {
         return null;
     }
 
-
     public static String findLabelReplacement(IMarker marker, CustomLabelVisitor labelVisitor) {
         try {
             ASTNode node = getNodeForMarker(marker);
@@ -69,9 +68,9 @@ public class CustomLabelUtil {
                 node.accept(labelVisitor);
                 return labelVisitor.getLabelReplacement();
             }
-            //Catch all exceptions (explicit) so that the label creation won't fail
-            //FindBugs prefers this being explicit
-        } catch (JavaModelException | ASTNodeNotFoundException | RuntimeException e) { 
+            // Catch all exceptions (explicit) so that the label creation won't fail
+            // FindBugs prefers this being explicit
+        } catch (JavaModelException | ASTNodeNotFoundException | RuntimeException e) {
             return DEFAULT_REPLACEMENT;
         }
         return DEFAULT_REPLACEMENT;

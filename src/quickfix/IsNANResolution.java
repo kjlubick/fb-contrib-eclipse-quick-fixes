@@ -22,82 +22,82 @@ import util.CustomLabelVisitor;
 
 public class IsNANResolution extends CustomLabelBugResolution {
 
-    
     @Override
     protected boolean resolveBindings() {
         return true;
     }
-    
-    
+
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         IsNANVisitor visitor = new IsNANVisitor();
         node.accept(visitor);
-       
-        Expression fixedExpression = makeFixedExpression(rewrite, visitor); 
+
+        Expression fixedExpression = makeFixedExpression(rewrite, visitor);
         rewrite.replace(visitor.infixToReplace, fixedExpression, null);
     }
 
     private static String doubleOrFloat(boolean isDouble) {
         return isDouble ? "Double" : "Float";
     }
-    
+
     @SuppressWarnings("unchecked")
     private Expression makeFixedExpression(ASTRewrite rewrite, IsNANVisitor visitor) {
         AST ast = rewrite.getAST();
         MethodInvocation fixedMethod = ast.newMethodInvocation();
         fixedMethod.setName(ast.newSimpleName("isNaN"));
-        
+
         if (visitor.isPrimitive) {
-            //make a reference to Double or Float
+            // make a reference to Double or Float
             SimpleName staticType = ast.newSimpleName(doubleOrFloat(visitor.isDouble));
             fixedMethod.setExpression(staticType);
             fixedMethod.arguments().add(rewrite.createMoveTarget(visitor.testedVariable));
         } else {
-            //call isNaN directly on the boxed variable
+            // call isNaN directly on the boxed variable
             fixedMethod.setExpression((Expression) rewrite.createMoveTarget(visitor.testedVariable));
         }
-        
-        
+
         if (!visitor.isEquals) {
             PrefixExpression not = ast.newPrefixExpression();
             not.setOperator(PrefixExpression.Operator.NOT);
             not.setOperand(fixedMethod);
             return not;
-        } 
-        
+        }
+
         return fixedMethod;
     }
-    
-    
+
     private static class IsNANVisitor extends CustomLabelVisitor {
-        
+
         public InfixExpression infixToReplace;
+
         public SimpleName testedVariable;
+
         public boolean isEquals;
+
         public boolean isDouble;
+
         public boolean isPrimitive;
-        
+
         @Override
         public boolean visit(InfixExpression node) {
             if (infixToReplace != null) {
                 return false;
             }
             this.infixToReplace = node;
-            
+
             if (node.getOperator() == Operator.EQUALS) {
                 this.isEquals = true;
             } else if (node.getOperator() == Operator.NOT_EQUALS) {
                 this.isEquals = false;
             }
-            
+
             if (node.getLeftOperand() instanceof SimpleName) {
                 handleVariable((SimpleName) node.getLeftOperand());
-            } else if (node.getRightOperand() instanceof SimpleName){
+            } else if (node.getRightOperand() instanceof SimpleName) {
                 handleVariable((SimpleName) node.getRightOperand());
             }
-            
+
             return true;
         }
 
@@ -112,16 +112,14 @@ public class IsNANResolution extends CustomLabelBugResolution {
 
         @Override
         public String getLabelReplacement() {
-            if (isPrimitive) {      
+            if (isPrimitive) {
                 return String.format("a call to %s%s.isNaN(%s)", isEquals ? "" : "!",
                         doubleOrFloat(isDouble), testedVariable.getIdentifier());
             }
             return String.format("%s%s.isNaN()", isEquals ? "" : "!", testedVariable.getIdentifier());
         }
-        
-        
-    }
 
+    }
 
     @Override
     protected CustomLabelVisitor getLabelFixingVisitor() {

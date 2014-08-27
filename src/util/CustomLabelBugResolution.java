@@ -9,7 +9,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public abstract class CustomLabelBugResolution extends BugResolution {
-    
+
     protected String customizedLabel;
 
     @Override
@@ -19,7 +19,7 @@ public abstract class CustomLabelBugResolution extends BugResolution {
             String labelReplacement = CustomLabelUtil.findLabelReplacement(marker, getLabelFixingVisitor());
             customizedLabel = super.getLabel().replace(CustomLabelUtil.PLACEHOLDER_STRING, labelReplacement);
         }
-       return customizedLabel;
+        return customizedLabel;
     }
 
     protected abstract CustomLabelVisitor getLabelFixingVisitor();

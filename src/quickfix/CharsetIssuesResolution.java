@@ -33,7 +33,6 @@ import util.CustomLabelVisitor;
 public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
     private boolean isName;
-   
 
     @Override
     protected boolean resolveBindings() {
@@ -44,8 +43,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
     public void setOptions(@Nonnull Map<String, String> options) {
         isName = Boolean.parseBoolean(options.get("isName"));
     }
-    
-   
+
     @Override
     protected CustomLabelVisitor getLabelFixingVisitor() {
         return new CSIVisitorAndFixer(isName);
@@ -81,7 +79,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
         private ASTNode badConstructorInvocation;
 
         private ASTNode badMethodInvocation;
-        
+
         private String literalValue = CustomLabelUtil.DEFAULT_REPLACEMENT;
 
         public CSIVisitorAndFixer(boolean needsToInvokeName, ASTRewrite rewrite) {
@@ -89,8 +87,8 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
             this.rootAstNode = rewrite.getAST();
             this.rewrite = rewrite;
         }
-        
-        public CSIVisitorAndFixer(boolean needsToInvokeName) { //for label traversing
+
+        public CSIVisitorAndFixer(boolean needsToInvokeName) { // for label traversing
             if (needsToInvokeName) {
                 parseToTypeArgs(CharsetIssues.UNREPLACEABLE_ENCODING_METHODS);
             } else {
@@ -237,14 +235,14 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
         private boolean foundThingToReplace() {
             return this.fixedAstNode != null;
         }
-        
+
         @Override
         public String getLabelReplacement() {
             return literalValue.replace('-', '_');
         }
     }
 
-    //basically adds a bridge between fb-contrib's representation of this and the AST's view of them.
+    // basically adds a bridge between fb-contrib's representation of this and the AST's view of them.
     private static class QTypeAndArgs {
         public boolean wasConstructor;
 
