@@ -3,12 +3,10 @@ package quickfix;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -19,10 +17,12 @@ import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
+import util.CustomLabelBugResolution;
 import util.CustomLabelVisitor;
 
-public class IsNANResolution extends BugResolution {
+public class IsNANResolution extends CustomLabelBugResolution {
 
+    
     @Override
     protected boolean resolveBindings() {
         return true;
@@ -34,23 +34,24 @@ public class IsNANResolution extends BugResolution {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         IsNANVisitor visitor = new IsNANVisitor();
         node.accept(visitor);
-        
-        AST ast = rewrite.getAST();
-        
-        Expression fixedExpression = makeFixedExpression(rewrite, visitor, ast);
-        
+       
+        Expression fixedExpression = makeFixedExpression(rewrite, visitor); 
         rewrite.replace(visitor.infixToReplace, fixedExpression, null);
     }
 
-
+    private static String doubleOrFloat(boolean isDouble) {
+        return isDouble ? "Double" : "Float";
+    }
+    
     @SuppressWarnings("unchecked")
-    private Expression makeFixedExpression(ASTRewrite rewrite, IsNANVisitor visitor, AST ast) {
+    private Expression makeFixedExpression(ASTRewrite rewrite, IsNANVisitor visitor) {
+        AST ast = rewrite.getAST();
         MethodInvocation fixedMethod = ast.newMethodInvocation();
         fixedMethod.setName(ast.newSimpleName("isNaN"));
         
         if (visitor.isPrimitive) {
             //make a reference to Double or Float
-            SimpleName staticType = ast.newSimpleName(visitor.isDouble? "Double" : "Float");
+            SimpleName staticType = ast.newSimpleName(doubleOrFloat(visitor.isDouble));
             fixedMethod.setExpression(staticType);
             fixedMethod.arguments().add(rewrite.createMoveTarget(visitor.testedVariable));
         } else {
@@ -70,10 +71,10 @@ public class IsNANResolution extends BugResolution {
     }
     
     
-    private static class IsNANVisitor extends ASTVisitor {
+    private static class IsNANVisitor extends CustomLabelVisitor {
         
         public InfixExpression infixToReplace;
-        public Expression testedVariable;
+        public SimpleName testedVariable;
         public boolean isEquals;
         public boolean isDouble;
         public boolean isPrimitive;
@@ -92,15 +93,15 @@ public class IsNANResolution extends BugResolution {
             }
             
             if (node.getLeftOperand() instanceof SimpleName) {
-                handleVariable(node.getLeftOperand());
+                handleVariable((SimpleName) node.getLeftOperand());
             } else if (node.getRightOperand() instanceof SimpleName){
-                handleVariable(node.getRightOperand());
+                handleVariable((SimpleName) node.getRightOperand());
             }
             
             return true;
         }
 
-        private void handleVariable(Expression side) {
+        private void handleVariable(SimpleName side) {
             this.testedVariable = side;
             ITypeBinding type = this.testedVariable.resolveTypeBinding();
             this.isPrimitive = type.isPrimitive();
@@ -108,15 +109,23 @@ public class IsNANResolution extends BugResolution {
             String name = type.getName();
             this.isDouble = "double".equals(name) || "Double".equals(name);
         }
+
+        @Override
+        public String getLabelReplacement() {
+            if (isPrimitive) {      
+                return String.format("a call to %s%s.isNaN(%s)", isEquals ? "" : "!",
+                        doubleOrFloat(isDouble), testedVariable.getIdentifier());
+            }
+            return String.format("%s%s.isNaN()", isEquals ? "" : "!", testedVariable.getIdentifier());
+        }
         
         
     }
 
 
-    //@Override
+    @Override
     protected CustomLabelVisitor getLabelFixingVisitor() {
-        // TODO Auto-generated method stub
-        return null;
+        return new IsNANVisitor();
     }
 
 }

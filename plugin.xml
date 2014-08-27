@@ -25,13 +25,13 @@
       
       <quickFix
             class="quickfix.IsNANResolution"
-            label="Replace with call to isNAN()"
-            pattern=" FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER">
+            label="Replace with YYY"
+            pattern="FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER">
       </quickFix>
       
       <quickFix
             class="quickfix.IsNANResolution"
-            label="Replace with call to isNAN()"
+            label="Replace with YYY"
             pattern="SPP_USE_ISNAN">
       </quickFix>
    </extension>
