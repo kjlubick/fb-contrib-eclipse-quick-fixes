@@ -45,29 +45,28 @@ public class IsNANResolution extends BugResolution {
 
     @SuppressWarnings("unchecked")
     private Expression makeFixedExpression(ASTRewrite rewrite, IsNANVisitor visitor, AST ast) {
-        Expression retVal = null;
+        MethodInvocation fixedMethod = ast.newMethodInvocation();
+        fixedMethod.setName(ast.newSimpleName("isNaN"));
         
         if (visitor.isPrimitive) {
-            MethodInvocation fixedExpression = ast.newMethodInvocation();
+            //make a reference to Double or Float
             SimpleName staticType = ast.newSimpleName(visitor.isDouble? "Double" : "Float");
-            fixedExpression.setExpression(staticType);
-            fixedExpression.setName(ast.newSimpleName("isNaN"));
-            fixedExpression.arguments().add(rewrite.createMoveTarget(visitor.testedVariable));
-            
-            if (!visitor.isEquals) {
-                PrefixExpression not = ast.newPrefixExpression();
-                not.setOperator(PrefixExpression.Operator.NOT);
-                not.setOperand(fixedExpression);
-                retVal = not;
-            } else {
-                retVal = fixedExpression;
-            }
-            
+            fixedMethod.setExpression(staticType);
+            fixedMethod.arguments().add(rewrite.createMoveTarget(visitor.testedVariable));
         } else {
-            
+            //call isNaN directly on the boxed variable
+            fixedMethod.setExpression((Expression) rewrite.createMoveTarget(visitor.testedVariable));
         }
         
-        return retVal;
+        
+        if (!visitor.isEquals) {
+            PrefixExpression not = ast.newPrefixExpression();
+            not.setOperator(PrefixExpression.Operator.NOT);
+            not.setOperand(fixedMethod);
+            return not;
+        } 
+        
+        return fixedMethod;
     }
     
     
