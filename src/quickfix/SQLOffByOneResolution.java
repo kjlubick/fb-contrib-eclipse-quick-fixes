@@ -109,8 +109,8 @@ public class SQLOffByOneResolution extends BugResolution {
             }
 
             List<?> args = node.arguments();
-            if  (!(calledMethod.startsWith("get") && args.size() == 1) ||
-                    (calledMethod.startsWith("update") && args.size() == 2)) {
+            if  (!((calledMethod.startsWith("get") && args.size() == 1) ||
+                    (calledMethod.startsWith("update") && args.size() == 2))) {
                 return false;
             }
             //there are two versions of resultSet.getString [and updateString]
