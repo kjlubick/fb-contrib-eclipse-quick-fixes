@@ -73,7 +73,7 @@
       <quickFix
       		arguments="replaceAll=true"
             class="quickfix.SQLOffByOneResolution"
-            label="Increment this and all following indices by 1"
+            label="Increment this and all similar indicies in this block by 1"
             pattern="SQL_BAD_RESULTSET_ACCESS">
       </quickFix>
       
@@ -87,7 +87,7 @@
       <quickFix
       		arguments="replaceAll=true"
             class="quickfix.SQLOffByOneResolution"
-            label="Increment this and all following indices by 1"
+            label="Increment this and all similar indicies in this block by 1"
             pattern="SQL_BAD_PREPARED_STATEMENT_ACCESS">
       </quickFix>
       
