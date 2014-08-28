@@ -34,6 +34,35 @@
             label="Replace with YYY"
             pattern="SPP_USE_ISNAN">
       </quickFix>
+      
+      <quickFix
+      		arguments="useConstructor=false"
+            class="quickfix.BigDecimalResolution"
+            label="Replace with BigDecimal.valueOf(double)"
+            pattern="DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE">
+      </quickFix>
+      
+      <quickFix
+      		arguments="useConstructor=true"
+            class="quickfix.BigDecimalResolution"
+            label="Replace with new BigDecimal(String)"
+            pattern="DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE">
+      </quickFix>
+      
+      <quickFix
+      		arguments="useConstructor=false"
+            class="quickfix.BigDecimalResolution"
+            label="Replace with BigDecimal.valueOf(double)"
+            pattern="SPP_USE_BIGDECIMAL_STRING_CTOR">
+      </quickFix>
+      
+      <quickFix
+      		arguments="useConstructor=true"
+            class="quickfix.BigDecimalResolution"
+            label="Replace with new BigDecimal(String)"
+            pattern="SPP_USE_BIGDECIMAL_STRING_CTOR">
+      </quickFix>
+      
    </extension>
 
 </plugin>
