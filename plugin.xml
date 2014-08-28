@@ -63,6 +63,35 @@
             pattern="SPP_USE_BIGDECIMAL_STRING_CTOR">
       </quickFix>
       
+      <quickFix
+      		arguments="replaceAll=false"
+            class="quickfix.SQLOffByOneResolution"
+            label="Change this index to 1 instead of 0"
+            pattern="SQL_BAD_RESULTSET_ACCESS">
+      </quickFix>
+      
+      <quickFix
+      		arguments="replaceAll=true"
+            class="quickfix.SQLOffByOneResolution"
+            label="Increment this and all following indices by 1"
+            pattern="SQL_BAD_RESULTSET_ACCESS">
+      </quickFix>
+      
+      <quickFix
+      		arguments="replaceAll=false"
+            class="quickfix.SQLOffByOneResolution"
+            label="Change this index to 1 instead of 0"
+            pattern="SQL_BAD_PREPARED_STATEMENT_ACCESS">
+      </quickFix>
+      
+      <quickFix
+      		arguments="replaceAll=true"
+            class="quickfix.SQLOffByOneResolution"
+            label="Increment this and all following indices by 1"
+            pattern="SQL_BAD_PREPARED_STATEMENT_ACCESS">
+      </quickFix>
+      
+      
    </extension>
 
 </plugin>
