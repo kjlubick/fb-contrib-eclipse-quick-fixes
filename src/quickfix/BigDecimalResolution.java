@@ -50,12 +50,15 @@ public class BigDecimalResolution extends BugResolution {
     }
     
     
-    @SuppressWarnings("unchecked")
     private Expression makeFixedExpression(ASTRewrite rewrite, BigDecimalVisitor visitor) {
         if (useConstructor) {
             return makeConstructor(rewrite, visitor);
         }
-        
+        return makeValueOf(rewrite, visitor);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Expression makeValueOf(ASTRewrite rewrite, BigDecimalVisitor visitor) {
         AST ast = rewrite.getAST();
         MethodInvocation fixedMethod = ast.newMethodInvocation();
         fixedMethod.setName(ast.newSimpleName("valueOf"));
@@ -67,11 +70,12 @@ public class BigDecimalResolution extends BugResolution {
     }
 
 
+    @SuppressWarnings("unchecked")
     private Expression makeConstructor(ASTRewrite rewrite, BigDecimalVisitor visitor) {
         AST ast = rewrite.getAST();
-        ClassInstanceCreation fixedConstructor = (ClassInstanceCreation) rewrite.createCopyTarget(visitor.badBigDecimalConstructor);
-        
-        fixedConstructor.arguments().clear();
+        ClassInstanceCreation fixedConstructor = ast.newClassInstanceCreation();
+        fixedConstructor.setType((Type) rewrite.createCopyTarget(visitor.badBigDecimalConstructor.getType()));
+
         StringLiteral stringLiteral = ast.newStringLiteral();
         stringLiteral.setLiteralValue(visitor.decimalVar.getToken());
         fixedConstructor.arguments().add(stringLiteral);
@@ -91,7 +95,7 @@ public class BigDecimalResolution extends BugResolution {
             }
             Type type = node.getType();
             if (type instanceof SimpleType
-                    && "java.math.BigDecimal".equals(((SimpleType) type).getName().getFullyQualifiedName())) {
+                    && "BigDecimal".equals(((SimpleType) type).getName().getFullyQualifiedName())) {
                 
                 @SuppressWarnings("unchecked")
                 List<Expression> args = node.arguments();
