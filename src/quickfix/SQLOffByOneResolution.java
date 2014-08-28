@@ -8,7 +8,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
@@ -32,14 +35,31 @@ public class SQLOffByOneResolution extends BugResolution {
     protected boolean resolveBindings() {
         return true;
     }
+    
+    @Override
+    public void setOptions(@Nonnull Map<String, String> options) {
+        fixAll = Boolean.parseBoolean(options.get("replaceAll"));
+    }
 
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         
+        if (fixAll) {
+            node = node.getParent();
+        }
+        
+        
         SQLVisitor visitor = new SQLVisitor(rewrite);
         node.accept(visitor);
 
+        for(int i = 0; i<visitor.badMethodInvocations.size(); i++) {
+            MethodInvocation bad = visitor.badMethodInvocations.get(i);
+            MethodInvocation fixed = visitor.fixedMethodInvocations.get(i);
+            
+            rewrite.replace(bad, fixed, null);
+        }
+        
     }
     
     private static class SQLVisitor extends ASTVisitor {
@@ -100,12 +120,25 @@ public class SQLOffByOneResolution extends BugResolution {
         }
 
 
+        @SuppressWarnings("unchecked")
         private MethodInvocation makeFixedMethodInvocation(MethodInvocation node) {
             MethodInvocation fixedMethodInvocation = rootAST.newMethodInvocation();
-            fixedMethodInvocation.setExpression((Expression) rewrite.createMoveTarget(node.getExpression()));
-            fixedMethodInvocation.setName((SimpleName) rewrite.createMoveTarget(node.getName()));
+            fixedMethodInvocation.setExpression((Expression) rewrite.createCopyTarget(node.getExpression()));
+            fixedMethodInvocation.setName((SimpleName) rewrite.createCopyTarget(node.getName()));
             
+            List<Expression> oldArguments = node.arguments();
+                   
+            //we know from isValidSQLSetUpdateOrGet that the first arg is the numberLiteral
+            NumberLiteral intArg = (NumberLiteral) oldArguments.get(0);
             
+            String incrementedArg = Integer.toString(Integer.parseInt(intArg.getToken()) + 1);
+            
+            List<Expression> newArguments = fixedMethodInvocation.arguments();
+            newArguments.add(rootAST.newNumberLiteral(incrementedArg));
+            
+            for(int i = 1; i < oldArguments.size(); i++) {
+                newArguments.add((Expression) rewrite.createCopyTarget(oldArguments.get(i)));
+            }
             
             return fixedMethodInvocation;
         }
