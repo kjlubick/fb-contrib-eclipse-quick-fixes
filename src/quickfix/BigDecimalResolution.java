@@ -33,7 +33,7 @@ public class BigDecimalResolution extends BugResolution {
     protected boolean resolveBindings() {
         return true;
     }
-    
+
     @Override
     public void setOptions(@Nonnull Map<String, String> options) {
         useConstructor = Boolean.parseBoolean(options.get("useConstructor"));
@@ -48,8 +48,7 @@ public class BigDecimalResolution extends BugResolution {
         Expression fixedExpression = makeFixedExpression(rewrite, visitor);
         rewrite.replace(visitor.badBigDecimalConstructor, fixedExpression, null);
     }
-    
-    
+
     private Expression makeFixedExpression(ASTRewrite rewrite, BigDecimalVisitor visitor) {
         if (useConstructor) {
             return makeConstructor(rewrite, visitor);
@@ -65,10 +64,9 @@ public class BigDecimalResolution extends BugResolution {
         SimpleName staticType = ast.newSimpleName("BigDecimal");
         fixedMethod.setExpression(staticType);
         fixedMethod.arguments().add(rewrite.createMoveTarget(visitor.decimalVar));
-        
+
         return fixedMethod;
     }
-
 
     @SuppressWarnings("unchecked")
     private Expression makeConstructor(ASTRewrite rewrite, BigDecimalVisitor visitor) {
@@ -82,12 +80,12 @@ public class BigDecimalResolution extends BugResolution {
         return fixedConstructor;
     }
 
-
     private static class BigDecimalVisitor extends ASTVisitor {
-        
+
         public ClassInstanceCreation badBigDecimalConstructor = null;
+
         private NumberLiteral decimalVar;
-        
+
         @Override
         public boolean visit(ClassInstanceCreation node) {
             if (badBigDecimalConstructor != null) {
@@ -96,18 +94,18 @@ public class BigDecimalResolution extends BugResolution {
             Type type = node.getType();
             if (type instanceof SimpleType
                     && "BigDecimal".equals(((SimpleType) type).getName().getFullyQualifiedName())) {
-                
+
                 @SuppressWarnings("unchecked")
                 List<Expression> args = node.arguments();
                 if (args.size() == 1 && args.get(0) instanceof NumberLiteral) {
                     badBigDecimalConstructor = node;
-                    this.decimalVar = (NumberLiteral)node.arguments().get(0);
-                }  
+                    this.decimalVar = (NumberLiteral) node.arguments().get(0);
+                }
             }
-            
+
             return true;
         }
-        
+
     }
 
 }
