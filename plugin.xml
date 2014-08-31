@@ -91,6 +91,11 @@
             pattern="SQL_BAD_PREPARED_STATEMENT_ACCESS">
       </quickFix>
       
+      <quickFix
+            class="quickfix.ReturnValueResolution"
+            label="[Message]"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+      </quickFix>
       
    </extension>
 
