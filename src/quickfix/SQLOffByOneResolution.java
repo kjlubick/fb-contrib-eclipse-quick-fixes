@@ -2,9 +2,6 @@ package quickfix;
 
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -138,19 +135,6 @@ public class SQLOffByOneResolution extends BugResolution {
 
             return fixedMethodInvocation;
         }
-    }
-
-    public void query(PreparedStatement ps) throws SQLException {
-        ps.setString(0, "foo");
-        ps.setString(1, "bar");
-        ps.setInt(2, 42);
-
-    }
-
-    public void getquery(ResultSet rs) throws SQLException {
-        System.out.println(rs.getInt(0));
-        System.out.println(rs.getString(1));
-        System.out.println(rs.getInt(2));
     }
 
 }

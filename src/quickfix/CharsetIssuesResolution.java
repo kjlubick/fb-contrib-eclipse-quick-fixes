@@ -14,6 +14,8 @@ import javax.annotation.Nonnull;
 import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
 
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.apache.bcel.generic.Type;
@@ -25,10 +27,6 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
-
-import util.CustomLabelBugResolution;
-import util.CustomLabelUtil;
-import util.CustomLabelVisitor;
 
 public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
@@ -80,7 +78,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
         private ASTNode badMethodInvocation;
 
-        private String literalValue = CustomLabelUtil.DEFAULT_REPLACEMENT;
+        private String literalValue = null;
 
         public CSIVisitorAndFixer(boolean needsToInvokeName, ASTRewrite rewrite) {
             this(needsToInvokeName);
