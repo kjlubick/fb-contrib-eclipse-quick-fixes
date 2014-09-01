@@ -98,6 +98,13 @@
             pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
       </quickFix>
       
+      <quickFix
+      		arguments="isNegated=false"
+            class="quickfix.ReturnValueResolution"
+            label="YYY"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+      </quickFix>
+      
    </extension>
 
 </plugin>

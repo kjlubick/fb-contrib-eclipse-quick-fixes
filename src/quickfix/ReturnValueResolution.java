@@ -19,9 +19,15 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.PrefixExpression;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 import util.CustomLabelBugResolution;
@@ -31,7 +37,28 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
     
     private final static String labelForBoolean = "Replace with if (YYY) {}";
     private final static String labelForBooleanNot = "Replace with if (!YYY) {}";
+    
+    
+    private final static String exceptionalSysOut = "System.out.println(\"Exceptional return value\");";
+    private final static String descriptionForBoolean = "Replace with <code><pre>if (YYY) {\n\t"+exceptionalSysOut+"\n}</pre></code>";
+    private final static String descriptionForBooleanNot = "Replace with <code><pre>if (!YYY) {\n\t"+exceptionalSysOut+"\n}</pre></code>";
+    
     private boolean isNegated;
+    
+    private String methodSourceCodeForReplacement;
+    
+    private String description;
+    
+    @Override
+    public String getDescription() {
+        if (description == null) {
+            String label = getLabel();     //force traversing, which fills in description
+            if (description == null) {
+                return label;       //something funky is happening, 
+            } 
+        }
+        return description;
+    }
 
     @Override
     protected boolean resolveBindings() {
@@ -50,18 +77,52 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
         ReturnValueResolutionVisitor rvrFinder = new ReturnValueResolutionVisitor(isNegated);
         node.accept(rvrFinder);
         
-        Expression fixedExpression = makeFixedExpression(rewrite, rvrFinder);
+        ASTNode fixedStatement = makeFixedExpression(rewrite, rvrFinder);
         
+        if (fixedStatement != null && rvrFinder.badMethodInvocation != null) {
+            //we have to call getParent() to get the statement. 
+            //If we simply replace the MethodInvocation with the ifStatement (or whatever),
+            //we get an extra semicolon on the end.
+            rewrite.replace(rvrFinder.badMethodInvocation.getParent(), fixedStatement, null);
+        }
     }
     
-    private Expression makeFixedExpression(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
+    private ASTNode makeFixedExpression(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
         
-//        AST rootNode = rewrite.getAST();
-//        
-//        if ()
+        AST rootNode = rewrite.getAST();
         
-        // TODO Auto-generated method stub
+        if ("boolean".equals(rvrFinder.returnType)) {
+            IfStatement ifStatement = rootNode.newIfStatement();
+            
+            PrefixExpression negation = rootNode.newPrefixExpression();
+            negation.setOperator(PrefixExpression.Operator.NOT);
+            negation.setOperand((Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation));
+            ifStatement.setExpression(negation);
+            
+            //the block surrounds the inner statement with {}
+            Block thenBlock = rootNode.newBlock();
+            Statement thenStatement = makeExceptionalStatement(rootNode);
+            thenBlock.statements().add(thenStatement);
+            ifStatement.setThenStatement(thenBlock);
+            
+            return ifStatement;
+        }
+        
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Statement makeExceptionalStatement(AST rootNode) {
+        //makes a statement `System.out.println("Exceptional return value");`
+        QualifiedName sysout = rootNode.newQualifiedName(rootNode.newSimpleName("System"), rootNode.newSimpleName("out"));
+        StringLiteral literal = rootNode.newStringLiteral();
+        literal.setLiteralValue("Exceptional return value");
+        
+        MethodInvocation expression = rootNode.newMethodInvocation();
+        expression.setExpression(sysout);
+        expression.setName(rootNode.newSimpleName("println"));
+        expression.arguments().add(literal);
+        return rootNode.newExpressionStatement(expression );
     }
 
     @Override
@@ -69,29 +130,28 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
         return new ReturnValueResolutionVisitor(isNegated);
     }
 
+    private static Set<String> supportedMethods = new HashSet<>(13);
+    static {
+        //from CheckReturnAnnotationDatabase, from the FindBugs project
+        supportedMethods.add("createNewFile");
+        supportedMethods.add("delete");
+        supportedMethods.add("mkdir");
+        supportedMethods.add("mkdirs");
+        supportedMethods.add("renameTo");
+        supportedMethods.add("setLastModified");
+        supportedMethods.add("setReadOnly");
+        supportedMethods.add("setWritable");
+        supportedMethods.add("await");
+        supportedMethods.add("awaitUntil");
+        supportedMethods.add("awaitNanos");
+        supportedMethods.add("offer");
+        supportedMethods.add("submit");
+    }
     
-    private static class ReturnValueResolutionVisitor extends CustomLabelVisitor{
-        private static Set<String> supportedMethods = new HashSet<>(13);
-        static {
-            //from CheckReturnAnnotationDatabase, from the FindBugs project
-            supportedMethods.add("createNewFile");
-            supportedMethods.add("delete");
-            supportedMethods.add("mkdir");
-            supportedMethods.add("mkdirs");
-            supportedMethods.add("renameTo");
-            supportedMethods.add("setLastModified");
-            supportedMethods.add("setReadOnly");
-            supportedMethods.add("setWritable");
-            supportedMethods.add("await");
-            supportedMethods.add("awaitUntil");
-            supportedMethods.add("awaitNanos");
-            supportedMethods.add("offer");
-            supportedMethods.add("submit");
-        }
-        
+    private class ReturnValueResolutionVisitor extends CustomLabelVisitor{
         public String returnType;
-        public MethodInvocation badMethodInvocation;
-        private String labelReplacement;
+        public ASTNode badMethodInvocation;
+        
         private boolean isNegated;
         
         public ReturnValueResolutionVisitor(boolean isNegated) {
@@ -109,18 +169,21 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
             
             returnType = node.resolveTypeBinding().getName();
             //string of method invocation for label
-            labelReplacement = node.toString();
+            methodSourceCodeForReplacement = node.toString();
             badMethodInvocation = node;
             return false;
         }
 
         @Override
         public String getLabelReplacement() {
+            //sets up label and description
             if ("boolean".equals(returnType)) {
                 if (isNegated) {
-                    return labelForBooleanNot.replace("YYY", labelReplacement);
+                    description = descriptionForBooleanNot.replace("YYY", methodSourceCodeForReplacement);
+                    return labelForBooleanNot.replace("YYY", methodSourceCodeForReplacement);
                 }
-                return labelForBoolean.replace("YYY", labelReplacement);
+                description = descriptionForBoolean.replace("YYY", methodSourceCodeForReplacement);
+                return labelForBoolean.replace("YYY", methodSourceCodeForReplacement);
             } else {
                 System.out.println("I don't know how to handle "+returnType);
                 return "Sorry, no quickfix yet";
@@ -136,6 +199,11 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
     public void main(String[] args) throws IOException {
         File f = new File("test.txt");
         f.createNewFile();
+        
+        if (!f.createNewFile()) {
+            System.out.println("Exceptional return value");
+        }
+        
         
         args[0].trim();
         
