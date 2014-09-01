@@ -92,8 +92,9 @@
       </quickFix>
       
       <quickFix
+      		arguments="isNegated=true"
             class="quickfix.ReturnValueResolution"
-            label="[Message]"
+            label="YYY"
             pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
       </quickFix>
       
