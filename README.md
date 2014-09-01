@@ -3,7 +3,7 @@ This repository extends the quick-fixes offered by the [FindBugs](http://findbug
 
 Currently, the FindBugs Eclipse Plugin only has support for extension in the nightly builds, but the public feature will be released soon.  Thus, I'm getting a head start on preparing custom quick-fixes.
 
-Because the aforementioned extension point is [only in dev](https://code.google.com/p/findbugs/source/detail?r=491d7f9cae6cef8919f0d76104dd567d8489db06), I've included an unofficial release of the plugin (through revision dd3f35c74eb8) under [releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  I've dubbed this release 3.0.1, and it is the current minimum version required for fb-contrib quickfixes.  This prereq will be updated when the official release happens.
+Because the aforementioned extension point is [only in dev](https://code.google.com/p/findbugs/source/detail?r=491d7f9cae6cef8919f0d76104dd567d8489db06), I've included an unofficial release of the plugin (through revision a69353ade781) under [releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  I've dubbed this release 3.0.1, and it is the current minimum version required for fb-contrib quickfixes.  This prereq will be updated when the official release happens.
 
 ##Supported quickfixes##
 See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb-contrib](http://fb-contrib.sourceforge.net/bugdescriptions.html) bug description pages for more info
