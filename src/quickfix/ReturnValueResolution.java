@@ -87,17 +87,15 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private ASTNode makeFixedExpression(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
-        
         AST rootNode = rewrite.getAST();
         
         if ("boolean".equals(rvrFinder.returnType)) {
             IfStatement ifStatement = rootNode.newIfStatement();
             
-            PrefixExpression negation = rootNode.newPrefixExpression();
-            negation.setOperator(PrefixExpression.Operator.NOT);
-            negation.setOperand((Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation));
-            ifStatement.setExpression(negation);
+            Expression expression = makeIfExpression(rewrite, rvrFinder);
+            ifStatement.setExpression(expression);
             
             //the block surrounds the inner statement with {}
             Block thenBlock = rootNode.newBlock();
@@ -109,6 +107,18 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
         }
         
         return null;
+    }
+
+    private Expression makeIfExpression(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
+        if (rvrFinder.isNegated) 
+        {
+            AST rootNode = rewrite.getAST();
+            PrefixExpression negation = rootNode.newPrefixExpression();
+            negation.setOperator(PrefixExpression.Operator.NOT);
+            negation.setOperand((Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation));
+            return negation;
+        }
+        return (Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation);
     }
 
     @SuppressWarnings("unchecked")
