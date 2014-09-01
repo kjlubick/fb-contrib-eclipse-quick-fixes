@@ -92,15 +92,15 @@
       </quickFix>
       
       <quickFix
-      		arguments="isNegated=true"
-            class="quickfix.ReturnValueResolution"
+      		arguments="isNegated=true,storeToSelf=true"
+            class="quickfix.ReturnValueBadPracticeResolution"
             label="YYY"
             pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
       </quickFix>
       
       <quickFix
-      		arguments="isNegated=false"
-            class="quickfix.ReturnValueResolution"
+      		arguments="isNegated=false,storeToSelf=false"
+            class="quickfix.ReturnValueBadPracticeResolution"
             label="YYY"
             pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
       </quickFix>

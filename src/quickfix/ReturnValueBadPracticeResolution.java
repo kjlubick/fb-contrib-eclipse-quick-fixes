@@ -33,10 +33,12 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import util.CustomLabelBugResolution;
 import util.CustomLabelVisitor;
 
-public class ReturnValueResolution extends CustomLabelBugResolution {
+public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     
     private final static String labelForBoolean = "Replace with if (YYY) {}";
     private final static String labelForBooleanNot = "Replace with if (!YYY) {}";
+    private final static String labelForVariableLocal = "Store result to new local";
+    private final static String labelForVariableField = "Store result to new field";
     
     
     private final static String exceptionalSysOut = "System.out.println(\"Exceptional return value\");";
@@ -44,9 +46,10 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
     private final static String descriptionForBooleanNot = "Replace with <code><pre>if (!YYY) {\n\t"+exceptionalSysOut+"\n}</pre></code>";
     
     private boolean isNegated;
+    private boolean storeToSelf;
     
-    private String methodSourceCodeForReplacement;
-    
+    private String methodSourceCodeForReplacement;      //for replacing in the boolean labels
+   
     private String description;
     
     @Override
@@ -68,6 +71,7 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
     @Override
     public void setOptions(@Nonnull Map<String, String> options) {
         isNegated = Boolean.parseBoolean(options.get("isNegated"));
+        storeToSelf = Boolean.parseBoolean(options.get("storeToSelf"));
     }
 
     @Override
@@ -164,6 +168,7 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
         
         private boolean isNegated;
         
+        
         public ReturnValueResolutionVisitor(boolean isNegated) {
             this.isNegated = isNegated;
         }
@@ -195,8 +200,12 @@ public class ReturnValueResolution extends CustomLabelBugResolution {
                 description = descriptionForBoolean.replace("YYY", methodSourceCodeForReplacement);
                 return labelForBoolean.replace("YYY", methodSourceCodeForReplacement);
             } else {
-                System.out.println("I don't know how to handle "+returnType);
-                return "Sorry, no quickfix yet";
+                if (storeToSelf) {
+                    description = labelForVariableField;
+                    return description;
+                }
+                description = labelForVariableLocal;
+                return description;
             }
         }
         
