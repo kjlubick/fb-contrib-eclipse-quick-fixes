@@ -1,5 +1,6 @@
 package quickfix;
 
+import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.addImports;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
 import java.io.File;
@@ -11,24 +12,31 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
 import util.CustomLabelBugResolution;
 import util.CustomLabelVisitor;
@@ -51,6 +59,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     private String methodSourceCodeForReplacement;      //for replacing in the boolean labels
    
     private String description;
+    private ImportRewrite typeSource;
     
     @Override
     public String getDescription() {
@@ -77,11 +86,12 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
+        this.typeSource = ImportRewrite.create(workingUnit, true);      //these imports won't get added
         
         ReturnValueResolutionVisitor rvrFinder = new ReturnValueResolutionVisitor(isNegated);
         node.accept(rvrFinder);
         
-        ASTNode fixedStatement = makeFixedExpression(rewrite, rvrFinder);
+        Statement fixedStatement = makeFixedStatement(rewrite, rvrFinder);
         
         if (fixedStatement != null && rvrFinder.badMethodInvocation != null) {
             //we have to call getParent() to get the statement. 
@@ -89,10 +99,14 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
             //we get an extra semicolon on the end.
             rewrite.replace(rvrFinder.badMethodInvocation.getParent(), fixedStatement, null);
         }
+        
+        //this is the easiest way to make the new imports (from the type conversion)
+        //actually be added
+        addImports(rewrite, workingUnit, typeSource.getAddedImports());
     }
     
     @SuppressWarnings("unchecked")
-    private ASTNode makeFixedExpression(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
+    private Statement makeFixedStatement(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
         AST rootNode = rewrite.getAST();
         
         if ("boolean".equals(rvrFinder.returnType)) {
@@ -108,9 +122,22 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
             ifStatement.setThenStatement(thenBlock);
             
             return ifStatement;
+        } else {
+            VariableDeclarationFragment fragment = rootNode.newVariableDeclarationFragment();
+            fragment.setInitializer((Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation));
+            fragment.setName(rootNode.newSimpleName("local"));
+            VariableDeclarationStatement retVal = rootNode.newVariableDeclarationStatement(fragment);
+           
+            Type type = getTypeFromTypeBinding(rvrFinder.badMethodInvocation.resolveTypeBinding(), rootNode);
+            
+            retVal.setType(type);
+            
+            return retVal;
         }
-        
-        return null;
+    }
+
+    private Type getTypeFromTypeBinding(ITypeBinding typeBinding, AST rootNode){
+        return typeSource.addImport(typeBinding, rootNode);
     }
 
     private Expression makeIfExpression(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
@@ -164,7 +191,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     
     private class ReturnValueResolutionVisitor extends CustomLabelVisitor{
         public String returnType;
-        public ASTNode badMethodInvocation;
+        public MethodInvocation badMethodInvocation;
         
         private boolean isNegated;
         
@@ -214,6 +241,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     
     
     private ExecutorService thing = Executors.newSingleThreadExecutor();
+    private Future<String> foo;
     
     public void main(String[] args) throws IOException {
         File f = new File("test.txt");
@@ -240,6 +268,10 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
         
         
         thing.submit(call);
+        
+        Future<String> foo = thing.submit(call);
+        
+        this.foo = thing.submit(call);
         
         thing.shutdown();
     }
