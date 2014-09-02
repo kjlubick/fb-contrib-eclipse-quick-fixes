@@ -4,7 +4,6 @@ import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.addImport
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,7 +15,6 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Block;
-import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -27,7 +25,6 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
@@ -41,7 +38,6 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     private final static String labelForBoolean = "Replace with if (YYY) {}";
     private final static String labelForBooleanNot = "Replace with if (!YYY) {}";
     private final static String labelForVariableLocal = "Store result to new local";
-    //private final static String labelForVariableField = "Store result to new field";
     
     
     private final static String exceptionalSysOut = "System.out.println(\"Exceptional return value\");";
@@ -94,9 +90,6 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
             //we get an extra semicolon on the end.
             rewrite.replace(rvrFinder.badMethodInvocation.getParent(), fixedStatement, null);
         }
-        
-       // System.out.println(rvrFinder.bodyDeclarations);
-        
         //this is the easiest way to make the new imports (from the type conversion)
         //actually be added
         addImports(rewrite, workingUnit, typeSource.getAddedImports());
@@ -132,11 +125,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
 
                 return retVal; 
             }
-            //I don't know how to make a new field.  This doesn't seem to be a common case, so I'm not worried
-//            VariableDeclarationFragment fieldFragment = rootNode.newVariableDeclarationFragment();
-//            fieldFragment.setName(rootNode.newSimpleName("newField"));
-//            rvrFinder.bodyDeclarations.add(rootNode.newFieldDeclaration(fieldFragment));
-//            
+            //I don't know how to make a new field.  This doesn't seem to be a common case, so I'm not worried    
             return null;
         }
     }
@@ -197,7 +186,6 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     private class ReturnValueResolutionVisitor extends CustomLabelVisitor{
         public String returnType;
         public MethodInvocation badMethodInvocation;
-        public List<BodyDeclaration> bodyDeclarations;
         
         private boolean isNegated;
         
@@ -219,25 +207,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
             //string of method invocation for label
             methodSourceCodeForReplacement = node.toString();
             badMethodInvocation = node;
-            
-            findAncestorsBodyDeclarations(node);
-            
             return false;
-        }
-
-        @SuppressWarnings("unchecked")
-        private void findAncestorsBodyDeclarations(MethodInvocation node) {
-            ASTNode parent = node.getParent();
-            while (!(parent instanceof TypeDeclaration)) {
-                if (parent == null) {
-                    break;      //shouldn't happen, we should always hit a type declaration
-                }
-                parent = parent.getParent();
-            }
-            
-            if (parent != null) {
-                this.bodyDeclarations = ((TypeDeclaration) parent).bodyDeclarations();
-            }
         }
 
         @Override
