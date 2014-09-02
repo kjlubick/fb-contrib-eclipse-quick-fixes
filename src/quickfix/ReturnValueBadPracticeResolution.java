@@ -3,26 +3,20 @@ package quickfix;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.addImports;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import javax.annotation.Nonnull;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -33,6 +27,7 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
@@ -46,7 +41,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     private final static String labelForBoolean = "Replace with if (YYY) {}";
     private final static String labelForBooleanNot = "Replace with if (!YYY) {}";
     private final static String labelForVariableLocal = "Store result to new local";
-    private final static String labelForVariableField = "Store result to new field";
+    //private final static String labelForVariableField = "Store result to new field";
     
     
     private final static String exceptionalSysOut = "System.out.println(\"Exceptional return value\");";
@@ -54,7 +49,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     private final static String descriptionForBooleanNot = "Replace with <code><pre>if (!YYY) {\n\t"+exceptionalSysOut+"\n}</pre></code>";
     
     private boolean isNegated;
-    private boolean storeToSelf;
+    private boolean storeToLocal;
     
     private String methodSourceCodeForReplacement;      //for replacing in the boolean labels
    
@@ -80,7 +75,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     @Override
     public void setOptions(@Nonnull Map<String, String> options) {
         isNegated = Boolean.parseBoolean(options.get("isNegated"));
-        storeToSelf = Boolean.parseBoolean(options.get("storeToSelf"));
+        storeToLocal = Boolean.parseBoolean(options.get("storeToLocal"));
     }
 
     @Override
@@ -99,6 +94,8 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
             //we get an extra semicolon on the end.
             rewrite.replace(rvrFinder.badMethodInvocation.getParent(), fixedStatement, null);
         }
+        
+       // System.out.println(rvrFinder.bodyDeclarations);
         
         //this is the easiest way to make the new imports (from the type conversion)
         //actually be added
@@ -123,16 +120,24 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
             
             return ifStatement;
         } else {
-            VariableDeclarationFragment fragment = rootNode.newVariableDeclarationFragment();
-            fragment.setInitializer((Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation));
-            fragment.setName(rootNode.newSimpleName("local"));
-            VariableDeclarationStatement retVal = rootNode.newVariableDeclarationStatement(fragment);
-           
-            Type type = getTypeFromTypeBinding(rvrFinder.badMethodInvocation.resolveTypeBinding(), rootNode);
-            
-            retVal.setType(type);
-            
-            return retVal;
+            if (storeToLocal) {
+                VariableDeclarationFragment fragment = rootNode.newVariableDeclarationFragment();
+                fragment.setInitializer((Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation));
+                fragment.setName(rootNode.newSimpleName("local"));
+                VariableDeclarationStatement retVal = rootNode.newVariableDeclarationStatement(fragment);
+
+                Type type = getTypeFromTypeBinding(rvrFinder.badMethodInvocation.resolveTypeBinding(), rootNode);
+
+                retVal.setType(type);
+
+                return retVal; 
+            }
+            //I don't know how to make a new field.  This doesn't seem to be a common case, so I'm not worried
+//            VariableDeclarationFragment fieldFragment = rootNode.newVariableDeclarationFragment();
+//            fieldFragment.setName(rootNode.newSimpleName("newField"));
+//            rvrFinder.bodyDeclarations.add(rootNode.newFieldDeclaration(fieldFragment));
+//            
+            return null;
         }
     }
 
@@ -192,6 +197,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     private class ReturnValueResolutionVisitor extends CustomLabelVisitor{
         public String returnType;
         public MethodInvocation badMethodInvocation;
+        public List<BodyDeclaration> bodyDeclarations;
         
         private boolean isNegated;
         
@@ -213,7 +219,25 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
             //string of method invocation for label
             methodSourceCodeForReplacement = node.toString();
             badMethodInvocation = node;
+            
+            findAncestorsBodyDeclarations(node);
+            
             return false;
+        }
+
+        @SuppressWarnings("unchecked")
+        private void findAncestorsBodyDeclarations(MethodInvocation node) {
+            ASTNode parent = node.getParent();
+            while (!(parent instanceof TypeDeclaration)) {
+                if (parent == null) {
+                    break;      //shouldn't happen, we should always hit a type declaration
+                }
+                parent = parent.getParent();
+            }
+            
+            if (parent != null) {
+                this.bodyDeclarations = ((TypeDeclaration) parent).bodyDeclarations();
+            }
         }
 
         @Override
@@ -227,8 +251,8 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
                 description = descriptionForBoolean.replace("YYY", methodSourceCodeForReplacement);
                 return labelForBoolean.replace("YYY", methodSourceCodeForReplacement);
             } else {
-                if (storeToSelf) {
-                    description = labelForVariableField;
+                if (storeToLocal) {
+                    description = labelForVariableLocal;
                     return description;
                 }
                 description = labelForVariableLocal;
@@ -237,43 +261,4 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
         }
         
     }
-    
-    
-    
-    private ExecutorService thing = Executors.newSingleThreadExecutor();
-    private Future<String> foo;
-    
-    public void main(String[] args) throws IOException {
-        File f = new File("test.txt");
-        f.createNewFile();
-        
-        if (!f.createNewFile()) {
-            System.out.println("Exceptional return value");
-        }
-        
-        
-        args[0].trim();
-        
-        args[1].getBytes(StandardCharsets.UTF_8);
-        
-        args[2].substring(3);
-        
-        Callable<String> call = new Callable<String>() {
-
-            @Override
-            public String call() throws Exception {
-                return "foo";
-            }
-        };
-        
-        
-        thing.submit(call);
-        
-        Future<String> foo = thing.submit(call);
-        
-        this.foo = thing.submit(call);
-        
-        thing.shutdown();
-    }
-
 }
