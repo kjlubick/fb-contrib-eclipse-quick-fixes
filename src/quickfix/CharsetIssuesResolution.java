@@ -133,6 +133,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
             if (csiMethods.containsKey(key)) {
                 List<Expression> arguments = node.arguments();
                 Integer indexVal = (Integer) csiMethods.get(key);
+                //converts from ith from the end to nth (from the beginning)
                 int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1;
 
                 // if this was a constant string, resolveConstantExpressionValue() will be nonnull
@@ -241,12 +242,13 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
     }
 
     // basically adds a bridge between fb-contrib's representation of this and the AST's view of them.
+    // Dot notation is key here because it is the form returned by the ASTNodes
     private static class QTypeAndArgs {
         public boolean wasConstructor;
 
-        final String qualifiedType;
+        final String qualifiedType;     //this looks like java.io.InputStreamReader
 
-        final List<String> argumentTypes = new ArrayList<String>();
+        final List<String> argumentTypes = new ArrayList<String>();  //these are also in dot notation
 
         // expecting in form "java/io/InputStreamReader.<init>(Ljava/io/InputStream;Ljava/lang/String;)V"
         public QTypeAndArgs(String fullSignatureWithArgs) {

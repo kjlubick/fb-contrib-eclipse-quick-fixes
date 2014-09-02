@@ -91,6 +91,19 @@
             pattern="SQL_BAD_PREPARED_STATEMENT_ACCESS">
       </quickFix>
       
+      <quickFix
+      		arguments="isNegated=true,storeToLocal=true"
+            class="quickfix.ReturnValueBadPracticeResolution"
+            label="YYY"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+      </quickFix>
+      
+      <quickFix
+      		arguments="isNegated=false,storeToLocal=true"
+            class="quickfix.ReturnValueBadPracticeResolution"
+            label="YYY"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+      </quickFix>
       
    </extension>
 
