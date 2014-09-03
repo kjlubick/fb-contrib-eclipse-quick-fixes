@@ -1,5 +1,5 @@
 #FindBugs User Preferences
-#Mon Sep 01 22:37:57 EDT 2014
+#Tue Sep 02 13:41:38 EDT 2014
 cloud_id=edu.umd.cs.findbugs.cloud.doNothingCloud
 detectorAbnormalFinallyBlockReturn=AbnormalFinallyBlockReturn|true
 detectorAbstractClassEmptyMethods=AbstractClassEmptyMethods|true
@@ -325,7 +325,7 @@ detectorXPathInjectionJavaxDetector=XPathInjectionJavaxDetector|false
 detectorXSSRequestWrapperDetector=XSSRequestWrapperDetector|false
 detector_threshold=2
 effort=default
-filter_settings=Medium|BAD_PRACTICE,CORRECTNESS,EXPERIMENTAL,I18N,MALICIOUS_CODE,MT_CORRECTNESS,PERFORMANCE,SECURITY,STYLE|false|17
+filter_settings=Medium|BAD_PRACTICE,CORRECTNESS,EXPERIMENTAL,I18N,MALICIOUS_CODE,MT_CORRECTNESS,PERFORMANCE,SECURITY,STYLE|false|18
 filter_settings_neg=NOISE|
 plugin0=edu.umd.cs.findbugs.plugins.noUpdateChecks|false
 run_at_full_build=false
