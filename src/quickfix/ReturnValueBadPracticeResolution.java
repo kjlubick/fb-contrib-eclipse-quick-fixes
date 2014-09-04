@@ -77,7 +77,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
-        this.typeSource = ImportRewrite.create(workingUnit, true);      //these imports won't get added
+        this.typeSource = ImportRewrite.create(workingUnit, true);      //these imports won't get added automatically
         
         ReturnValueResolutionVisitor rvrFinder = new ReturnValueResolutionVisitor(isNegated);
         node.accept(rvrFinder);
