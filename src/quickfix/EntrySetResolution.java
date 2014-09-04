@@ -22,7 +22,6 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.ParameterizedType;
-import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
@@ -34,6 +33,8 @@ import util.TraversalUtil;
 public class EntrySetResolution extends BugResolution {
 
     private ImportRewrite typeSource;
+    private ASTRewrite rewrite;
+    private AST ast;
 
 
     @Override
@@ -45,48 +46,16 @@ public class EntrySetResolution extends BugResolution {
         return typeSource.addImport(typeBinding, ast);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         this.typeSource = ImportRewrite.create(workingUnit, true);      //these imports won't get added automatically
-        
+        this.rewrite = rewrite;
+        this.ast = rewrite.getAST();
         EntrySetResolutionVisitor visitor = new EntrySetResolutionVisitor();
         node.accept(visitor);
-        
-        AST ast = rewrite.getAST();
-        
-        //visitor.ancestorForLoop;
-        EnhancedForStatement replacement = ast.newEnhancedForStatement();
-        
-       // Type keyType = visitor.ancestorForLoop.getParameter().getType();
-        
-        MethodInvocation oldLoopExpression = (MethodInvocation)visitor.ancestorForLoop.getExpression();
-        ParameterizedType mapType = (ParameterizedType) getTypeFromTypeBinding(oldLoopExpression.getExpression().resolveTypeBinding(),ast);
-        
-        ParameterizedType newType = ast.newParameterizedType(ast.newSimpleType(ast.newName("Map.Entry")));
-        
-        List<Type> oldTypeArgs = mapType.typeArguments();
-        
-        while(!oldTypeArgs.isEmpty()) {
-            Type oldType = oldTypeArgs.get(0);
-            oldType.delete();
-            newType.typeArguments().add(oldType);
-        }
-        
-        SingleVariableDeclaration loopParameter = ast.newSingleVariableDeclaration();
-        loopParameter.setType(newType);
-        loopParameter.setName(ast.newSimpleName("entry"));
-        
-        replacement.setParameter(loopParameter);
-        
-        MethodInvocation initialization = ast.newMethodInvocation();
-        
-        
-        initialization.setExpression((Expression) rewrite.createCopyTarget(oldLoopExpression.getExpression()));
-        initialization.setName(ast.newSimpleName("entrySet"));
-        
-        replacement.setExpression(initialization);
+         
+        EnhancedForStatement replacement = makeReplacementForLoop(visitor);
         
         rewrite.replace(visitor.ancestorForLoop, replacement, null);
         
@@ -94,15 +63,69 @@ public class EntrySetResolution extends BugResolution {
         addImports(rewrite, workingUnit, typeSource.getAddedImports());
         addImports(rewrite, workingUnit, "java.util.Map.Entry");
     }
+
+    
+    private EnhancedForStatement makeReplacementForLoop(EntrySetResolutionVisitor visitor) {
+        //this would be map.keySet().  
+        //We need this to get the type of map and get the variable name of map
+        MethodInvocation oldLoopExpression = (MethodInvocation) visitor.ancestorForLoop.getExpression();
+        
+        //for(Parameter : Expression)
+        EnhancedForStatement replacement = ast.newEnhancedForStatement(); 
+        replacement.setParameter(makeEntrySetParameter(oldLoopExpression));
+        replacement.setExpression(makeCallToEntrySet(oldLoopExpression));
+
+        //TODO create new statement to replace the key object (e.g. the String s that used to be in the for each)
+        //TODO replace the call to map.get()
+        //TODO transfer the rest of the statements in the old block
+        return replacement;
+    }
+
+    private SingleVariableDeclaration makeEntrySetParameter(MethodInvocation oldLoopExpression) {
+        //this is the type of map, e.g. Map<String, Integer>
+        ParameterizedType oldParamType = (ParameterizedType) getTypeFromTypeBinding(oldLoopExpression.getExpression()
+                .resolveTypeBinding(), ast);
+
+        //give it a base type of Map.Entry, then transfer the params
+        ParameterizedType newParamType = ast.newParameterizedType(ast.newSimpleType(ast.newName("Map.Entry")));
+        transferTypeArguments(oldParamType, newParamType);
+
+        SingleVariableDeclaration loopParameter = ast.newSingleVariableDeclaration();
+        loopParameter.setType(newParamType);
+        loopParameter.setName(ast.newSimpleName("entry"));
+        return loopParameter;
+    }
+
+    private MethodInvocation makeCallToEntrySet(MethodInvocation expressionToCopyVariableFrom) {
+        MethodInvocation initialization = ast.newMethodInvocation();
+        //Expression.Name()  We want to copy the expression and make a new name
+        initialization.setExpression((Expression) rewrite.createCopyTarget(expressionToCopyVariableFrom.getExpression()));
+        initialization.setName(ast.newSimpleName("entrySet"));
+        return initialization;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void transferTypeArguments(ParameterizedType existingType, ParameterizedType newType) {
+        List<Type> oldTypeArgs = existingType.typeArguments();
+        
+        while(!oldTypeArgs.isEmpty()) {
+            //This is the only way I could find to copy the Types.  rewrite.createCopyTarget didn't help
+            //because the types seemed to be in a limbo between attached an not attached.
+            Type oldType = oldTypeArgs.get(0);
+            oldType.delete();
+            newType.typeArguments().add(oldType);
+        }
+    }
     
     private static class EntrySetResolutionVisitor extends ASTVisitor {
         
         public EnhancedForStatement ancestorForLoop;
+        public VariableDeclarationStatement badCallToMapGet;
 
         @Override
         public boolean visit(VariableDeclarationStatement node) {
             this.ancestorForLoop = TraversalUtil.findClosestAncestor(node, EnhancedForStatement.class);
-
+            this.badCallToMapGet = node;
 
             return true;
         }
