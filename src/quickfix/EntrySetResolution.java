@@ -64,7 +64,7 @@ public class EntrySetResolution extends BugResolution {
         MethodInvocation oldLoopExpression = (MethodInvocation)visitor.ancestorForLoop.getExpression();
         ParameterizedType mapType = (ParameterizedType) getTypeFromTypeBinding(oldLoopExpression.getExpression().resolveTypeBinding(),ast);
         
-        ParameterizedType newType = ast.newParameterizedType(ast.newSimpleType(ast.newName("java.util.Map.Entry")));
+        ParameterizedType newType = ast.newParameterizedType(ast.newSimpleType(ast.newName("Map.Entry")));
         
         List<Type> oldTypeArgs = mapType.typeArguments();
         
@@ -92,6 +92,7 @@ public class EntrySetResolution extends BugResolution {
         
         
         addImports(rewrite, workingUnit, typeSource.getAddedImports());
+        addImports(rewrite, workingUnit, "java.util.Map.Entry");
     }
     
     private static class EntrySetResolutionVisitor extends ASTVisitor {

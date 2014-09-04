@@ -127,6 +127,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
             }
             //I don't know how to make a new field.  This doesn't seem to be a common case, so I'm not worried    
             return null;
+            
         }
     }
 
