@@ -10,6 +10,8 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.eclipse.jdt.core.dom.AST;
@@ -29,9 +31,6 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
-
-import util.CustomLabelBugResolution;
-import util.CustomLabelVisitor;
 
 public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     
