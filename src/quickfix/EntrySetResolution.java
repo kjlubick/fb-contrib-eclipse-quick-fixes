@@ -3,11 +3,7 @@ package quickfix;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.addImports;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
@@ -85,15 +81,18 @@ public class EntrySetResolution extends BugResolution {
         replacement.setParameter(makeEntrySetParameter(oldLoopExpression));
         replacement.setExpression(makeCallToEntrySet(oldLoopExpression));
 
-        List<Statement> replacementBlockStatements = ((Block)replacement.getBody()).statements();
-        
+        List<Statement> replacementBlockStatements = ((Block)replacement.getBody()).statements();   
         //create new statement to replace the key object (e.g. the String s that used to be in the for each)
-        replacementBlockStatements.add(makeNewKeyStatement(visitor));
-        
+        replacementBlockStatements.add(makeNewKeyStatement(visitor)); 
         //replace the call to map.get() with a call to entry.getValue()
         replacementBlockStatements.add(makeNewValueStatement(visitor));
-        
-        // TODO transfer the rest of the statements in the old block
+        // transfer the rest of the statements in the old block
+        copyRestOfBlock(replacementBlockStatements, visitor);      
+        return replacement;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void copyRestOfBlock(List<Statement> replacementBlockStatements, EntrySetResolutionVisitor visitor) {
         List<Statement> oldBlockStatements = ((Block)visitor.ancestorForLoop.getBody()).statements();
         for(Statement statement : oldBlockStatements) {
             if (statement.equals(visitor.badMapGetStatement)) {
@@ -101,38 +100,29 @@ public class EntrySetResolution extends BugResolution {
             }
             replacementBlockStatements.add((Statement) rewrite.createMoveTarget(statement));
         }
-        
-        return replacement;
     }
     
-    private VariableDeclarationStatement makeNewKeyStatement(EntrySetResolutionVisitor visitor) {
+    private VariableDeclarationStatement makeNewVariableStatement(SimpleName varName, String initMethodName, Type varType){
         VariableDeclarationFragment keyFragment = ast.newVariableDeclarationFragment();
-        keyFragment.setName(copy(visitor.ancestorForLoop.getParameter().getName()));
+        keyFragment.setName(copy(varName));
         
         MethodInvocation entrySetKey = ast.newMethodInvocation();
         entrySetKey.setExpression(copy(this.entryName));
-        entrySetKey.setName(ast.newSimpleName("getKey"));
+        entrySetKey.setName(ast.newSimpleName(initMethodName));
         
         keyFragment.setInitializer(entrySetKey);
         
         VariableDeclarationStatement newKeyStatement = ast.newVariableDeclarationStatement(keyFragment);
-        newKeyStatement.setType(copy(keyType));
+        newKeyStatement.setType(copy(varType));
         return newKeyStatement;
+    }
+    
+    private VariableDeclarationStatement makeNewKeyStatement(EntrySetResolutionVisitor visitor) {
+        return makeNewVariableStatement(visitor.ancestorForLoop.getParameter().getName(), "getKey", keyType);
     }
 
     private VariableDeclarationStatement makeNewValueStatement(EntrySetResolutionVisitor visitor) {
-        VariableDeclarationFragment valueFragment = ast.newVariableDeclarationFragment();
-        valueFragment.setName(copy(visitor.badMapGetVariableFragment.getName()));
-        
-        MethodInvocation entrySetValue = ast.newMethodInvocation();
-        entrySetValue.setExpression(copy(this.entryName));
-        entrySetValue.setName(ast.newSimpleName("getValue"));
-        
-        valueFragment.setInitializer(entrySetValue);
-        
-        VariableDeclarationStatement newValueStatement = ast.newVariableDeclarationStatement(valueFragment);
-        newValueStatement.setType(copy(valueType));
-        return newValueStatement;
+        return makeNewVariableStatement(visitor.badMapGetVariableFragment.getName(), "getValue", valueType);
     }
 
     private SingleVariableDeclaration makeEntrySetParameter(MethodInvocation oldLoopExpression) {
@@ -202,29 +192,4 @@ public class EntrySetResolution extends BugResolution {
             return false;
         }
     }
-
-    private void test() {
-        Map<String, Integer> map = Collections.emptyMap();
-
-        for (String s : map.keySet()) {
-            Integer i = map.get(s);
-            System.out.println(s + ": " + i);
-        }
-
-        // fixed
-        for (Entry<String, Integer> entry : map.entrySet()) {
-            String s = entry.getKey();
-            Integer i = entry.getValue();
-            System.out.println(s + ": " + i);
-        }
-        // alt fix
-        Iterator<Entry<String, Integer>> it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, Integer> entry = it.next();
-            String s = entry.getKey();
-            Integer i = entry.getValue();
-            System.out.println(s + ": " + i);
-        }
-    }
-
 }
