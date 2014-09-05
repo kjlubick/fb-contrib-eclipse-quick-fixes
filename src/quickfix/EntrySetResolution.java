@@ -94,10 +94,13 @@ public class EntrySetResolution extends BugResolution {
         replacementBlockStatements.add(makeNewValueStatement(visitor));
         
         // TODO transfer the rest of the statements in the old block
-//        List<Statement> oldBlockStatements = ((Block)visitor.ancestorForLoop.getBody()).statements();
-//        for(Statement statement : oldBlockStatements) {
-//            if (statement.(visitor.badCallToMapGet))
-//        }
+        List<Statement> oldBlockStatements = ((Block)visitor.ancestorForLoop.getBody()).statements();
+        for(Statement statement : oldBlockStatements) {
+            if (statement.equals(visitor.badMapGetStatement)) {
+                continue;
+            }
+            replacementBlockStatements.add((Statement) rewrite.createMoveTarget(statement));
+        }
         
         return replacement;
     }
@@ -189,11 +192,13 @@ public class EntrySetResolution extends BugResolution {
 
         public EnhancedForStatement ancestorForLoop;
         public VariableDeclarationFragment badMapGetVariableFragment;
+        public VariableDeclarationStatement badMapGetStatement;
 
         @Override
         public boolean visit(VariableDeclarationStatement node) {
             this.ancestorForLoop = TraversalUtil.findClosestAncestor(node, EnhancedForStatement.class);
             this.badMapGetVariableFragment = (VariableDeclarationFragment) node.fragments().get(0);
+            this.badMapGetStatement = node;
             return false;
         }
     }
