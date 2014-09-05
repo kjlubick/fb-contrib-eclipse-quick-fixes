@@ -16,14 +16,18 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.ParameterizedType;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
@@ -37,6 +41,12 @@ public class EntrySetResolution extends BugResolution {
     private ASTRewrite rewrite;
 
     private AST ast;
+
+    private Type keyType;
+
+    private Type valueType;
+
+    private SimpleName entryName;
 
     @Override
     protected boolean resolveBindings() {
@@ -64,6 +74,7 @@ public class EntrySetResolution extends BugResolution {
         addImports(rewrite, workingUnit, "java.util.Map.Entry");
     }
 
+    @SuppressWarnings("unchecked")
     private EnhancedForStatement makeReplacementForLoop(EntrySetResolutionVisitor visitor) {
         // this would be map.keySet().
         // We need this to get the type of map and get the variable name of map
@@ -74,8 +85,27 @@ public class EntrySetResolution extends BugResolution {
         replacement.setParameter(makeEntrySetParameter(oldLoopExpression));
         replacement.setExpression(makeCallToEntrySet(oldLoopExpression));
 
+        List<Statement> replacementBlockStatements = ((Block)replacement.getBody()).statements();
+        
         // TODO create new statement to replace the key object (e.g. the String s that used to be in the for each)
+        
+        
         // TODO replace the call to map.get()
+        
+        VariableDeclarationFragment fragment = ast.newVariableDeclarationFragment();
+        fragment.setName(copy(visitor.badCallToMapGet.getName()));
+        
+        MethodInvocation entrySetValue = ast.newMethodInvocation();
+        entrySetValue.setExpression(copy(this.entryName));
+        entrySetValue.setName(ast.newSimpleName("getValue"));
+        
+        fragment.setInitializer(entrySetValue);
+        
+        VariableDeclarationStatement newValueStatement = ast.newVariableDeclarationStatement(fragment);
+        newValueStatement.setType(copy(valueType));
+        
+        replacementBlockStatements.add(newValueStatement);
+        //visitor.badCallToMapGet.
         // TODO transfer the rest of the statements in the old block
         return replacement;
     }
@@ -91,7 +121,8 @@ public class EntrySetResolution extends BugResolution {
 
         SingleVariableDeclaration loopParameter = ast.newSingleVariableDeclaration();
         loopParameter.setType(newParamType);
-        loopParameter.setName(ast.newSimpleName("entry"));
+        this.entryName = ast.newSimpleName("entry");
+        loopParameter.setName(entryName);
         return loopParameter;
     }
 
@@ -107,25 +138,41 @@ public class EntrySetResolution extends BugResolution {
     private void transferTypeArguments(ParameterizedType existingType, ParameterizedType newType) {
         List<Type> oldTypeArgs = existingType.typeArguments();
 
+        int i = 0;
         while (!oldTypeArgs.isEmpty()) {
             // This is the only way I could find to copy the Types. rewrite.createCopyTarget didn't help
-            // because the types seemed to be in a limbo between attached an not attached.
+            // because the types seemed to be in a limbo between attached and not attached.
+            // If I try to copy w/o deleting them from the original list, some sort of infite loop happens
+            // on clone
             Type oldType = oldTypeArgs.get(0);
             oldType.delete();
+            if (i == 0) {
+                this.keyType = copy(oldType);
+            } else if (i == 1) {
+                this.valueType = copy(oldType);
+            }
+            //this version is okay to add w/o a clone, because it is detached.
             newType.typeArguments().add(oldType);
+            i++;
         }
+    }
+
+    //Convenience method to copy nodes
+    @SuppressWarnings("unchecked")
+    private <T extends ASTNode> T copy(T original) {
+        return (T) ASTNode.copySubtree(ast, original);
     }
 
     private static class EntrySetResolutionVisitor extends ASTVisitor {
 
         public EnhancedForStatement ancestorForLoop;
 
-        public VariableDeclarationStatement badCallToMapGet;
+        public VariableDeclarationFragment badCallToMapGet;
 
         @Override
         public boolean visit(VariableDeclarationStatement node) {
             this.ancestorForLoop = TraversalUtil.findClosestAncestor(node, EnhancedForStatement.class);
-            this.badCallToMapGet = node;
+            this.badCallToMapGet = (VariableDeclarationFragment) node.fragments().get(0);
             return false;
         }
     }
