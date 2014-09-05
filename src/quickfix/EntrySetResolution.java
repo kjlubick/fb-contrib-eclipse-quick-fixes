@@ -6,12 +6,12 @@ import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNod
 import java.util.List;
 
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
@@ -30,7 +30,7 @@ import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
 import util.TraversalUtil;
 
-public class EntrySetResolution extends BugResolution {
+public class EntrySetResolution extends CustomLabelBugResolution {
 
     private ImportRewrite typeSource;
 
@@ -44,10 +44,33 @@ public class EntrySetResolution extends BugResolution {
 
     private SimpleName entryName;
 
+    private EntrySetResolutionVisitor descriptionVisitor;
+
     @Override
     protected boolean resolveBindings() {
         return true;
     }
+    
+    @Override
+    protected CustomLabelVisitor getLabelFixingVisitor() {
+        this.descriptionVisitor = new EntrySetResolutionVisitor();
+        return descriptionVisitor;
+    }
+    
+    @Override
+    public String getDescription() {
+        if (descriptionVisitor != null && descriptionVisitor.ancestorForLoop != null) {
+            return String.format("for(Map.Entry<%s,%s> entry :%s.entrySet()) {%n"+
+                    "%s %s = entry.getKey();%n" +
+                    "%s %s = entry.getValue();%n" +
+                    "...%n"+
+                    "}"
+                    //,KeyType,ValueType,MapName,KeyType,KeyVar,ValueType,ValueVar
+                );
+        }
+        return super.getDescription();
+    }
+    
 
     private Type getTypeFromTypeBinding(ITypeBinding typeBinding, AST ast) {
         return typeSource.addImport(typeBinding, ast);
@@ -178,7 +201,7 @@ public class EntrySetResolution extends BugResolution {
         return (T) ASTNode.copySubtree(ast, original);
     }
 
-    private static class EntrySetResolutionVisitor extends ASTVisitor {
+    private static class EntrySetResolutionVisitor extends CustomLabelVisitor {
 
         public EnhancedForStatement ancestorForLoop;
         public VariableDeclarationFragment badMapGetVariableFragment;
@@ -190,6 +213,11 @@ public class EntrySetResolution extends BugResolution {
             this.badMapGetVariableFragment = (VariableDeclarationFragment) node.fragments().get(0);
             this.badMapGetStatement = node;
             return false;
+        }
+
+        @Override
+        public String getLabelReplacement() {
+            return "";      //we only need this to make the description
         }
     }
 }
