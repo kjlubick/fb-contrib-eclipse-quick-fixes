@@ -107,7 +107,7 @@
       
       <quickFix
             class="quickfix.EntrySetResolution"
-            label="Replace using entrySet() foreach loop"
+            label="Replace with a foreach loop using entrySet() instead of keySet()"
             pattern="WMI_WRONG_MAP_ITERATOR">
       </quickFix>
       
