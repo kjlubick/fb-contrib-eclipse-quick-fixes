@@ -89,9 +89,14 @@ public class EntrySetResolution extends BugResolution {
         
         // TODO create new statement to replace the key object (e.g. the String s that used to be in the for each)
         
+        //replace the call to map.get() with a call to entry.getValue()
+        replacementBlockStatements.add(makeNewValueStatement(visitor));
         
-        // TODO replace the call to map.get()
-        
+        // TODO transfer the rest of the statements in the old block
+        return replacement;
+    }
+
+    private VariableDeclarationStatement makeNewValueStatement(EntrySetResolutionVisitor visitor) {
         VariableDeclarationFragment fragment = ast.newVariableDeclarationFragment();
         fragment.setName(copy(visitor.badCallToMapGet.getName()));
         
@@ -103,11 +108,7 @@ public class EntrySetResolution extends BugResolution {
         
         VariableDeclarationStatement newValueStatement = ast.newVariableDeclarationStatement(fragment);
         newValueStatement.setType(copy(valueType));
-        
-        replacementBlockStatements.add(newValueStatement);
-        //visitor.badCallToMapGet.
-        // TODO transfer the rest of the statements in the old block
-        return replacement;
+        return newValueStatement;
     }
 
     private SingleVariableDeclaration makeEntrySetParameter(MethodInvocation oldLoopExpression) {
