@@ -87,26 +87,47 @@ public class EntrySetResolution extends BugResolution {
 
         List<Statement> replacementBlockStatements = ((Block)replacement.getBody()).statements();
         
-        // TODO create new statement to replace the key object (e.g. the String s that used to be in the for each)
+        //create new statement to replace the key object (e.g. the String s that used to be in the for each)
+        replacementBlockStatements.add(makeNewKeyStatement(visitor));
         
         //replace the call to map.get() with a call to entry.getValue()
         replacementBlockStatements.add(makeNewValueStatement(visitor));
         
         // TODO transfer the rest of the statements in the old block
+//        List<Statement> oldBlockStatements = ((Block)visitor.ancestorForLoop.getBody()).statements();
+//        for(Statement statement : oldBlockStatements) {
+//            if (statement.(visitor.badCallToMapGet))
+//        }
+        
         return replacement;
+    }
+    
+    private VariableDeclarationStatement makeNewKeyStatement(EntrySetResolutionVisitor visitor) {
+        VariableDeclarationFragment keyFragment = ast.newVariableDeclarationFragment();
+        keyFragment.setName(copy(visitor.ancestorForLoop.getParameter().getName()));
+        
+        MethodInvocation entrySetKey = ast.newMethodInvocation();
+        entrySetKey.setExpression(copy(this.entryName));
+        entrySetKey.setName(ast.newSimpleName("getKey"));
+        
+        keyFragment.setInitializer(entrySetKey);
+        
+        VariableDeclarationStatement newKeyStatement = ast.newVariableDeclarationStatement(keyFragment);
+        newKeyStatement.setType(copy(keyType));
+        return newKeyStatement;
     }
 
     private VariableDeclarationStatement makeNewValueStatement(EntrySetResolutionVisitor visitor) {
-        VariableDeclarationFragment fragment = ast.newVariableDeclarationFragment();
-        fragment.setName(copy(visitor.badCallToMapGet.getName()));
+        VariableDeclarationFragment valueFragment = ast.newVariableDeclarationFragment();
+        valueFragment.setName(copy(visitor.badMapGetVariableFragment.getName()));
         
         MethodInvocation entrySetValue = ast.newMethodInvocation();
         entrySetValue.setExpression(copy(this.entryName));
         entrySetValue.setName(ast.newSimpleName("getValue"));
         
-        fragment.setInitializer(entrySetValue);
+        valueFragment.setInitializer(entrySetValue);
         
-        VariableDeclarationStatement newValueStatement = ast.newVariableDeclarationStatement(fragment);
+        VariableDeclarationStatement newValueStatement = ast.newVariableDeclarationStatement(valueFragment);
         newValueStatement.setType(copy(valueType));
         return newValueStatement;
     }
@@ -167,13 +188,12 @@ public class EntrySetResolution extends BugResolution {
     private static class EntrySetResolutionVisitor extends ASTVisitor {
 
         public EnhancedForStatement ancestorForLoop;
-
-        public VariableDeclarationFragment badCallToMapGet;
+        public VariableDeclarationFragment badMapGetVariableFragment;
 
         @Override
         public boolean visit(VariableDeclarationStatement node) {
             this.ancestorForLoop = TraversalUtil.findClosestAncestor(node, EnhancedForStatement.class);
-            this.badCallToMapGet = (VariableDeclarationFragment) node.fragments().get(0);
+            this.badMapGetVariableFragment = (VariableDeclarationFragment) node.fragments().get(0);
             return false;
         }
     }
