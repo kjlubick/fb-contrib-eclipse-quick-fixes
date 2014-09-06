@@ -18,9 +18,10 @@ See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb
 **FindBugs**
 - DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE
 - FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER
+- RV_RETURN_VALUE_IGNORED_BAD_PRACTICE
 - SQL_BAD_PREPARED_STATEMENT_ACCESS
 - SQL_BAD_RESULTSET_ACCESS
-- RV_RETURN_VALUE_IGNORED_BAD_PRACTICE
+- WMI_WRONG_MAP_ITERATOR
 
 ##Installing the plugin##
 This project isn't quite ready for release yet.  But, if you really want, check out one of the [pre-releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  This works for Eclipse 3.6+.
