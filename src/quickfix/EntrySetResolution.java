@@ -60,13 +60,21 @@ public class EntrySetResolution extends CustomLabelBugResolution {
     @Override
     public String getDescription() {
         if (descriptionVisitor != null && descriptionVisitor.ancestorForLoop != null) {
-            return String.format("for(Map.Entry<%s,%s> entry :%s.entrySet()) {%n"+
-                    "%s %s = entry.getKey();%n" +
-                    "%s %s = entry.getValue();%n" +
-                    "...%n"+
-                    "}"
-                    //,KeyType,ValueType,MapName,KeyType,KeyVar,ValueType,ValueVar
-                );
+            
+            SingleVariableDeclaration key = descriptionVisitor.ancestorForLoop.getParameter();
+            String keyType = key.getType().toString();
+            String keyVar = key.getName().toString();
+            String valueType = descriptionVisitor.badMapGetStatement.getType().toString();
+            String valueVar = descriptionVisitor.badMapGetVariableFragment.getName().toString();
+            String mapName = ((MethodInvocation)descriptionVisitor.ancestorForLoop.getExpression()).getExpression().toString();
+            
+            return String.format("for(Map.Entry&lt;%s,%s&gt; entry : %s.entrySet()) {<br/>" +
+                    "%s %s = entry.getKey();<br/>" +
+                    "%s %s = entry.getValue();<br/>" +
+                    "...<br/>" +
+                    "}",
+                    keyType, valueType, mapName, keyType, keyVar, valueType, valueVar
+                    );
         }
         return super.getDescription();
     }
