@@ -111,6 +111,12 @@
             pattern="WMI_WRONG_MAP_ITERATOR">
       </quickFix>
       
+      <quickFix
+            class="quickfix.StringToCharResolution"
+            label="Replace with the char equivalent method call"
+            pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
+      </quickFix>
+      
    </extension>
 
 </plugin>
