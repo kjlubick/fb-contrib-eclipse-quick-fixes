@@ -32,7 +32,7 @@ public class InsecureRandomResolution extends BugResolution {
                     + "however, calls to the object's methods (e.g. nextInt(), nextBytes()) "
                     + "may be significantly slower.";
         }
-        return "Initializing the seed like <br/><code>new Random(Random(SecureRandom.getInstance().generateSeed())</code><br/>"
+        return "Initializing the seed like <br/><code>new Random(SecureRandom.getInstance().generateSeed())</code><br/>"
                 + "creates a more secure starting point for the random number generation than the default.<br/><br/>"
                 + "However, still using <code>java.lang.Random</code> makes this slightly less secure than using "
                 + "<code>java.secure.SecureRandom</code>, but at the benefit of being faster.  ";

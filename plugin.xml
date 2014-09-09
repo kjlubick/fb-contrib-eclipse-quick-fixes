@@ -121,14 +121,14 @@
       		arguments="useSecureRandomObject=false"
             class="quickfix.InsecureRandomResolution"
             label="Initialize with seed from SecureRandom"
-            pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
+            pattern="MDM_RANDOM_SEED">
       </quickFix>
       
       <quickFix
       		arguments="useSecureRandomObject=true"
             class="quickfix.InsecureRandomResolution"
-            label="Replace using SecureRandom"
-            pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
+            label="Replace using a SecureRandom object"
+            pattern="MDM_RANDOM_SEED">
       </quickFix>
       
    </extension>
