@@ -1,7 +1,12 @@
 package util;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 
 /**
  * A string representation of a method call and its arguments.
@@ -14,6 +19,7 @@ import java.util.List;
  */
 public final class QMethodAndArgs {
 
+    public final static String CONSTRUCTOR_METHOD = "<init>";
     public final String qualifiedTypeString;      //the type that this method is invoked on (dot seperated)
     public final String invokedMethodString;      //the name of the method invoked
     public final List<String> argumentTypes;      //dot separated argument types
@@ -24,7 +30,28 @@ public final class QMethodAndArgs {
         this.invokedMethodString = invokedMethodString;
         this.argumentTypes = Collections.unmodifiableList(argumentTypes);
     }
-
+    
+    public static List<String> expressionsToTypeStrings(List<Expression> expressions) {
+        List<String> list = new ArrayList<>();
+        for (Expression type : expressions) {
+            list.add(type.resolveTypeBinding().getQualifiedName());
+        }
+        return list;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static QMethodAndArgs make(ClassInstanceCreation node) {
+        String qtype = node.getType().resolveBinding().getQualifiedName();
+        String method = CONSTRUCTOR_METHOD;
+        return new QMethodAndArgs(qtype, method, expressionsToTypeStrings(node.arguments()));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static QMethodAndArgs make(MethodInvocation node) {
+        String qtype = node.getExpression().resolveTypeBinding().getQualifiedName();
+        String method = node.getName().getIdentifier();
+        return new QMethodAndArgs(qtype, method, expressionsToTypeStrings(node.arguments()));
+    }
 
     @Override
     public int hashCode() {
