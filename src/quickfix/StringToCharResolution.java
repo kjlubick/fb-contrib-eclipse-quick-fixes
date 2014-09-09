@@ -27,18 +27,7 @@ public class StringToCharResolution extends BugResolution {
     private static class StringToCharVisitor extends ASTVisitor {
         //private static 
     }
-    
-    
-    //TODO I think I can make this a util class, (something similar is used in charSetIssues)
-    //Subclasses can take different types into the constructor.  
-    private static class QMethodAndArgs {
-        //TODO make these final
-        public String qualifiedTypeString;      //the type that this method is invoked on (dot seperated)
-        public String invokedMethodString;      //the name of the method invoked
-        public List<String> argumentTypes;      //dot seperated argument types
-        
-    }
-    
+   
     
     //for testing
     private StringBuffer sb;
