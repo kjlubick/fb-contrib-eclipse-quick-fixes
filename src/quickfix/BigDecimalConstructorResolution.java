@@ -25,7 +25,7 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
-public class BigDecimalResolution extends BugResolution {
+public class BigDecimalConstructorResolution extends BugResolution {
 
     private boolean useConstructor;
 
