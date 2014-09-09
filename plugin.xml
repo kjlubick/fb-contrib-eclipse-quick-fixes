@@ -117,6 +117,20 @@
             pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
       </quickFix>
       
+      <quickFix
+      		arguments="useSecureRandomObject=false"
+            class="quickfix.InsecureRandomResolution"
+            label="Initialize with seed from SecureRandom"
+            pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
+      </quickFix>
+      
+      <quickFix
+      		arguments="useSecureRandomObject=true"
+            class="quickfix.InsecureRandomResolution"
+            label="Replace using SecureRandom"
+            pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
+      </quickFix>
+      
    </extension>
 
 </plugin>
