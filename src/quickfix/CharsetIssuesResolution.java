@@ -249,7 +249,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
             String qualifiedTypeWithSlashes = fullSignatureWithArgs.substring(0, firstSplitIndex);
             
             String qtype = qualifiedTypeWithSlashes.replace('/', '.');
-            String method = fullSignatureWithArgs.substring(firstSplitIndex,secondSplitIndex);
+            String method = fullSignatureWithArgs.substring(firstSplitIndex + 1, secondSplitIndex);
             
             List<String> argumentTypes = new ArrayList<>();
             
@@ -262,93 +262,5 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
             return new QMethodAndArgs(qtype, method, argumentTypes);
         }
     }
-
-    // basically adds a bridge between fb-contrib's representation of this and the AST's view of them.
-    // Dot notation is key here because it is the form returned by the ASTNodes
-//    @Deprecated
-//    private static class QTypeAndArgs {
-//        public boolean wasConstructor;
-//
-//        final String qualifiedType;     //this looks like java.io.InputStreamReader
-//
-//        final List<String> argumentTypes = new ArrayList<String>();  //these are also in dot notation
-//
-//        // expecting in form "java/io/InputStreamReader.<init>(Ljava/io/InputStream;Ljava/lang/String;)V"
-//        public QTypeAndArgs(String fullSignatureWithArgs) {
-//            int splitIndex = fullSignatureWithArgs.indexOf('(');
-//            String qualifiedTypeWithSlashes = fullSignatureWithArgs.substring(0, splitIndex);
-//
-//            qualifiedType = qualifiedTypeWithSlashes.replace('/', '.');
-//
-//            Type[] bcelTypes = Type.getArgumentTypes(fullSignatureWithArgs.substring(splitIndex));
-//
-//            for (Type t : bcelTypes) {
-//                argumentTypes.add(t.toString()); // toString returns them in human-readable dot notation
-//            }
-//
-//            wasConstructor = fullSignatureWithArgs.contains("<init>");
-//        }
-//
-//        private QTypeAndArgs(String qualifiedName, List<Expression> arguments) {
-//            this.qualifiedType = qualifiedName;
-//            for (Expression type : arguments) {
-//                argumentTypes.add(type.resolveTypeBinding().getQualifiedName());
-//            }
-//        }
-//
-//        @SuppressWarnings("unchecked")
-//        public QTypeAndArgs(ClassInstanceCreation node) {
-//            this(node.getType().resolveBinding().getQualifiedName() + ".<init>",
-//                    node.arguments());
-//            wasConstructor = true;
-//        }
-//
-//        @SuppressWarnings("unchecked")
-//        public QTypeAndArgs(MethodInvocation node) {
-//            this(node.getExpression().resolveTypeBinding().getQualifiedName() + '.' + node.getName().getIdentifier(),
-//                    node.arguments());
-//            wasConstructor = false;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return "QTypeAndArgs [wasConstructor=" + wasConstructor + ", qualifiedType=" + qualifiedType
-//                    + ", argumentTypes=" + argumentTypes + "]";
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//            final int prime = 31;
-//            int result = 1;
-//            result = prime * result + ((argumentTypes == null) ? 0 : argumentTypes.hashCode());
-//            result = prime * result + ((qualifiedType == null) ? 0 : qualifiedType.hashCode());
-//            return prime * result + (wasConstructor ? 1231 : 1237);
-//        }
-//
-//        @Override
-//        public boolean equals(Object obj) {
-//            if (this == obj)
-//                return true;
-//            if (obj == null)
-//                return false;
-//            if (getClass() != obj.getClass())
-//                return false;
-//            QTypeAndArgs other = (QTypeAndArgs) obj;
-//            if (argumentTypes == null) {
-//                if (other.argumentTypes != null)
-//                    return false;
-//            } else if (!argumentTypes.equals(other.argumentTypes))
-//                return false;
-//            if (qualifiedType == null) {
-//                if (other.qualifiedType != null)
-//                    return false;
-//            } else if (!qualifiedType.equals(other.qualifiedType))
-//                return false;
-//            if (wasConstructor != other.wasConstructor)
-//                return false;
-//            return true;
-//        }
-//
-//    }
 
 }

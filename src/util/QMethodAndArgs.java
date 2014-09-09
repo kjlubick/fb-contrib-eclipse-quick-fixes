@@ -11,7 +11,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 /**
  * A string representation of a method call and its arguments.
  * 
- * Usually used as a bridge between external libraries' datastructures.
+ * Usually used as a bridge between external libraries' data structures.
  * 
  * It is suggested clients make a static factory
  * @author Kevin Lubick
@@ -24,7 +24,12 @@ public final class QMethodAndArgs {
     public final String invokedMethodString;      //the name of the method invoked
     public final List<String> argumentTypes;      //dot separated argument types
     
-    
+    /**
+     * A string representation of a method call and its arguments.
+     * 
+     * Usually used as a bridge between external libraries' data structures.
+     * 
+     */
     public QMethodAndArgs(String qualifiedTypeString, String invokedMethodString, List<String> argumentTypes) {
         this.qualifiedTypeString = qualifiedTypeString;
         this.invokedMethodString = invokedMethodString;
@@ -39,6 +44,12 @@ public final class QMethodAndArgs {
         return list;
     }
     
+    @Override
+    public String toString() {
+        return "QMethodAndArgs [qualifiedTypeString=" + qualifiedTypeString + ", invokedMethodString=" + invokedMethodString
+                + ", argumentTypes=" + argumentTypes + ']';
+    }
+
     @SuppressWarnings("unchecked")
     public static QMethodAndArgs make(ClassInstanceCreation node) {
         String qtype = node.getType().resolveBinding().getQualifiedName();
