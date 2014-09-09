@@ -3,9 +3,7 @@ package quickfix;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
@@ -57,26 +55,6 @@ public class StringToCharResolution extends BugResolution {
             return true;
         }
         
-    }
-   
-    
-    //for testing
-    private StringBuffer sb;
-    
-    public void test(String foo) {
-        sb = new StringBuffer();
-        sb.append("f").append("o");
-        sb.append('f').append("o");
-        StringBuilder sb2 = new StringBuilder();
-        sb2.append("g");
-        sb2.append('g');
-        
-        System.out.println(foo.replace(".", ","));
-        System.out.println(foo.replace('.', ','));
-        
-        System.out.println(foo.lastIndexOf("."));
-        System.out.println(foo.lastIndexOf('.'));
-            
     }
 
 }
