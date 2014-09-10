@@ -1,5 +1,7 @@
 package quickfix;
 
+import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
+
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -8,6 +10,9 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
@@ -40,8 +45,26 @@ public class InsecureRandomResolution extends BugResolution {
 
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
-        // TODO Auto-generated method stub
+        ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
+        RandomVisitor visitor = new RandomVisitor();
+        node.accept(visitor);
+        
+        System.out.println(visitor.randomToFix);
+        //Make a new Random ClassInstanceCreation or a SecureRandome one, depending on input
+    }
+    
+    private static class RandomVisitor extends ASTVisitor {
+        
+        public ClassInstanceCreation randomToFix;
 
+        @Override
+        public boolean visit(ClassInstanceCreation node) {
+            if ("java.util.Random".equals(node.resolveTypeBinding().getQualifiedName())) {
+                this.randomToFix = node;
+            }
+            
+            return true;
+        }
     }
 
 }
