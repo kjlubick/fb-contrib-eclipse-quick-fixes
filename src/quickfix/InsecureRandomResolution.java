@@ -60,24 +60,34 @@ public class InsecureRandomResolution extends BugResolution {
 
         AST ast = rewrite.getAST();
         
-        //System.out.println(visitor.randomToFix);
-        //Make a new Random ClassInstanceCreation or a SecureRandome one, depending on input
+        //Make a new Random ClassInstanceCreation or a SecureRandome one, depending on input   
+        ClassInstanceCreation fixedClassInstanceCreation;
         
-        ClassInstanceCreation newRandom = makeRandomWithSeed(ast);
+        if (useSecureRandomObject) {
+            fixedClassInstanceCreation = makeSecureRandom(ast);
+        } else {
+            fixedClassInstanceCreation = makeRandomWithSeed(ast);
+        }
         
-        rewrite.replace(visitor.randomToFix, newRandom, null);
+        rewrite.replace(visitor.randomToFix, fixedClassInstanceCreation, null);
         
         addImports(rewrite, workingUnit, QUALIFIED_SECURE_RANDOM);
     }
 
+    private ClassInstanceCreation makeSecureRandom(AST ast) {
+        SimpleType secureRandomType = ast.newSimpleType(ast.newName("SecureRandom"));
+        ClassInstanceCreation newSecureRandom = ast.newClassInstanceCreation();
+        newSecureRandom.setType(secureRandomType);
+        return newSecureRandom;
+    }
+
+    @SuppressWarnings("unchecked")
     private ClassInstanceCreation makeRandomWithSeed(AST ast) {
         SimpleType randomType = ast.newSimpleType(ast.newName("Random"));
         ClassInstanceCreation newRandom = ast.newClassInstanceCreation();
         newRandom.setType(randomType);
         
-        SimpleType secureRandomType = ast.newSimpleType(ast.newName("SecureRandom"));
-        ClassInstanceCreation newSecureRandom = ast.newClassInstanceCreation();
-        newSecureRandom.setType(secureRandomType);
+        ClassInstanceCreation newSecureRandom = makeSecureRandom(ast);
         
         MethodInvocation getLong = ast.newMethodInvocation();
         getLong.setExpression(newSecureRandom);

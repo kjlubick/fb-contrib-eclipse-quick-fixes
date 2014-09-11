@@ -15,6 +15,7 @@ See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb
 - SPP_USE_ISNAN
 - LSC_LITERAL_STRING_COMPARISON
 - UCPM_USE_CHARACTER_PARAMETERIZED_METHOD
+- MDM_RANDOM_SEED
 
 **FindBugs**
 - DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE
