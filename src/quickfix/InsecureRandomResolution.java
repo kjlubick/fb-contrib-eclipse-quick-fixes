@@ -63,6 +63,14 @@ public class InsecureRandomResolution extends BugResolution {
         //System.out.println(visitor.randomToFix);
         //Make a new Random ClassInstanceCreation or a SecureRandome one, depending on input
         
+        ClassInstanceCreation newRandom = makeRandomWithSeed(ast);
+        
+        rewrite.replace(visitor.randomToFix, newRandom, null);
+        
+        addImports(rewrite, workingUnit, QUALIFIED_SECURE_RANDOM);
+    }
+
+    private ClassInstanceCreation makeRandomWithSeed(AST ast) {
         SimpleType randomType = ast.newSimpleType(ast.newName("Random"));
         ClassInstanceCreation newRandom = ast.newClassInstanceCreation();
         newRandom.setType(randomType);
@@ -76,10 +84,7 @@ public class InsecureRandomResolution extends BugResolution {
         getLong.setName(ast.newSimpleName("nextLong"));
         
         newRandom.arguments().add(getLong);
-        
-        rewrite.replace(visitor.randomToFix, newRandom, null);
-        
-        addImports(rewrite, workingUnit, QUALIFIED_SECURE_RANDOM);
+        return newRandom;
     }
     
     private static class RandomVisitor extends ASTVisitor {
