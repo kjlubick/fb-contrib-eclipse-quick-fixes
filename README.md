@@ -28,6 +28,11 @@ See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb
 - SQL_BAD_RESULTSET_ACCESS
 - WMI_WRONG_MAP_ITERATOR
 
+##Simultaneous Quickfixes##
+Do you have many bugs detected with a quickfix? The base FindBugs plugin supports multiple fixes simultaneously:
+![multiple-quickfixes](https://cloud.githubusercontent.com/assets/6819944/4324949/7e882a7c-3f5f-11e4-9170-bac5b24c2dbc.gif)
+
+
 ##Installing the plugin##
 This project isn't quite ready for release yet.  But, if you really want, check out one of the [pre-releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  This works for Eclipse 3.6+.
 
