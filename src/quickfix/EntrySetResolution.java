@@ -188,7 +188,7 @@ public class EntrySetResolution extends CustomLabelBugResolution {
         while (!oldTypeArgs.isEmpty()) {
             // This is the only way I could find to copy the Types. rewrite.createCopyTarget didn't help
             // because the types seemed to be in a limbo between attached and not attached.
-            // If I try to copy w/o deleting them from the original list, some sort of infite loop happens
+            // If I try to copy w/o deleting them from the original list, some sort of infinite loop happens
             // on clone
             Type oldType = oldTypeArgs.get(0);
             oldType.delete();
@@ -197,7 +197,7 @@ public class EntrySetResolution extends CustomLabelBugResolution {
             } else if (i == 1) {
                 this.valueType = copy(oldType);
             }
-            //this version is okay to add w/o a clone, because it is detached.
+            //oldType is okay to add now w/o a clone, because it is detached.
             newType.typeArguments().add(oldType);
             i++;
         }

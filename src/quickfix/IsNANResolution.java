@@ -3,6 +3,7 @@ package quickfix;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
@@ -79,6 +80,8 @@ public class IsNANResolution extends CustomLabelBugResolution {
         public boolean isPrimitive;
 
         @Override
+        @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS",
+        justification = "Fixing the duplications would not impact performance and probably harm readibility")
         public boolean visit(InfixExpression node) {
             if (infixToReplace != null) {
                 return false;

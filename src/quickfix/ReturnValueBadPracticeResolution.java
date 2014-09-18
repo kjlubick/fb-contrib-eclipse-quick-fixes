@@ -56,7 +56,8 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
         if (description == null) {
             String label = getLabel();     //force traversing, which fills in description
             if (description == null) {
-                return label;       //something funky is happening, 
+                return label;       //something funky is happening, description shouldn't be null
+                                    //We'll be safe and return label (which is not null)
             } 
         }
         return description;
