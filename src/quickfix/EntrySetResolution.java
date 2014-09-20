@@ -50,24 +50,24 @@ public class EntrySetResolution extends CustomLabelBugResolution {
     protected boolean resolveBindings() {
         return true;
     }
-    
+
     @Override
     protected CustomLabelVisitor getLabelFixingVisitor() {
         this.descriptionVisitor = new EntrySetResolutionVisitor();
         return descriptionVisitor;
     }
-    
+
     @Override
     public String getDescription() {
         if (descriptionVisitor != null && descriptionVisitor.ancestorForLoop != null) {
-            
+
             SingleVariableDeclaration key = descriptionVisitor.ancestorForLoop.getParameter();
             String keyType = key.getType().toString();
             String keyVar = key.getName().toString();
             String valueType = descriptionVisitor.badMapGetStatement.getType().toString();
             String valueVar = descriptionVisitor.badMapGetVariableFragment.getName().toString();
-            String mapName = ((MethodInvocation)descriptionVisitor.ancestorForLoop.getExpression()).getExpression().toString();
-            
+            String mapName = ((MethodInvocation) descriptionVisitor.ancestorForLoop.getExpression()).getExpression().toString();
+
             return String.format("for(Map.Entry&lt;%s,%s&gt; entry : %s.entrySet()) {<br/>" +
                     "%s %s = entry.getKey();<br/>" +
                     "%s %s = entry.getValue();<br/>" +
@@ -78,7 +78,6 @@ public class EntrySetResolution extends CustomLabelBugResolution {
         }
         return super.getDescription();
     }
-    
 
     private Type getTypeFromTypeBinding(ITypeBinding typeBinding, AST ast) {
         return typeSource.addImport(typeBinding, ast);
@@ -112,42 +111,42 @@ public class EntrySetResolution extends CustomLabelBugResolution {
         replacement.setParameter(makeEntrySetParameter(oldLoopExpression));
         replacement.setExpression(makeCallToEntrySet(oldLoopExpression));
 
-        List<Statement> replacementBlockStatements = ((Block)replacement.getBody()).statements();   
-        //create new statement to replace the key object (e.g. the String s that used to be in the for each)
-        replacementBlockStatements.add(makeNewKeyStatement(visitor)); 
-        //replace the call to map.get() with a call to entry.getValue()
+        List<Statement> replacementBlockStatements = ((Block) replacement.getBody()).statements();
+        // create new statement to replace the key object (e.g. the String s that used to be in the for each)
+        replacementBlockStatements.add(makeNewKeyStatement(visitor));
+        // replace the call to map.get() with a call to entry.getValue()
         replacementBlockStatements.add(makeNewValueStatement(visitor));
         // transfer the rest of the statements in the old block
-        copyRestOfBlock(replacementBlockStatements, visitor);      
+        copyRestOfBlock(replacementBlockStatements, visitor);
         return replacement;
     }
 
     @SuppressWarnings("unchecked")
     private void copyRestOfBlock(List<Statement> replacementBlockStatements, EntrySetResolutionVisitor visitor) {
-        List<Statement> oldBlockStatements = ((Block)visitor.ancestorForLoop.getBody()).statements();
-        for(Statement statement : oldBlockStatements) {
+        List<Statement> oldBlockStatements = ((Block) visitor.ancestorForLoop.getBody()).statements();
+        for (Statement statement : oldBlockStatements) {
             if (statement.equals(visitor.badMapGetStatement)) {
                 continue;
             }
             replacementBlockStatements.add((Statement) rewrite.createMoveTarget(statement));
         }
     }
-    
-    private VariableDeclarationStatement makeNewVariableStatement(SimpleName varName, String initMethodName, Type varType){
+
+    private VariableDeclarationStatement makeNewVariableStatement(SimpleName varName, String initMethodName, Type varType) {
         VariableDeclarationFragment keyFragment = ast.newVariableDeclarationFragment();
         keyFragment.setName(copy(varName));
-        
+
         MethodInvocation entrySetKey = ast.newMethodInvocation();
         entrySetKey.setExpression(copy(this.entryName));
         entrySetKey.setName(ast.newSimpleName(initMethodName));
-        
+
         keyFragment.setInitializer(entrySetKey);
-        
+
         VariableDeclarationStatement newKeyStatement = ast.newVariableDeclarationStatement(keyFragment);
         newKeyStatement.setType(copy(varType));
         return newKeyStatement;
     }
-    
+
     private VariableDeclarationStatement makeNewKeyStatement(EntrySetResolutionVisitor visitor) {
         return makeNewVariableStatement(visitor.ancestorForLoop.getParameter().getName(), "getKey", keyType);
     }
@@ -197,13 +196,13 @@ public class EntrySetResolution extends CustomLabelBugResolution {
             } else if (i == 1) {
                 this.valueType = copy(oldType);
             }
-            //oldType is okay to add now w/o a clone, because it is detached.
+            // oldType is okay to add now w/o a clone, because it is detached.
             newType.typeArguments().add(oldType);
             i++;
         }
     }
 
-    //Convenience method to copy nodes
+    // Convenience method to copy nodes
     @SuppressWarnings("unchecked")
     private <T extends ASTNode> T copy(T original) {
         return (T) ASTNode.copySubtree(ast, original);
@@ -212,7 +211,9 @@ public class EntrySetResolution extends CustomLabelBugResolution {
     private static class EntrySetResolutionVisitor extends CustomLabelVisitor {
 
         public EnhancedForStatement ancestorForLoop;
+
         public VariableDeclarationFragment badMapGetVariableFragment;
+
         public VariableDeclarationStatement badMapGetStatement;
 
         @Override
@@ -225,7 +226,7 @@ public class EntrySetResolution extends CustomLabelBugResolution {
 
         @Override
         public String getLabelReplacement() {
-            return "";      //we only need this to make the description
+            return ""; // we only need this to make the description
         }
     }
 }

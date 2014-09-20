@@ -43,7 +43,7 @@ public class SQLOffByOneResolution extends BugResolution {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
 
         if (fixAll) {
-            //for fix all, we go up one node, which is the entire scope the first detected statement was in
+            // for fix all, we go up one node, which is the entire scope the first detected statement was in
             node = node.getParent();
         }
 
@@ -117,7 +117,7 @@ public class SQLOffByOneResolution extends BugResolution {
         @SuppressWarnings("unchecked")
         private MethodInvocation makeFixedMethodInvocation(MethodInvocation node) {
             MethodInvocation fixedMethodInvocation = rootAST.newMethodInvocation();
-            //move targets didn't seem to work, so I'm using copy targets instead
+            // move targets didn't seem to work, so I'm using copy targets instead
             fixedMethodInvocation.setExpression((Expression) rewrite.createCopyTarget(node.getExpression()));
             fixedMethodInvocation.setName((SimpleName) rewrite.createCopyTarget(node.getName()));
 

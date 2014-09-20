@@ -27,23 +27,22 @@ public class StringToCharResolution extends BugResolution {
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
-        
+
         StringToCharVisitor visitor = new StringToCharVisitor();
         node.accept(visitor);
-        
+
         AST ast = rewrite.getAST();
-        
-        for(Map.Entry<StringLiteral, Character> entry: visitor.replacements.entrySet()) {
+
+        for (Map.Entry<StringLiteral, Character> entry : visitor.replacements.entrySet()) {
             CharacterLiteral charLiteral = ast.newCharacterLiteral();
             charLiteral.setCharValue(entry.getValue());
-            
+
             rewrite.replace(entry.getKey(), charLiteral, null);
         }
     }
-    
-    
+
     private static class StringToCharVisitor extends ASTVisitor {
-        
+
         Map<StringLiteral, Character> replacements = new HashMap<>();
 
         @Override
@@ -54,7 +53,7 @@ public class StringToCharResolution extends BugResolution {
             }
             return true;
         }
-        
+
     }
 
 }

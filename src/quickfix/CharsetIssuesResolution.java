@@ -135,7 +135,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
             if (csiMethods.containsKey(key)) {
                 List<Expression> arguments = node.arguments();
                 Integer indexVal = (Integer) csiMethods.get(key);
-                //converts from ith from the end to nth (from the beginning)
+                // converts from ith from the end to nth (from the beginning)
                 int indexOfArgumentToReplace = (arguments.size() - indexVal) - 1;
 
                 // if this was a constant string, resolveConstantExpressionValue() will be nonnull
@@ -241,24 +241,24 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
         public String getLabelReplacement() {
             return literalValue.replace('-', '_');
         }
-        
-     // expecting in form "java/io/InputStreamReader.<init>(Ljava/io/InputStream;Ljava/lang/String;)V"
-        private static QMethodAndArgs make(String fullSignatureWithArgs){
+
+        // expecting in form "java/io/InputStreamReader.<init>(Ljava/io/InputStream;Ljava/lang/String;)V"
+        private static QMethodAndArgs make(String fullSignatureWithArgs) {
             int firstSplitIndex = fullSignatureWithArgs.indexOf('.');
             int secondSplitIndex = fullSignatureWithArgs.indexOf('(');
             String qualifiedTypeWithSlashes = fullSignatureWithArgs.substring(0, firstSplitIndex);
-            
+
             String qtype = qualifiedTypeWithSlashes.replace('/', '.');
             String method = fullSignatureWithArgs.substring(firstSplitIndex + 1, secondSplitIndex);
-            
+
             List<String> argumentTypes = new ArrayList<>();
-            
+
             Type[] bcelTypes = Type.getArgumentTypes(fullSignatureWithArgs.substring(secondSplitIndex));
 
             for (Type t : bcelTypes) {
                 argumentTypes.add(t.toString()); // toString returns them in human-readable dot notation
             }
-            
+
             return new QMethodAndArgs(qtype, method, argumentTypes);
         }
     }

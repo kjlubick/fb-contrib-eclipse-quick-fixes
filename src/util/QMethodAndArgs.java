@@ -14,16 +14,20 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
  * Usually used as a bridge between external libraries' data structures.
  * 
  * It is suggested clients make a static factory
+ * 
  * @author Kevin Lubick
- *
+ * 
  */
 public final class QMethodAndArgs {
 
     public final static String CONSTRUCTOR_METHOD = "<init>";
-    public final String qualifiedTypeString;      //the type that this method is invoked on (dot seperated)
-    public final String invokedMethodString;      //the name of the method invoked
-    public final List<String> argumentTypes;      //dot separated argument types
-    
+
+    public final String qualifiedTypeString; // the type that this method is invoked on (dot seperated)
+
+    public final String invokedMethodString; // the name of the method invoked
+
+    public final List<String> argumentTypes; // dot separated argument types
+
     /**
      * A string representation of a method call and its arguments.
      * 
@@ -35,7 +39,7 @@ public final class QMethodAndArgs {
         this.invokedMethodString = invokedMethodString;
         this.argumentTypes = Collections.unmodifiableList(argumentTypes);
     }
-    
+
     public static List<String> expressionsToTypeStrings(List<Expression> expressions) {
         List<String> list = new ArrayList<>();
         for (Expression type : expressions) {
@@ -43,7 +47,7 @@ public final class QMethodAndArgs {
         }
         return list;
     }
-    
+
     @Override
     public String toString() {
         return "QMethodAndArgs [qualifiedTypeString=" + qualifiedTypeString + ", invokedMethodString=" + invokedMethodString
@@ -56,7 +60,7 @@ public final class QMethodAndArgs {
         String method = CONSTRUCTOR_METHOD;
         return new QMethodAndArgs(qtype, method, expressionsToTypeStrings(node.arguments()));
     }
-    
+
     @SuppressWarnings("unchecked")
     public static QMethodAndArgs make(MethodInvocation node) {
         String qtype = node.getExpression().resolveTypeBinding().getQualifiedName();
@@ -72,7 +76,6 @@ public final class QMethodAndArgs {
         result = prime * result + ((invokedMethodString == null) ? 0 : invokedMethodString.hashCode());
         return prime * result + ((qualifiedTypeString == null) ? 0 : qualifiedTypeString.hashCode());
     }
-
 
     @Override
     public boolean equals(Object obj) {
@@ -100,8 +103,5 @@ public final class QMethodAndArgs {
             return false;
         return true;
     }
-    
-    
-   
-    
+
 }

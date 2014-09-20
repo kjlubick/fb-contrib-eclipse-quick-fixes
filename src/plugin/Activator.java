@@ -32,7 +32,7 @@ public class Activator implements BundleActivator {
      */
     @Override
     @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD",
-    justification = "Eclipse Plugins are singletons")
+            justification = "Eclipse Plugins are singletons")
     public void stop(BundleContext bundleContext) throws Exception {
         Activator.context = null;
     }

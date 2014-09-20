@@ -81,7 +81,7 @@ public class IsNANResolution extends CustomLabelBugResolution {
 
         @Override
         @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS",
-        justification = "Fixing the duplications would not impact performance and probably harm readibility")
+                justification = "Fixing the duplications would not impact performance and probably harm readibility")
         public boolean visit(InfixExpression node) {
             if (infixToReplace != null) {
                 return false;

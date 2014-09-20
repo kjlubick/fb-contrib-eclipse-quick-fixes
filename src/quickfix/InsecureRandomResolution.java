@@ -19,25 +19,25 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
-import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
 public class InsecureRandomResolution extends BugResolution {
 
     private static final String QUALIFIED_SECURE_RANDOM = "java.security.SecureRandom";
+
     private static final String QUALIFIED_RANDOM = "java.util.Random";
-    
+
     private boolean useSecureRandomObject;
 
     @Override
     protected boolean resolveBindings() {
         return true;
     }
-    
+
     @Override
     public void setOptions(@Nonnull Map<String, String> options) {
         this.useSecureRandomObject = Boolean.parseBoolean(options.get("useSecureRandomObject"));
     }
-    
+
     @Override
     public String getDescription() {
         if (useSecureRandomObject) {
@@ -53,24 +53,24 @@ public class InsecureRandomResolution extends BugResolution {
 
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
-        
+
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         RandomVisitor visitor = new RandomVisitor();
         node.accept(visitor);
 
         AST ast = rewrite.getAST();
-        
-        //Make a new Random ClassInstanceCreation or a SecureRandome one, depending on input   
+
+        // Make a new Random ClassInstanceCreation or a SecureRandome one, depending on input
         ClassInstanceCreation fixedClassInstanceCreation;
-        
+
         if (useSecureRandomObject) {
             fixedClassInstanceCreation = makeSecureRandom(ast);
         } else {
             fixedClassInstanceCreation = makeRandomWithSeed(ast);
         }
-        
+
         rewrite.replace(visitor.randomToFix, fixedClassInstanceCreation, null);
-        
+
         addImports(rewrite, workingUnit, QUALIFIED_SECURE_RANDOM);
     }
 
@@ -86,20 +86,19 @@ public class InsecureRandomResolution extends BugResolution {
         SimpleType randomType = ast.newSimpleType(ast.newName("Random"));
         ClassInstanceCreation newRandom = ast.newClassInstanceCreation();
         newRandom.setType(randomType);
-        
+
         ClassInstanceCreation newSecureRandom = makeSecureRandom(ast);
-        
+
         MethodInvocation getLong = ast.newMethodInvocation();
         getLong.setExpression(newSecureRandom);
         getLong.setName(ast.newSimpleName("nextLong"));
-        
+
         newRandom.arguments().add(getLong);
         return newRandom;
     }
-    
+
     private static class RandomVisitor extends ASTVisitor {
-        
-        
+
         public ClassInstanceCreation randomToFix;
 
         @Override
@@ -107,7 +106,7 @@ public class InsecureRandomResolution extends BugResolution {
             if (QUALIFIED_RANDOM.equals(node.resolveTypeBinding().getQualifiedName())) {
                 this.randomToFix = node;
             }
-            
+
             return true;
         }
     }

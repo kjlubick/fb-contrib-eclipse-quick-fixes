@@ -33,32 +33,39 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
 public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
-    
+
     private final static String labelForBoolean = "Replace with if (YYY) {}";
+
     private final static String labelForBooleanNot = "Replace with if (!YYY) {}";
+
     private final static String labelForVariableLocal = "Store result to new local";
-    
-    
+
     private final static String exceptionalSysOut = "System.out.println(\"Exceptional return value\");";
-    private final static String descriptionForBoolean = "Replace with <code><pre>if (YYY) {\n\t"+exceptionalSysOut+"\n}</pre></code>";
-    private final static String descriptionForBooleanNot = "Replace with <code><pre>if (!YYY) {\n\t"+exceptionalSysOut+"\n}</pre></code>";
-    
+
+    private final static String descriptionForBoolean = "Replace with <code><pre>if (YYY) {\n\t" + exceptionalSysOut
+            + "\n}</pre></code>";
+
+    private final static String descriptionForBooleanNot = "Replace with <code><pre>if (!YYY) {\n\t" + exceptionalSysOut
+            + "\n}</pre></code>";
+
     private boolean isNegated;
+
     private boolean storeToLocal;
-    
-    private String methodSourceCodeForReplacement;      //for replacing in the boolean labels
-   
+
+    private String methodSourceCodeForReplacement; // for replacing in the boolean labels
+
     private String description;
+
     private ImportRewrite typeSource;
-    
+
     @Override
     public String getDescription() {
         if (description == null) {
-            String label = getLabel();     //force traversing, which fills in description
+            String label = getLabel(); // force traversing, which fills in description
             if (description == null) {
-                return label;       //something funky is happening, description shouldn't be null
-                                    //We'll be safe and return label (which is not null)
-            } 
+                return label; // something funky is happening, description shouldn't be null
+                              // We'll be safe and return label (which is not null)
+            }
         }
         return description;
     }
@@ -67,7 +74,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     protected boolean resolveBindings() {
         return true;
     }
-    
+
     @Override
     public void setOptions(@Nonnull Map<String, String> options) {
         isNegated = Boolean.parseBoolean(options.get("isNegated"));
@@ -77,40 +84,40 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
-        this.typeSource = ImportRewrite.create(workingUnit, true);      //these imports won't get added automatically
-        
+        this.typeSource = ImportRewrite.create(workingUnit, true); // these imports won't get added automatically
+
         ReturnValueResolutionVisitor rvrFinder = new ReturnValueResolutionVisitor(isNegated);
         node.accept(rvrFinder);
-        
+
         Statement fixedStatement = makeFixedStatement(rewrite, rvrFinder);
-        
+
         if (fixedStatement != null && rvrFinder.badMethodInvocation != null) {
-            //we have to call getParent() to get the statement. 
-            //If we simply replace the MethodInvocation with the ifStatement (or whatever),
-            //we get an extra semicolon on the end.
+            // we have to call getParent() to get the statement.
+            // If we simply replace the MethodInvocation with the ifStatement (or whatever),
+            // we get an extra semicolon on the end.
             rewrite.replace(rvrFinder.badMethodInvocation.getParent(), fixedStatement, null);
         }
-        //this is the easiest way to make the new imports (from the type conversion)
-        //actually be added
+        // this is the easiest way to make the new imports (from the type conversion)
+        // actually be added
         addImports(rewrite, workingUnit, typeSource.getAddedImports());
     }
-    
+
     @SuppressWarnings("unchecked")
     private Statement makeFixedStatement(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
         AST rootNode = rewrite.getAST();
-        
+
         if ("boolean".equals(rvrFinder.returnType)) {
             IfStatement ifStatement = rootNode.newIfStatement();
-            
+
             Expression expression = makeIfExpression(rewrite, rvrFinder);
             ifStatement.setExpression(expression);
-            
-            //the block surrounds the inner statement with {}
+
+            // the block surrounds the inner statement with {}
             Block thenBlock = rootNode.newBlock();
             Statement thenStatement = makeExceptionalStatement(rootNode);
             thenBlock.statements().add(thenStatement);
             ifStatement.setThenStatement(thenBlock);
-            
+
             return ifStatement;
         } else {
             if (storeToLocal) {
@@ -123,20 +130,20 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
 
                 retVal.setType(type);
 
-                return retVal; 
+                return retVal;
             }
-            //I don't know how to make a new field.  This doesn't seem to be a common case, so I'm not worried    
+            // I don't know how to make a new field. This doesn't seem to be a common case, so I'm not worried
             return null;
-            
+
         }
     }
 
-    private Type getTypeFromTypeBinding(ITypeBinding typeBinding, AST rootNode){
+    private Type getTypeFromTypeBinding(ITypeBinding typeBinding, AST rootNode) {
         return typeSource.addImport(typeBinding, rootNode);
     }
 
     private Expression makeIfExpression(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
-        if (rvrFinder.isNegated) 
+        if (rvrFinder.isNegated)
         {
             AST rootNode = rewrite.getAST();
             PrefixExpression negation = rootNode.newPrefixExpression();
@@ -149,16 +156,16 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
 
     @SuppressWarnings("unchecked")
     private Statement makeExceptionalStatement(AST rootNode) {
-        //makes a statement `System.out.println("Exceptional return value");`
+        // makes a statement `System.out.println("Exceptional return value");`
         QualifiedName sysout = rootNode.newQualifiedName(rootNode.newSimpleName("System"), rootNode.newSimpleName("out"));
         StringLiteral literal = rootNode.newStringLiteral();
         literal.setLiteralValue("Exceptional return value");
-        
+
         MethodInvocation expression = rootNode.newMethodInvocation();
         expression.setExpression(sysout);
         expression.setName(rootNode.newSimpleName("println"));
         expression.arguments().add(literal);
-        return rootNode.newExpressionStatement(expression );
+        return rootNode.newExpressionStatement(expression);
     }
 
     @Override
@@ -168,7 +175,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
 
     private static Set<String> supportedMethods = new HashSet<>(13);
     static {
-        //from CheckReturnAnnotationDatabase, from the FindBugs project
+        // from CheckReturnAnnotationDatabase, from the FindBugs project
         supportedMethods.add("createNewFile");
         supportedMethods.add("delete");
         supportedMethods.add("mkdir");
@@ -183,14 +190,14 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
         supportedMethods.add("offer");
         supportedMethods.add("submit");
     }
-    
-    private class ReturnValueResolutionVisitor extends CustomLabelVisitor{
+
+    private class ReturnValueResolutionVisitor extends CustomLabelVisitor {
         public String returnType;
+
         public MethodInvocation badMethodInvocation;
-        
+
         private boolean isNegated;
-        
-        
+
         public ReturnValueResolutionVisitor(boolean isNegated) {
             this.isNegated = isNegated;
         }
@@ -198,14 +205,14 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
         @Override
         public boolean visit(MethodInvocation node) {
             if (returnType != null) {
-                return false;   //no need to search further, we've already found one
+                return false; // no need to search further, we've already found one
             }
             if (!supportedMethods.contains(node.getName().getFullyQualifiedName())) {
-                return true;    //keep searching
+                return true; // keep searching
             }
-            
+
             returnType = node.resolveTypeBinding().getName();
-            //string of method invocation for label
+            // string of method invocation for label
             methodSourceCodeForReplacement = node.toString();
             badMethodInvocation = node;
             return false;
@@ -213,7 +220,7 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
 
         @Override
         public String getLabelReplacement() {
-            //sets up label and description
+            // sets up label and description
             if ("boolean".equals(returnType)) {
                 if (isNegated) {
                     description = descriptionForBooleanNot.replace("YYY", methodSourceCodeForReplacement);
@@ -230,6 +237,6 @@ public class ReturnValueBadPracticeResolution extends CustomLabelBugResolution {
                 return description;
             }
         }
-        
+
     }
 }
