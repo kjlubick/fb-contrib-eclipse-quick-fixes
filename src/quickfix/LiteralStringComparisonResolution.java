@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public class LiteralStringComparisonResolution extends BugResolution {
@@ -48,7 +49,7 @@ public class LiteralStringComparisonResolution extends BugResolution {
     private MethodInvocation createFixedMethodInvocation(ASTRewrite rewrite, LSCVisitor lscFinder) {
         AST ast = rewrite.getAST();
         MethodInvocation fixedMethodInvocation = ast.newMethodInvocation();
-        String invokedMethodName = lscFinder.lscMethodInvocation.getName().toString();
+        String invokedMethodName = lscFinder.lscMethodInvocation.getName().getIdentifier();
         fixedMethodInvocation.setName(ast.newSimpleName(invokedMethodName));
         // can't simply use visitor.stringLiteralExpression because an IllegalArgumentException
         // will be thrown because it belongs to another AST. So, we use a moveTarget to eventually
@@ -74,18 +75,17 @@ public class LiteralStringComparisonResolution extends BugResolution {
         public Expression stringVariableExpression;
 
         @Override
+        @SuppressWarnings("unchecked")
         public boolean visit(MethodInvocation node) {
             if (this.lscMethodInvocation != null) {
                 return false;
             }
-            if (comparisonMethods.contains(node.getName().toString())) {
-
-                @SuppressWarnings("unchecked")
+            if (comparisonMethods.contains(node.getName().getIdentifier())) {       
                 List<Expression> arguments = (List<Expression>) node.arguments();
                 if (arguments.size() == 1) { // I doubt this could be anything other than 1
                     // if this was a constant string, resolveConstantExpressionValue() will be nonnull
                     Expression argument = arguments.get(0);
-                    if (null != argument.resolveConstantExpressionValue()) {
+                    if (argument instanceof StringLiteral) {
                         this.lscMethodInvocation = node;
                         this.stringLiteralExpression = argument;
                         this.stringVariableExpression = node.getExpression();
