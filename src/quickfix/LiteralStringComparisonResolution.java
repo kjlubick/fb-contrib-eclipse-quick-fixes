@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
@@ -24,7 +25,7 @@ public class LiteralStringComparisonResolution extends BugResolution {
 
     @Override
     protected boolean resolveBindings() {
-        return false;
+        return true;        //we want the type to make sure the receiver of the .equals() is a String
     }
 
     @Override
@@ -80,7 +81,13 @@ public class LiteralStringComparisonResolution extends BugResolution {
             if (this.lscMethodInvocation != null) {
                 return false;
             }
-            if (comparisonMethods.contains(node.getName().getIdentifier())) {       
+            
+            // for checking the type of the receiver.  Although it is tempting to try
+            // node.resolveTypeBinding(), that refers to the return value.
+            ITypeBinding typeBinding = node.getExpression().resolveTypeBinding(); 
+            if (comparisonMethods.contains(node.getName().getIdentifier()) && //check the method name            
+                "java.lang.String".equals(typeBinding.getQualifiedName())) {  
+                
                 List<Expression> arguments = (List<Expression>) node.arguments();
                 if (arguments.size() == 1) { // I doubt this could be anything other than 1
                     // if this was a constant string, resolveConstantExpressionValue() will be nonnull
