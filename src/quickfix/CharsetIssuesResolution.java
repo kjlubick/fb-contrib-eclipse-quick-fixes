@@ -70,8 +70,6 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
         private ASTNode fixedAstNode = null;
 
-        private boolean needsToInvokeName; // should use StandardCharsets.UTF_8.name() instead of StandardCharsets
-
         private AST rootAstNode;
 
         private ASTRewrite rewrite;
@@ -221,7 +219,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
                 String stringLiteral = literalValue.replace('-', '_');
                 QualifiedName qualifiedCharset = rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"),
                         rootAstNode.newSimpleName(stringLiteral));
-                if (needsToInvokeName) {
+                if (isName) {
                     MethodInvocation charsetName = rootAstNode.newMethodInvocation();
                     charsetName.setExpression(qualifiedCharset);
                     charsetName.setName(rootAstNode.newSimpleName("name"));
