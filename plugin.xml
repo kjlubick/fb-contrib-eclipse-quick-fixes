@@ -131,6 +131,12 @@
             pattern="MDM_RANDOM_SEED">
       </quickFix>
       
+      <quickFix
+            class="quickfix.NeedlessBoxingResolution"
+            label="Replace with YYY"
+            pattern="NAB_NEEDLESS_BOXING_PARSE">
+      </quickFix>
+      
    </extension>
 
 </plugin>
