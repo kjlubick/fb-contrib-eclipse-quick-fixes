@@ -31,7 +31,7 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
     protected CustomLabelVisitor getLabelFixingVisitor() {
         return new NeedlessBoxingVisitor();
     }
-    
+
     @Override
     public void setOptions(@Nonnull Map<String, String> options) {
         useBooleanConstants = Boolean.parseBoolean(options.get("useBooleanConstants"));
@@ -82,7 +82,7 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
     private class NeedlessBoxingVisitor extends CustomLabelVisitor {
 
         public MethodInvocation badMethodInvocation;
-        
+
         public BooleanLiteral badBooleanLiteral;
 
         public String makeParseMethod() {
@@ -102,7 +102,7 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
         }
 
         public String makeTrueOrFalse() {
-            return badBooleanLiteral.booleanValue()?"TRUE":"FALSE";
+            return badBooleanLiteral.booleanValue() ? "TRUE" : "FALSE";
         }
 
         @Override
@@ -118,24 +118,24 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
 
             return true;
         }
-        
+
         @Override
         public boolean visit(BooleanLiteral node) {
             if (this.badBooleanLiteral != null) {
                 return false;
             }
-            if (node.resolveBoxing()) {     //did boxing happen?  If so, that's our cue
+            if (node.resolveBoxing()) { // did boxing happen? If so, that's our cue
                 badBooleanLiteral = node;
                 return false;
             }
-            
+
             return true;
         }
 
         @Override
         public String getLabelReplacement() {
             if (useBooleanConstants) {
-                return "Boolean."+makeTrueOrFalse();
+                return "Boolean." + makeTrueOrFalse();
             }
             if (badMethodInvocation == null) {
                 return "the parse equivalent";
@@ -157,8 +157,7 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
         }
 
     }
-    
-    
+
     public Boolean getVal() {
         Map<String, Boolean> map = new HashMap<String, Boolean>();
         map.put("foo", true);
