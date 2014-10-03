@@ -46,13 +46,13 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
     @Override
     protected CustomLabelVisitor getLabelFixingVisitor() {
-        return new CSIVisitorAndFixer(isName);
+        return new CSIVisitorAndFixer();
     }
 
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
-        CSIVisitorAndFixer visitor = new CSIVisitorAndFixer(isName, rewrite);
+        CSIVisitorAndFixer visitor = new CSIVisitorAndFixer(rewrite);
         node.accept(visitor);
 
         ASTNode badUseOfLiteral = visitor.getBadInvocation();
@@ -62,15 +62,13 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
         addImports(rewrite, workingUnit, "java.nio.charset.StandardCharsets");
     }
 
-    private final static class CSIVisitorAndFixer extends CustomLabelVisitor {
+    private final class CSIVisitorAndFixer extends CustomLabelVisitor {
 
         private Map<QMethodAndArgs, Object> csiConstructors;
 
         private Map<QMethodAndArgs, Object> csiMethods;
 
         private ASTNode fixedAstNode = null;
-
-        private boolean needsToInvokeName; // should use StandardCharsets.UTF_8.name() instead of StandardCharsets
 
         private AST rootAstNode;
 
@@ -82,19 +80,18 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
         private String literalValue = null;
 
-        public CSIVisitorAndFixer(boolean needsToInvokeName, ASTRewrite rewrite) {
-            this(needsToInvokeName);
+        public CSIVisitorAndFixer(ASTRewrite rewrite) {
+            this();
             this.rootAstNode = rewrite.getAST();
             this.rewrite = rewrite;
         }
 
-        public CSIVisitorAndFixer(boolean needsToInvokeName) { // for label traversing
-            if (needsToInvokeName) {
+        public CSIVisitorAndFixer() { // for label traversing
+            if (isName) {
                 parseToTypeArgs(CharsetIssues.UNREPLACEABLE_ENCODING_METHODS);
             } else {
                 parseToTypeArgs(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
             }
-            this.needsToInvokeName = needsToInvokeName;
         }
 
         public ASTNode getFixedInvocation() {
@@ -222,7 +219,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
                 String stringLiteral = literalValue.replace('-', '_');
                 QualifiedName qualifiedCharset = rootAstNode.newQualifiedName(rootAstNode.newName("StandardCharsets"),
                         rootAstNode.newSimpleName(stringLiteral));
-                if (needsToInvokeName) {
+                if (isName) {
                     MethodInvocation charsetName = rootAstNode.newMethodInvocation();
                     charsetName.setExpression(qualifiedCharset);
                     charsetName.setName(rootAstNode.newSimpleName("name"));
@@ -243,7 +240,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
         }
 
         // expecting in form "java/io/InputStreamReader.<init>(Ljava/io/InputStream;Ljava/lang/String;)V"
-        private static QMethodAndArgs make(String fullSignatureWithArgs) {
+        private QMethodAndArgs make(String fullSignatureWithArgs) {
             int firstSplitIndex = fullSignatureWithArgs.indexOf('.');
             int secondSplitIndex = fullSignatureWithArgs.indexOf('(');
             String qualifiedTypeWithSlashes = fullSignatureWithArgs.substring(0, firstSplitIndex);
