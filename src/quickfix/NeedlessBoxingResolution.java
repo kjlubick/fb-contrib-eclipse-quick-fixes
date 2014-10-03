@@ -2,15 +2,22 @@ package quickfix;
 
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.jar.Attributes.Name;
+
+import javax.annotation.Nonnull;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.apache.bcel.generic.RETURN;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -18,9 +25,16 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public class NeedlessBoxingResolution extends CustomLabelBugResolution {
 
+    private boolean useBooleanConstants;
+
     @Override
     protected CustomLabelVisitor getLabelFixingVisitor() {
         return new NeedlessBoxingVisitor();
+    }
+    
+    @Override
+    public void setOptions(@Nonnull Map<String, String> options) {
+        useBooleanConstants = Boolean.parseBoolean(options.get("useBooleanConstants"));
     }
 
     @Override
@@ -34,13 +48,23 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
         NeedlessBoxingVisitor visitor = new NeedlessBoxingVisitor();
         node.accept(visitor);
 
-        MethodInvocation fixedMethodInvocation = makeFixed(rewrite, visitor);
+        if (useBooleanConstants) {
+            Expression fixedBooleanConstant = makeFixedBooleanConstant(rewrite.getAST(), visitor);
+            rewrite.replace(visitor.badBooleanLiteral, fixedBooleanConstant, null);
+        } else {
+            MethodInvocation fixedMethodInvocation = makeFixedMethodInvocation(rewrite, visitor);
+            rewrite.replace(visitor.badMethodInvocation, fixedMethodInvocation, null);
+        }
+    }
 
-        rewrite.replace(visitor.badMethodInvocation, fixedMethodInvocation, null);
+    private Expression makeFixedBooleanConstant(AST ast, NeedlessBoxingVisitor visitor) {
+        Expression retVal = ast.newQualifiedName(ast.newSimpleName("Boolean"),
+                ast.newSimpleName(visitor.makeTrueOrFalse()));
+        return retVal;
     }
 
     @SuppressWarnings("unchecked")
-    private MethodInvocation makeFixed(ASTRewrite rewrite, NeedlessBoxingVisitor visitor) {
+    private MethodInvocation makeFixedMethodInvocation(ASTRewrite rewrite, NeedlessBoxingVisitor visitor) {
         AST ast = rewrite.getAST();
         MethodInvocation retVal = ast.newMethodInvocation();
         MethodInvocation original = visitor.badMethodInvocation;
@@ -55,9 +79,11 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
         return retVal;
     }
 
-    private static class NeedlessBoxingVisitor extends CustomLabelVisitor {
+    private class NeedlessBoxingVisitor extends CustomLabelVisitor {
 
         public MethodInvocation badMethodInvocation;
+        
+        public BooleanLiteral badBooleanLiteral;
 
         public String makeParseMethod() {
             if (badMethodInvocation == null)
@@ -75,6 +101,10 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
             return "parseXXX";
         }
 
+        public String makeTrueOrFalse() {
+            return badBooleanLiteral.booleanValue()?"TRUE":"FALSE";
+        }
+
         @Override
         public boolean visit(MethodInvocation node) {
             if (badMethodInvocation != null)
@@ -88,9 +118,25 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
 
             return true;
         }
+        
+        @Override
+        public boolean visit(BooleanLiteral node) {
+            if (this.badBooleanLiteral != null) {
+                return false;
+            }
+            if (node.resolveBoxing()) {     //did boxing happen?  If so, that's our cue
+                badBooleanLiteral = node;
+                return false;
+            }
+            
+            return true;
+        }
 
         @Override
         public String getLabelReplacement() {
+            if (useBooleanConstants) {
+                return "Boolean."+makeTrueOrFalse();
+            }
             if (badMethodInvocation == null) {
                 return "the parse equivalent";
             }
@@ -110,5 +156,13 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
             return sb.append(')').toString();
         }
 
+    }
+    
+    
+    public Boolean getVal() {
+        Map<String, Boolean> map = new HashMap<String, Boolean>();
+        map.put("foo", true);
+        System.out.println(map);
+        return Boolean.FALSE;
     }
 }
