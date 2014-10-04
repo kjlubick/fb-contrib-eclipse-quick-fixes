@@ -5,7 +5,6 @@ import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNod
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.Attributes.Name;
 
 import javax.annotation.Nonnull;
 
@@ -14,7 +13,6 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
-import org.apache.bcel.generic.RETURN;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.BooleanLiteral;
@@ -58,9 +56,8 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
     }
 
     private Expression makeFixedBooleanConstant(AST ast, NeedlessBoxingVisitor visitor) {
-        Expression retVal = ast.newQualifiedName(ast.newSimpleName("Boolean"),
+        return ast.newQualifiedName(ast.newSimpleName("Boolean"),
                 ast.newSimpleName(visitor.makeTrueOrFalse()));
-        return retVal;
     }
 
     @SuppressWarnings("unchecked")
