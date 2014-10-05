@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
@@ -30,9 +31,15 @@ public class LiteralStringComparisonResolution extends BugResolution {
 
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
-        LSCVisitor lscFinder = findLSCOccurrence(workingUnit, bug);
+        ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
+        if (node instanceof Name) {
+            node = node.getParent();
+        }
+        LSCVisitor lscFinder = new LSCVisitor();
+        node.accept(lscFinder);
 
-        MethodInvocation badMethodInvocation = lscFinder.lscMethodInvocation;
+        MethodInvocation badMethodInvocation = lscFinder.lscMethodInvocation;  
+        //System.out.println();
 
         MethodInvocation fixedMethodInvocation = createFixedMethodInvocation(rewrite, lscFinder);
 
@@ -84,22 +91,27 @@ public class LiteralStringComparisonResolution extends BugResolution {
 
             // for checking the type of the receiver. Although it is tempting to try
             // node.resolveTypeBinding(), that refers to the return value.
-            ITypeBinding typeBinding = node.getExpression().resolveTypeBinding();
-            if (comparisonMethods.contains(node.getName().getIdentifier()) && // check the method name
-                    "java.lang.String".equals(typeBinding.getQualifiedName())) {
+            Expression expression = node.getExpression();
+            if (expression != null) {
+                ITypeBinding typeBinding = expression.resolveTypeBinding();
+                if (comparisonMethods.contains(node.getName().getIdentifier()) && // check the method name
+                        "java.lang.String".equals(typeBinding.getQualifiedName())) {
 
-                List<Expression> arguments = (List<Expression>) node.arguments();
-                if (arguments.size() == 1) { // I doubt this could be anything other than 1
-                    // if this was a constant string, resolveConstantExpressionValue() will be nonnull
-                    Expression argument = arguments.get(0);
-                    if (argument instanceof StringLiteral) {
-                        this.lscMethodInvocation = node;
-                        this.stringLiteralExpression = argument;
-                        this.stringVariableExpression = node.getExpression();
-                        return false;
+                    List<Expression> arguments = (List<Expression>) node.arguments();
+                    if (arguments.size() == 1) { // Sanity check to make sure this isn't a look alike
+                        Expression argument = arguments.get(0);
+                        if (argument.resolveConstantExpressionValue() != null) {
+                            // if this was a constant string, resolveConstantExpressionValue() will be nonnull
+                            // We can't simply do argument instanceof StringLiteral because if we have Class.CONSTANT,
+                            // that isn't a StringLiteral
+                            this.lscMethodInvocation = node;
+                            this.stringLiteralExpression = argument;
+                            this.stringVariableExpression = expression;
+                            return false;
+                        }
                     }
-                }
 
+                }
             }
             return true;
         }
