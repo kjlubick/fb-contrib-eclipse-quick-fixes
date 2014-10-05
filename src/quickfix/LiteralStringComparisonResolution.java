@@ -14,6 +14,7 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -32,26 +33,25 @@ public class LiteralStringComparisonResolution extends BugResolution {
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
-        if (node instanceof Name) {
-            node = node.getParent();
-        }
+        node = backtrackToBlock(node);
         LSCVisitor lscFinder = new LSCVisitor();
         node.accept(lscFinder);
 
         MethodInvocation badMethodInvocation = lscFinder.lscMethodInvocation;  
-        //System.out.println();
 
         MethodInvocation fixedMethodInvocation = createFixedMethodInvocation(rewrite, lscFinder);
 
         rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
     }
 
-    private LSCVisitor findLSCOccurrence(CompilationUnit workingUnit, BugInstance bug) throws ASTNodeNotFoundException {
-        ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
-        LSCVisitor lscFinder = new LSCVisitor();
-        node.accept(lscFinder);
-        return lscFinder;
+    private ASTNode backtrackToBlock(ASTNode node) {
+        //finds top-most expression that is not a block
+        while (!(node.getParent() == null || node.getParent() instanceof Block)) {
+            node = node.getParent();
+        }
+        return node;
     }
+
 
     @SuppressWarnings("unchecked")
     private MethodInvocation createFixedMethodInvocation(ASTRewrite rewrite, LSCVisitor lscFinder) {
