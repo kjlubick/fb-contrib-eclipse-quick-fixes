@@ -2,7 +2,6 @@ package quickfix;
 
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -153,12 +152,5 @@ public class NeedlessBoxingResolution extends CustomLabelBugResolution {
             return sb.append(')').toString();
         }
 
-    }
-
-    public Boolean getVal() {
-        Map<String, Boolean> map = new HashMap<String, Boolean>();
-        map.put("foo", true);
-        System.out.println(map);
-        return Boolean.FALSE;
     }
 }

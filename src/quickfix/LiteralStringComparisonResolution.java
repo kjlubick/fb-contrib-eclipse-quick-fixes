@@ -9,7 +9,6 @@ import java.util.Set;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.ASTNodeNotFoundException;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.eclipse.jdt.core.dom.AST;
@@ -20,8 +19,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public class LiteralStringComparisonResolution extends BugResolution {
