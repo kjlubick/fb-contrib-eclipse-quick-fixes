@@ -2,6 +2,7 @@ package quickfix;
 
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,11 +38,13 @@ public class LiteralStringComparisonResolution extends BugResolution {
         LSCVisitor lscFinder = new LSCVisitor();
         node.accept(lscFinder);
 
-        MethodInvocation badMethodInvocation = lscFinder.lscMethodInvocation;  
+        for (ResolutionBundle toResolve : lscFinder.problemsToResolve) {
+            MethodInvocation badMethodInvocation = toResolve.lscMethodInvocation;  
 
-        MethodInvocation fixedMethodInvocation = createFixedMethodInvocation(rewrite, lscFinder);
+            MethodInvocation fixedMethodInvocation = createFixedMethodInvocation(rewrite, toResolve);
 
-        rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
+            rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
+        }
     }
 
     private ASTNode backtrackToBlock(ASTNode node) {
@@ -54,17 +57,32 @@ public class LiteralStringComparisonResolution extends BugResolution {
 
 
     @SuppressWarnings("unchecked")
-    private MethodInvocation createFixedMethodInvocation(ASTRewrite rewrite, LSCVisitor lscFinder) {
+    private MethodInvocation createFixedMethodInvocation(ASTRewrite rewrite, ResolutionBundle toResolve) {
         AST ast = rewrite.getAST();
         MethodInvocation fixedMethodInvocation = ast.newMethodInvocation();
-        String invokedMethodName = lscFinder.lscMethodInvocation.getName().getIdentifier();
+        String invokedMethodName = toResolve.lscMethodInvocation.getName().getIdentifier();
         fixedMethodInvocation.setName(ast.newSimpleName(invokedMethodName));
         // can't simply use visitor.stringLiteralExpression because an IllegalArgumentException
         // will be thrown because it belongs to another AST. So, we use a moveTarget to eventually
         // move the literal into the right place
-        fixedMethodInvocation.setExpression((Expression) rewrite.createMoveTarget(lscFinder.stringLiteralExpression)); // thing the method is called on
-        fixedMethodInvocation.arguments().add((Expression) rewrite.createMoveTarget(lscFinder.stringVariableExpression));
+        fixedMethodInvocation.setExpression((Expression) rewrite.createMoveTarget(toResolve.stringLiteralExpression)); // thing the method is called on
+        fixedMethodInvocation.arguments().add((Expression) rewrite.createMoveTarget(toResolve.stringVariableExpression));
         return fixedMethodInvocation;
+    }
+    
+    private static class ResolutionBundle {
+        public MethodInvocation lscMethodInvocation;
+
+        public Expression stringLiteralExpression;
+
+        public Expression stringVariableExpression;
+
+        public ResolutionBundle(MethodInvocation lscMethodInvocation, Expression stringLiteralExpression,
+                Expression stringVariableExpression) {
+            this.lscMethodInvocation = lscMethodInvocation;
+            this.stringLiteralExpression = stringLiteralExpression;
+            this.stringVariableExpression = stringVariableExpression;
+        }
     }
 
     private static class LSCVisitor extends ASTVisitor {
@@ -76,19 +94,12 @@ public class LiteralStringComparisonResolution extends BugResolution {
             comparisonMethods.add("equalsIgnoreCase");
         }
 
-        public MethodInvocation lscMethodInvocation;
-
-        public Expression stringLiteralExpression;
-
-        public Expression stringVariableExpression;
+        List<ResolutionBundle> problemsToResolve = new ArrayList<>();
 
         @Override
         @SuppressWarnings("unchecked")
         public boolean visit(MethodInvocation node) {
-            if (this.lscMethodInvocation != null) {
-                return false;
-            }
-
+            
             // for checking the type of the receiver. Although it is tempting to try
             // node.resolveTypeBinding(), that refers to the return value.
             Expression expression = node.getExpression();
@@ -104,10 +115,7 @@ public class LiteralStringComparisonResolution extends BugResolution {
                             // if this was a constant string, resolveConstantExpressionValue() will be nonnull
                             // We can't simply do argument instanceof StringLiteral because if we have Class.CONSTANT,
                             // that isn't a StringLiteral
-                            this.lscMethodInvocation = node;
-                            this.stringLiteralExpression = argument;
-                            this.stringVariableExpression = expression;
-                            return false;
+                            problemsToResolve.add(new ResolutionBundle(node, argument, expression));
                         }
                     }
 
