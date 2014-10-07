@@ -1,6 +1,7 @@
 package quickfix;
 
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
+import static util.TraversalUtil.backtrackToBlock;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,19 +10,15 @@ import java.util.Set;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.ASTNodeNotFoundException;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public class LiteralStringComparisonResolution extends BugResolution {
@@ -45,14 +42,6 @@ public class LiteralStringComparisonResolution extends BugResolution {
 
             rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
         }
-    }
-
-    private ASTNode backtrackToBlock(ASTNode node) {
-        //finds top-most expression that is not a block
-        while (!(node.getParent() == null || node.getParent() instanceof Block)) {
-            node = node.getParent();
-        }
-        return node;
     }
 
 

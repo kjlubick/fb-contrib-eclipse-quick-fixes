@@ -145,6 +145,14 @@
             pattern="NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION">
       </quickFix>
       
+      <quickFix
+            class="quickfix.ArrayToStringResolution"
+            label="Replace with YYY"
+            pattern="DMI_INVOKING_TOSTRING_ON_ARRAY">
+      </quickFix>
+      
+      
+      
    </extension>
 
 </plugin>
