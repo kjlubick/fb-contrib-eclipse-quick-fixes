@@ -37,52 +37,38 @@ public class ArrayToStringResolution extends BugResolution {
         node = backtrackToBlock(node);
         ArrayToStringVisitor atsFinder = new ArrayToStringVisitor();
         node.accept(atsFinder);
-        
+
         AST ast = node.getAST();
-        
-        for(Expression arr: atsFinder.arrayExpressionsToWrap) {
+
+        for (Expression arr : atsFinder.arrayExpressionsToWrap) {
             MethodInvocation wrappedExpression = ast.newMethodInvocation();
-            
+
             wrappedExpression.setExpression(ast.newSimpleName("Arrays"));
             wrappedExpression.setName(ast.newSimpleName("toString"));
             wrappedExpression.arguments().add(rewrite.createMoveTarget(arr));
-            
+
             rewrite.replace(arr, wrappedExpression, null);
         }
-        
+
         ASTUtil.addImports(rewrite, workingUnit, "java.util.Arrays");
     }
-    
-    
-    /*   && ("toString".equals(getNameConstantOperand()) 
-     * && "()Ljava/lang/String;".equals(getSigConstantOperand())
-                        || "append".equals(getNameConstantOperand())
-                        && "(Ljava/lang/Object;)Ljava/lang/StringBuilder;".equals(getSigConstantOperand())
-                        && "java/lang/StringBuilder".equals(getClassConstantOperand())
-                        || "append".equals(getNameConstantOperand())
-                        && "(Ljava/lang/Object;)Ljava/lang/StringBuffer;".equals(getSigConstantOperand())
-                        && "java/lang/StringBuffer".equals(getClassConstantOperand()) || ("print".equals(getNameConstantOperand()) || "println".equals(getNameConstantOperand()))
-                                && "(Ljava/lang/Object;)V".equals(getSigConstantOperand()))) {
-    */
-    
+
     private static class ArrayToStringVisitor extends ASTVisitor {
-        
+
         public List<Expression> arrayExpressionsToWrap = new ArrayList<>();
-                
+
         private static Set<String> methodsToCheck = new HashSet<>();
-        
+
         static {
             methodsToCheck.add("java.io.PrintStream.println");
             methodsToCheck.add("java.io.PrintStream.print");
             methodsToCheck.add("java.lang.StringBuilder.append");
             methodsToCheck.add("java.lang.StringBuffer.append");
         }
-        
-        
-        
+
         @Override
         public boolean visit(MethodInvocation node) {
-            //for stringBuilder.append(array); and System.out.println(one);
+            // for stringBuilder.append(array); and System.out.println(one);
             if (methodsToCheck.contains(asQualifiedString(node)))
             {
                 if (node.arguments().size() == 1) {
@@ -92,7 +78,7 @@ public class ArrayToStringResolution extends BugResolution {
             }
             return true;
         }
-        
+
         private static String asQualifiedString(MethodInvocation node) {
             return String.format("%s.%s",
                     node.getExpression().resolveTypeBinding().getQualifiedName(),
@@ -120,46 +106,6 @@ public class ArrayToStringResolution extends BugResolution {
                 arrayExpressionsToWrap.add(operand);
             }
         }
-        
-        
-        
-    }
-    
-//    private static class ResolutionBundle {
-//        public Expression arrayExpression;
-//
-//        public ResolutionBundle(Expression arrayExpression) {
-//            this.arrayExpression = arrayExpression;
-//        }
-//    }
-    
-    public String test(int[] one, Double two[]) {
-        
-        System.out.println(one);
-        
-        StringBuilder sb = new StringBuilder();
-        sb.append("Hello");
-        sb.append(two);
-        
-        return sb.toString();
-        
-    }
-    
-    public void test2(int[] one, Double two[]) {
-
-        String string = "Hello" + one + ':' + two;
-
-        System.out.println(string);
 
     }
-    
-    public void test3(int[] one, Double two[]) {
-
-        System.out.println("Hello" + one + ':' + two);
-
-    }
-    
-   
-    
-
 }
