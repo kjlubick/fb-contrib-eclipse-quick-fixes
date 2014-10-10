@@ -147,7 +147,7 @@
       
       <quickFix
             class="quickfix.ArrayToStringResolution"
-            label="Replace with YYY"
+            label="Wrap array with Arrays.toString()"
             pattern="DMI_INVOKING_TOSTRING_ON_ARRAY">
       </quickFix>
       
