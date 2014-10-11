@@ -149,6 +149,12 @@
             class="quickfix.ReturnValueIgnoreResolution"
             label="Replace with YYY"
             pattern="RV_RETURN_VALUE_IGNORED">
+	</quickFix>
+      
+      <quickFix
+            class="quickfix.ArrayToStringResolution"
+            label="Wrap array with Arrays.toString()"
+            pattern="DMI_INVOKING_TOSTRING_ON_ARRAY">
       </quickFix>
       
       

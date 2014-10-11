@@ -88,9 +88,9 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
         public CSIVisitorAndFixer() { // for label traversing
             if (isName) {
-                parseToTypeArgs(CharsetIssues.UNREPLACEABLE_ENCODING_METHODS);
+                parseToTypeArgs(CharsetIssues.getUnreplaceableCharsetEncodings());
             } else {
-                parseToTypeArgs(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
+                parseToTypeArgs(CharsetIssues.getReplaceableCharsetEncodings());
             }
         }
 
