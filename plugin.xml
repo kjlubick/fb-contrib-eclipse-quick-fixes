@@ -145,6 +145,14 @@
             pattern="NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION">
       </quickFix>
       
+      <quickFix
+            class="quickfix.ReturnValueIgnoreResolution"
+            label="Replace with YYY"
+            pattern="RV_RETURN_VALUE_IGNORED">
+      </quickFix>
+      
+      
+      
    </extension>
 
 </plugin>
