@@ -8,7 +8,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
-public class NeedlessBoxingResolution extends CustomLabelBugResolution {
+public class NeedlessBoxingResolution extends BugResolution {
 
     private boolean useBooleanConstants;
 

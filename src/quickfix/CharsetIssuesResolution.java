@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
 
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
@@ -30,7 +30,7 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 import util.QMethodAndArgs;
 
-public class CharsetIssuesResolution extends CustomLabelBugResolution {
+public class CharsetIssuesResolution extends BugResolution {
 
     private boolean isName;
 

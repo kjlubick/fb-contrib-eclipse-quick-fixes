@@ -4,7 +4,7 @@ import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNod
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
-public class IsNANResolution extends CustomLabelBugResolution {
+public class IsNANResolution extends BugResolution {
 
     @Override
     protected boolean resolveBindings() {

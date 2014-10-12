@@ -6,7 +6,7 @@ import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNod
 import java.util.List;
 
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
@@ -30,7 +30,7 @@ import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
 import util.TraversalUtil;
 
-public class EntrySetResolution extends CustomLabelBugResolution {
+public class EntrySetResolution extends BugResolution {
 
     private ImportRewrite typeSource;
 
