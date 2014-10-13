@@ -1,6 +1,7 @@
 package quickfix;
 
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
@@ -74,8 +75,12 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
     @Override
     protected boolean resolveBindings() {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
+    }
+    
+    @Override
+    protected ApplicabilityVisitor getApplicabilityVisitor() {
+        return new PrescanVisitor();
     }
 
     @Override
@@ -83,5 +88,16 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         // TODO Auto-generated method stub
 
     }
+    
+    private static class PrescanVisitor extends ApplicabilityVisitor {
+
+        @Override
+        public boolean isApplicable() {
+            // TODO Auto-generated method stub
+            return false;
+        }
+        
+    }
+    
 
 }
