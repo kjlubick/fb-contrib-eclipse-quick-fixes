@@ -1,12 +1,18 @@
 package quickfix;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+
+import util.QMethod;
 
 public class ReturnValueIgnoreResolution extends BugResolution {
     
@@ -91,10 +97,31 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     
     private static class PrescanVisitor extends ApplicabilityVisitor {
 
+        private static Map<QMethod, Boolean> supportsLocalFix = new HashMap<QMethod, Boolean>();
+        
+        static {
+            supportsLocalFix.put(new QMethod("java.lang.String", "trim"), Boolean.TRUE);
+            supportsLocalFix.put(new QMethod("java.math.BigDecimal", "byteValueExact"), Boolean.FALSE);
+        }
+        
+        private boolean applicable = true;
+        
+        @Override
+        public boolean visit(MethodInvocation node) {
+            
+            QMethod qMethod = QMethod.make(node);
+            
+            if (supportsLocalFix.containsKey(qMethod)) {
+                applicable = supportsLocalFix.get(qMethod);
+            }
+            
+            return false;
+        }
+        
+        
         @Override
         public boolean isApplicable() {
-            // TODO Auto-generated method stub
-            return false;
+            return applicable;
         }
         
     }
