@@ -18,13 +18,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
  * @author Kevin Lubick
  * 
  */
-public final class QMethodAndArgs {
-
-    public final static String CONSTRUCTOR_METHOD = "<init>";
-
-    public final String qualifiedTypeString; // the type that this method is invoked on (dot seperated)
-
-    public final String invokedMethodString; // the name of the method invoked
+public class QMethodAndArgs extends QMethod {
 
     public final List<String> argumentTypes; // dot separated argument types
 
@@ -35,8 +29,7 @@ public final class QMethodAndArgs {
      * 
      */
     public QMethodAndArgs(String qualifiedTypeString, String invokedMethodString, List<String> argumentTypes) {
-        this.qualifiedTypeString = qualifiedTypeString;
-        this.invokedMethodString = invokedMethodString;
+        super(qualifiedTypeString,invokedMethodString);
         this.argumentTypes = Collections.unmodifiableList(argumentTypes);
     }
 
@@ -71,17 +64,16 @@ public final class QMethodAndArgs {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
+        int result = super.hashCode();
         result = prime * result + ((argumentTypes == null) ? 0 : argumentTypes.hashCode());
-        result = prime * result + ((invokedMethodString == null) ? 0 : invokedMethodString.hashCode());
-        return prime * result + ((qualifiedTypeString == null) ? 0 : qualifiedTypeString.hashCode());
+        return result;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (obj == null)
+        if (!super.equals(obj))
             return false;
         if (getClass() != obj.getClass())
             return false;
@@ -90,16 +82,6 @@ public final class QMethodAndArgs {
             if (other.argumentTypes != null)
                 return false;
         } else if (!argumentTypes.equals(other.argumentTypes))
-            return false;
-        if (invokedMethodString == null) {
-            if (other.invokedMethodString != null)
-                return false;
-        } else if (!invokedMethodString.equals(other.invokedMethodString))
-            return false;
-        if (qualifiedTypeString == null) {
-            if (other.qualifiedTypeString != null)
-                return false;
-        } else if (!qualifiedTypeString.equals(other.qualifiedTypeString))
             return false;
         return true;
     }
