@@ -146,6 +146,14 @@
       </quickFix>
       
       <quickFix
+      		arguments="resolveWithLocal=false"
+            class="quickfix.ReturnValueIgnoreResolution"
+            label="Replace with YYY"
+            pattern="RV_RETURN_VALUE_IGNORED">
+	</quickFix>
+	
+	<quickFix
+			arguments="resolveWithLocal=true"
             class="quickfix.ReturnValueIgnoreResolution"
             label="Replace with YYY"
             pattern="RV_RETURN_VALUE_IGNORED">
