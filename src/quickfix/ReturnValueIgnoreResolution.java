@@ -101,7 +101,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         
         static {
             supportsLocalFix.put(new QMethod("java.lang.String", "trim"), Boolean.TRUE);
-            supportsLocalFix.put(new QMethod("java.math.BigDecimal", "byteValueExact"), Boolean.FALSE);
+            supportsLocalFix.put(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"), Boolean.FALSE);
         }
         
         private boolean applicable = true;
