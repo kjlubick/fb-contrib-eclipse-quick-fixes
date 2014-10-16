@@ -3,6 +3,8 @@ package quickfix;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
@@ -78,6 +80,13 @@ public class ReturnValueIgnoreResolution extends BugResolution {
  
 
      */
+    
+    private boolean storeToLocal;
+
+    @Override
+    public void setOptions(Map<String, String> options) {
+        storeToLocal = Boolean.parseBoolean(options.get("resolveWithLocal"));
+    }
 
     @Override
     protected boolean resolveBindings() {
@@ -95,14 +104,14 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
     }
     
-    private static class PrescanVisitor extends ApplicabilityVisitor {
-
-        private static Map<QMethod, Boolean> supportsLocalFix = new HashMap<QMethod, Boolean>();
-        
-        static {
-            supportsLocalFix.put(new QMethod("java.lang.String", "trim"), Boolean.TRUE);
-            supportsLocalFix.put(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"), Boolean.FALSE);
-        }
+    private static Map<QMethod, Boolean> supportsLocalFix = new HashMap<QMethod, Boolean>();
+    
+    static {
+        supportsLocalFix.put(new QMethod("java.lang.String", "trim"), Boolean.TRUE);
+        supportsLocalFix.put(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"), Boolean.FALSE);
+    }
+    
+    private class PrescanVisitor extends ApplicabilityVisitor {
         
         private boolean applicable = true;
         
@@ -121,7 +130,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         
         @Override
         public boolean isApplicable() {
-            return applicable;
+            return applicable || storeToLocal;
         }
         
     }

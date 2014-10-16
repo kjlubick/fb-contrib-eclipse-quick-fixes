@@ -148,14 +148,14 @@
       <quickFix
       		arguments="resolveWithLocal=false"
             class="quickfix.ReturnValueIgnoreResolution"
-            label="Replace with YYY"
+            label="Store result back to self"
             pattern="RV_RETURN_VALUE_IGNORED">
 	</quickFix>
 	
 	<quickFix
 			arguments="resolveWithLocal=true"
             class="quickfix.ReturnValueIgnoreResolution"
-            label="Replace with YYY"
+            label="Store result to a local"
             pattern="RV_RETURN_VALUE_IGNORED">
 	</quickFix>
       
