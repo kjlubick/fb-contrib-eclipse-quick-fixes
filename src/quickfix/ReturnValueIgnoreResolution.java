@@ -19,6 +19,22 @@ import util.QMethod;
 
 public class ReturnValueIgnoreResolution extends BugResolution {
     
+    private final static String exceptionalSysOut = "System.out.println(\"Exceptional return value\");";
+
+    private final static String descriptionForWrapIf = "Replace with <code><pre>if (YYY) {\n\t" + exceptionalSysOut
+            + "\n}</pre></code>";
+
+    private final static String descriptionForNegatedWrapIf = "Replace with <code><pre>if (!YYY) {\n\t" + exceptionalSysOut
+            + "\n}</pre></code>";
+    
+    private final static String descriptionForNewLocal = "Makes a new local variable and assigns the result of the method call to it.";
+    
+    public final static String descriptionForStoreToSelf = "Stores the result of the method call back to the original method caller.";
+    
+    private String description;
+
+    
+    
     private enum TriStatus {
         UNRESOLVED, TRUE, FALSE
     }
@@ -86,8 +102,19 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
      */
         
-    public enum QuickFixType {
-        STORE_TO_NEW_LOCAL, STORE_TO_SELF, WRAP_WITH_IF, WRAP_WITH_NEGATED_IF
+    private enum QuickFixType {
+        STORE_TO_NEW_LOCAL(descriptionForNewLocal), STORE_TO_SELF(descriptionForStoreToSelf),
+        WRAP_WITH_IF(descriptionForWrapIf), WRAP_WITH_NEGATED_IF(descriptionForNegatedWrapIf);
+        
+        private String description;
+        
+        QuickFixType(String d) {
+            description = d;
+        }
+        
+        public String getDescription() {
+            return description;
+        }
     }
     
     private QuickFixType quickFixType;
@@ -109,8 +136,19 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     
     @Override
     protected ASTVisitor getLabelFixingVisitor() {
-        // TODO Auto-generated method stub
-        return super.getLabelFixingVisitor();
+        return new PrescanVisitor();
+    }
+    
+    @Override
+    public String getDescription() {
+        if (description == null) {
+            String label = getLabel(); // force traversing, which fills in description
+            if (description == null) {
+                return label; // something funky is happening, description shouldn't be null
+                              // We'll be safe and return label (which is not null)
+            }
+        }
+        return description;
     }
 
     @Override
@@ -133,10 +171,11 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         
         private TriStatus returnsSelf = TriStatus.UNRESOLVED;
         private String returnTypeOfMethod;
+        private MethodInvocation badMethodInvocation;
         
         @Override
         public boolean visit(MethodInvocation node) {
-            if (returnTypeOfMethod != null) {
+            if (badMethodInvocation != null) {
                 return false; // only need to go one layer deep. By definition,
                               // if the return value is ignored, it's not nested in anything
             }
@@ -144,6 +183,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
             QMethod qMethod = QMethod.make(node);
             
             if (supportsQuickFix.contains(qMethod)) {
+                badMethodInvocation = node;
                 
                 // look at the returned value and see if it equals the same type
                 // as what the method is invoked on. 
@@ -184,12 +224,14 @@ public class ReturnValueIgnoreResolution extends BugResolution {
             case STORE_TO_NEW_LOCAL:
             case STORE_TO_SELF:
             default:
+                description = quickFixType.getDescription();
                 return "";
- 
             case WRAP_WITH_IF:
-                return "boolean".equals(returnTypeOfMethod);
             case WRAP_WITH_NEGATED_IF:
-                return "boolean".equals(returnTypeOfMethod);
+                String methodSourceCode = badMethodInvocation != null ? badMethodInvocation.toString() : "[method call]";
+                description = quickFixType.getDescription().replace("YYY", methodSourceCode);
+                // it's okay to invoke toString() here because it's user facing, not actually being turned into code
+                return methodSourceCode;
             }
         }
         
