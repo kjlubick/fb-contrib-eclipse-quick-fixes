@@ -7,8 +7,10 @@ import java.util.Set;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
@@ -85,28 +87,14 @@ public class ReturnValueIgnoreResolution extends BugResolution {
      */
         
     public enum QuickFixType {
-        STORE_TO_NEW_LOCAL, STORE_TO_SELF;
-//        private String shortName;
-//
-//        private QuickFixType(String shortName) {
-//            this.shortName = shortName;
-//        }
-//
-//        public static QuickFixType fromString(String shortName) {
-//            for (QuickFixType color : QuickFixType.values()) {
-//                if (color.shortName.equals(shortName)) {
-//                    return color;
-//                }
-//            }
-//            throw new IllegalArgumentException("Illegal quickFix name: " + shortName);
-//        }
+        STORE_TO_NEW_LOCAL, STORE_TO_SELF, WRAP_WITH_IF, WRAP_WITH_NEGATED_IF
     }
     
-    private QuickFixType storeToLocal;
+    private QuickFixType quickFixType;
 
     @Override
     public void setOptions(Map<String, String> options) {
-        storeToLocal = QuickFixType.valueOf(options.get("resolutionType"));
+        quickFixType = QuickFixType.valueOf(options.get("resolutionType"));
     }
 
     @Override
@@ -115,8 +103,14 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     }
     
     @Override
-    protected ApplicabilityVisitor getApplicabilityVisitor() {
+    protected ASTVisitor getApplicabilityVisitor() {
         return new PrescanVisitor();
+    }
+    
+    @Override
+    protected CustomLabelVisitor getLabelFixingVisitor() {
+        // TODO Auto-generated method stub
+        return super.getLabelFixingVisitor();
     }
 
     @Override
@@ -130,16 +124,22 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     static {
         supportsQuickFix.add(new QMethod("java.lang.String", "trim"));
         supportsQuickFix.add(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"));
+        supportsQuickFix.add(new QMethod("java.io.File", "createNewFile"));
     }
     
-    private class PrescanVisitor extends ApplicabilityVisitor {
+    private class PrescanVisitor extends ASTVisitor implements ApplicabilityVisitor {
         
         
         
         private TriStatus returnsSelf = TriStatus.UNRESOLVED;
+        private String returnTypeOfMethod;
         
         @Override
         public boolean visit(MethodInvocation node) {
+            if (returnTypeOfMethod != null) {
+                return false; // only need to go one layer deep. By definition,
+                              // if the return value is ignored, it's not nested in anything
+            }
             
             QMethod qMethod = QMethod.make(node);
             
@@ -147,8 +147,9 @@ public class ReturnValueIgnoreResolution extends BugResolution {
                 
                 // look at the returned value and see if it equals the same type
                 // as what the method is invoked on. 
-                if (qMethod.qualifiedTypeString.equals(
-                        node.resolveTypeBinding().getQualifiedName())) {
+                returnTypeOfMethod = node.resolveTypeBinding().getQualifiedName();
+                
+                if (qMethod.qualifiedTypeString.equals(returnTypeOfMethod)) {
                     returnsSelf = TriStatus.TRUE;
                 } else {
                     returnsSelf = TriStatus.FALSE;
@@ -162,11 +163,15 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         
         @Override
         public boolean isApplicable() {
-            switch (storeToLocal) {
+            switch (quickFixType) {
             case STORE_TO_NEW_LOCAL:
                 return true;
             case STORE_TO_SELF:
                 return returnsSelf == TriStatus.TRUE;
+            case WRAP_WITH_IF:
+                return "boolean".equals(returnTypeOfMethod);
+            case WRAP_WITH_NEGATED_IF:
+                return "boolean".equals(returnTypeOfMethod);
             default:
                 return false;
             }

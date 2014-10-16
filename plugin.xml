@@ -92,20 +92,6 @@
       </quickFix>
       
       <quickFix
-      		arguments="isNegated=true,storeToLocal=true"
-            class="quickfix.ReturnValueBadPracticeResolution"
-            label="YYY"
-            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
-      </quickFix>
-      
-      <quickFix
-      		arguments="isNegated=false,storeToLocal=true"
-            class="quickfix.ReturnValueBadPracticeResolution"
-            label="YYY"
-            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
-      </quickFix>
-      
-      <quickFix
             class="quickfix.EntrySetResolution"
             label="Replace with a foreach loop using entrySet()"
             pattern="WMI_WRONG_MAP_ITERATOR">
@@ -158,6 +144,62 @@
             label="Store result to a local"
             pattern="RV_RETURN_VALUE_IGNORED">
 	</quickFix>
+	
+	<quickFix
+			arguments="resolutionType=WRAP_WITH_IF"
+            class="quickfix.ReturnValueIgnoreResolution"
+            label="Replace with if (YYY) {}"
+            pattern="RV_RETURN_VALUE_IGNORED">
+	</quickFix>
+	
+	<quickFix
+			arguments="resolutionType=WRAP_WITH_NEGATED_IF"
+            class="quickfix.ReturnValueIgnoreResolution"
+            label="Replace with if (!YYY) {}"
+            pattern="RV_RETURN_VALUE_IGNORED">
+	</quickFix>
+	
+	<quickFix
+      		arguments="resolutionType=STORE_TO_SELF"
+            class="quickfix.ReturnValueIgnoreResolution"
+            label="Store result back to self"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+	</quickFix>
+	
+	<quickFix
+			arguments="resolutionType=STORE_TO_NEW_LOCAL"
+            class="quickfix.ReturnValueIgnoreResolution"
+            label="Store result to a local"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+	</quickFix>
+	
+	<quickFix
+			arguments="resolutionType=WRAP_WITH_IF"
+            class="quickfix.ReturnValueIgnoreResolution"
+            label="Replace with if (YYY) {}"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+	</quickFix>
+	
+	<quickFix
+			arguments="resolutionType=WRAP_WITH_NEGATED_IF"
+            class="quickfix.ReturnValueIgnoreResolution"
+            label="Replace with if (!YYY) {}"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+	</quickFix>
+	
+<!--	      <quickFix
+      		arguments="isNegated=true,storeToLocal=true"
+            class="quickfix.ReturnValueBadPracticeResolution"
+            label="YYY"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+      </quickFix>
+      
+      <quickFix
+      		arguments="isNegated=false,storeToLocal=true"
+            class="quickfix.ReturnValueBadPracticeResolution"
+            label="YYY"
+            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
+      </quickFix> -->
       
       <quickFix
             class="quickfix.ArrayToStringResolution"
