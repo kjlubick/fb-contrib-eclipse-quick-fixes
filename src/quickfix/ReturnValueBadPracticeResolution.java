@@ -16,6 +16,7 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
@@ -169,7 +170,7 @@ public class ReturnValueBadPracticeResolution extends BugResolution {
     }
 
     @Override
-    protected CustomLabelVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getLabelFixingVisitor() {
         return new ReturnValueResolutionVisitor(isNegated);
     }
 
@@ -191,7 +192,7 @@ public class ReturnValueBadPracticeResolution extends BugResolution {
         supportedMethods.add("submit");
     }
 
-    private class ReturnValueResolutionVisitor extends CustomLabelVisitor {
+    private class ReturnValueResolutionVisitor extends ASTVisitor implements CustomLabelVisitor {
         public String returnType;
 
         public MethodInvocation badMethodInvocation;

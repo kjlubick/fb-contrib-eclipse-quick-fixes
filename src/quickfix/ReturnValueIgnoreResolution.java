@@ -108,7 +108,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     }
     
     @Override
-    protected CustomLabelVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getLabelFixingVisitor() {
         // TODO Auto-generated method stub
         return super.getLabelFixingVisitor();
     }
@@ -127,7 +127,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         supportsQuickFix.add(new QMethod("java.io.File", "createNewFile"));
     }
     
-    private class PrescanVisitor extends ASTVisitor implements ApplicabilityVisitor {
+    private class PrescanVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
         
         
         
@@ -174,6 +174,22 @@ public class ReturnValueIgnoreResolution extends BugResolution {
                 return "boolean".equals(returnTypeOfMethod);
             default:
                 return false;
+            }
+        }
+
+
+        @Override
+        public String getLabelReplacement() {
+            switch (quickFixType) {
+            case STORE_TO_NEW_LOCAL:
+            case STORE_TO_SELF:
+            default:
+                return "";
+ 
+            case WRAP_WITH_IF:
+                return "boolean".equals(returnTypeOfMethod);
+            case WRAP_WITH_NEGATED_IF:
+                return "boolean".equals(returnTypeOfMethod);
             }
         }
         

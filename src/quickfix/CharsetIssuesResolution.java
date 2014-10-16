@@ -21,6 +21,7 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 import org.apache.bcel.generic.Type;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
@@ -45,7 +46,7 @@ public class CharsetIssuesResolution extends BugResolution {
     }
 
     @Override
-    protected CustomLabelVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getLabelFixingVisitor() {
         return new CSIVisitorAndFixer();
     }
 
@@ -62,7 +63,7 @@ public class CharsetIssuesResolution extends BugResolution {
         addImports(rewrite, workingUnit, "java.nio.charset.StandardCharsets");
     }
 
-    private final class CSIVisitorAndFixer extends CustomLabelVisitor {
+    private final class CSIVisitorAndFixer extends ASTVisitor implements CustomLabelVisitor {
 
         private Map<QMethodAndArgs, Object> csiConstructors;
 

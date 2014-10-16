@@ -10,6 +10,7 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -67,7 +68,7 @@ public class IsNANResolution extends BugResolution {
         return fixedMethod;
     }
 
-    private static class IsNANVisitor extends CustomLabelVisitor {
+    private static class IsNANVisitor extends ASTVisitor implements CustomLabelVisitor {
 
         public InfixExpression infixToReplace;
 
@@ -124,7 +125,7 @@ public class IsNANResolution extends BugResolution {
     }
 
     @Override
-    protected CustomLabelVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getLabelFixingVisitor() {
         return new IsNANVisitor();
     }
 

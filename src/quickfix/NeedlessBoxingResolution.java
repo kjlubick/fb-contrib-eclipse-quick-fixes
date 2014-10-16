@@ -14,6 +14,7 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
@@ -25,7 +26,7 @@ public class NeedlessBoxingResolution extends BugResolution {
     private boolean useBooleanConstants;
 
     @Override
-    protected CustomLabelVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getLabelFixingVisitor() {
         return new NeedlessBoxingVisitor();
     }
 
@@ -75,7 +76,7 @@ public class NeedlessBoxingResolution extends BugResolution {
         return retVal;
     }
 
-    private class NeedlessBoxingVisitor extends CustomLabelVisitor {
+    private class NeedlessBoxingVisitor extends ASTVisitor implements CustomLabelVisitor {
 
         public MethodInvocation badMethodInvocation;
 

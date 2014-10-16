@@ -12,6 +12,7 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
@@ -52,7 +53,7 @@ public class EntrySetResolution extends BugResolution {
     }
 
     @Override
-    protected CustomLabelVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getLabelFixingVisitor() {
         this.descriptionVisitor = new EntrySetResolutionVisitor();
         return descriptionVisitor;
     }
@@ -208,7 +209,7 @@ public class EntrySetResolution extends BugResolution {
         return (T) ASTNode.copySubtree(ast, original);
     }
 
-    private static class EntrySetResolutionVisitor extends CustomLabelVisitor {
+    private static class EntrySetResolutionVisitor extends ASTVisitor implements CustomLabelVisitor {
 
         public EnhancedForStatement ancestorForLoop;
 
