@@ -38,69 +38,6 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     private enum TriStatus {
         UNRESOLVED, TRUE, FALSE
     }
-    
-    /* I'm thinking having a QMethod map to a condition of (returns same value or not) so I know if I can offer to store to same
-     * I think I also want to modify the proper FindBugs plugin to check to see if it should add a resolution or not
-     * 
-        addMethodAnnotation("java.util.Iterator", "hasNext", "()Z", false, CheckReturnValueAnnotation.CHECK_RETURN_VALUE_LOW);
-
-        addMethodAnnotation("java.security.MessageDigest", "digest", "([B)[B", false,
-        addMethodAnnotation("java.util.concurrent.locks.ReadWriteLock", "readLock", "()Ljava/util/concurrent/locks/Lock;", false,
-        addMethodAnnotation("java.util.concurrent.locks.ReadWriteLock", "writeLock", "()Ljava/util/concurrent/locks/Lock;",
-        addMethodAnnotation("java.util.concurrent.locks.Condition", "await", "(JLjava/util/concurrent/TimeUnit;)Z", false,
-        addMethodAnnotation("java.util.concurrent.CountDownLatch", "await", "(JLjava/util/concurrent/TimeUnit;)Z", false,
-        addMethodAnnotation("java.util.concurrent.locks.Condition", "awaitUntil", "(Ljava/util/Date;)Z", false,
-        addMethodAnnotation("java.util.concurrent.locks.Condition", "awaitNanos", "(J)J", false,
-        addMethodAnnotation("java.util.concurrent.Semaphore", "tryAcquire", "(JLjava/util/concurrent/TimeUnit;)Z", false,
-    addMethodAnnotation("java.util.concurrent.Semaphore", "tryAcquire", "()Z", false,
-        addMethodAnnotation("java.util.concurrent.locks.Lock", "tryLock", "(JLjava/util/concurrent/TimeUnit;)Z", false,
-        addMethodAnnotation("java.util.concurrent.locks.Lock", "newCondition", "()Ljava/util/concurrent/locks/Condition;", false,
-        addMethodAnnotation("java.util.concurrent.locks.Lock", "tryLock", "()Z", false,
-        addMethodAnnotation("java.util.concurrent.BlockingQueue", "offer",
-        addMethodAnnotation("java.util.concurrent.BlockingQueue", "offer", "(Ljava/lang/Object;)Z", false,
-       addMethodAnnotation("java.util.concurrent.ConcurrentLinkedQueue", "offer", "(Ljava/lang/Object;)Z", false,
-        addMethodAnnotation("java.util.concurrent.DelayQueue", "offer", "(Ljava/lang/Object;)Z", false,
-        addMethodAnnotation("java.util.concurrent.LinkedBlockingQueue", "offer", "(Ljava/lang/Object;)Z", false,
-       addMethodAnnotation("java.util.LinkedList", "offer", "(Ljava/lang/Object;)Z", false,
-         addMethodAnnotation("java.util.Queue", "offer", "(Ljava/lang/Object;)Z", false,
-      addMethodAnnotation("java.util.concurrent.ArrayBlockingQueue", "offer", "(Ljava/lang/Object;)Z", false,
-       addMethodAnnotation("java.util.concurrent.SynchronousQueue", "offer", "(Ljava/lang/Object;)Z", false,
-       addMethodAnnotation("java.util.PriorityQueue", "offer", "(Ljava/lang/Object;)Z", false,
-        addMethodAnnotation("java.util.concurrent.PriorityBlockingQueue", "offer", "(Ljava/lang/Object;)Z", false,
-        addMethodAnnotation("java.util.concurrent.BlockingQueue", "poll", "(JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;",
-        addMethodAnnotation("java.util.Queue", "poll", "()Ljava/lang/Object;", false,
-        addMethodAnnotation("java.lang.String", "getBytes", "(Ljava/lang/String;)[B", false,
-        addMethodAnnotation("java.lang.String", "charAt", "(I)C", false, CheckReturnValueAnnotation.CHECK_RETURN_VALUE_LOW);
-        addMethodAnnotation("java.lang.String", "toString", "()Ljava/lang/String;", false,
-        addMethodAnnotation("java.lang.String", "length", "()I", false, CheckReturnValueAnnotation.CHECK_RETURN_VALUE_LOW);
-        addMethodAnnotation("java.lang.String", "matches", "(Ljava/lang/String;)Z", false,
-        addMethodAnnotation("java.lang.String", "intern", "()Ljava/lang/String;", false,
-        addMethodAnnotation("java.lang.String", "<init>", "([BLjava/lang/String;)V", false,
-        addMethodAnnotation("java.lang.String", "<init>", "(Ljava/lang/String;)V", false,
-        addMethodAnnotation("java.lang.String", "<init>", "()V", false, CheckReturnValueAnnotation.CHECK_RETURN_VALUE_LOW);
-        addMethodAnnotation("java.math.BigDecimal", "inflate", "()Ljava/math/BigInteger;", false,
-        addMethodAnnotation("java.math.BigDecimal", "precision", "()I", false,
-        addMethodAnnotation("java.math.BigDecimal", "toBigIntegerExact", "()Ljava/math/BigInteger;", false,
-        addMethodAnnotation("java.math.BigDecimal", "longValueExact", "()J", false,
-        addMethodAnnotation("java.math.BigDecimal", "intValueExact", "()I", false,
-        addMethodAnnotation("java.math.BigDecimal", "shortValueExact", "()S", false,
-        addMethodAnnotation("java.math.BigDecimal", "byteValueExact", "()B", false,
-        addMethodAnnotation("java.math.BigDecimal", "<init>", "(Ljava/lang/String;)V", false,
-        addMethodAnnotation("java.math.BigDecimal", "intValue", "()I", false,
-         addMethodAnnotation("java.math.BigDecimal", "stripZerosToMatchScale", "(J)Ljava/math/BigDecimal;", false,
-         addMethodAnnotation("java.math.BigInteger", "addOne", "([IIII)I", true,
-         addMethodAnnotation("java.math.BigInteger", "subN", "([I[II)I", true,
-         addMethodAnnotation("java.math.BigInteger", "<init>", "(Ljava/lang/String;)V", false,
-        addMethodAnnotation("java.net.InetAddress", "getByName", "(Ljava/lang/String;)Ljava/net/InetAddress;", true,
-         addMethodAnnotation("java.net.InetAddress", "getAllByName", "(Ljava/lang/String;)[Ljava/net/InetAddress;", true,
-        addMethodAnnotation("java.lang.ProcessBuilder", "redirectErrorStream", "()Z", false,
-         addMethodAnnotation("java.lang.ProcessBuilder", "redirectErrorStream", "()Z", false,
-        addMethodAnnotation("java.lang.ProcessBuilder", "redirectErrorStream", "()Z", false,
-         addMethodAnnotation(java.sql.Statement.class, "executeQuery", "(Ljava/lang/String;)Ljava/sql/ResultSet;", false,
-        addMethodAnnotation(java.sql.PreparedStatement.class, "executeQuery", "()Ljava/sql/ResultSet;", false,
- 
-
-     */
         
     private enum QuickFixType {
         STORE_TO_NEW_LOCAL(descriptionForNewLocal), STORE_TO_SELF(descriptionForStoreToSelf),
@@ -160,14 +97,62 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     private static Set<QMethod> supportsQuickFix = new HashSet<QMethod>();
     
     static {
-        supportsQuickFix.add(new QMethod("java.lang.String", "trim"));
-        supportsQuickFix.add(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"));
+        //TODO import bad_practice methods and doublecheck String and some other things I may have missed
         supportsQuickFix.add(new QMethod("java.io.File", "createNewFile"));
+        supportsQuickFix.add(new QMethod("java.util.Iterator", "hasNext"));
+        supportsQuickFix.add(new QMethod("java.security.MessageDigest", "digest"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.locks.ReadWriteLock", "readLock"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.locks.ReadWriteLock", "writeLock"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.locks.Condition", "await"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.CountDownLatch", "await"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.locks.Condition", "awaitUntil"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.locks.Condition", "awaitNanos"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.Semaphore", "tryAcquire"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.locks.Lock", "tryLock"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.locks.Lock", "newCondition"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.locks.Lock", "tryLock"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.BlockingQueue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.ConcurrentLinkedQueue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.DelayQueue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.LinkedBlockingQueue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.LinkedList", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.Queue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.ArrayBlockingQueue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.SynchronousQueue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.PriorityQueue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.PriorityBlockingQueue", "offer"));
+        supportsQuickFix.add(new QMethod("java.util.concurrent.BlockingQueue", "poll"));
+        supportsQuickFix.add(new QMethod("java.util.Queue", "poll"));
+        supportsQuickFix.add(new QMethod("java.lang.String", "getBytes"));
+        supportsQuickFix.add(new QMethod("java.lang.String", "charAt"));
+        supportsQuickFix.add(new QMethod("java.lang.String", "toString"));
+        supportsQuickFix.add(new QMethod("java.lang.String", "length"));
+        supportsQuickFix.add(new QMethod("java.lang.String", "matches"));
+        supportsQuickFix.add(new QMethod("java.lang.String", "intern"));
+        supportsQuickFix.add(new QMethod("java.lang.String", "<init>"));
+        supportsQuickFix.add(new QMethod("java.lang.String", "trim"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "inflate"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "precision"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "toBigIntegerExact"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "longValueExact"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "intValueExact"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "shortValueExact"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "byteValueExact"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "<init>"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "intValue"));
+        supportsQuickFix.add(new QMethod("java.math.BigDecimal", "stripZerosToMatchScale"));
+        supportsQuickFix.add(new QMethod("java.math.BigInteger", "addOne"));
+        supportsQuickFix.add(new QMethod("java.math.BigInteger", "subN"));
+        supportsQuickFix.add(new QMethod("java.math.BigInteger", "<init>"));
+        supportsQuickFix.add(new QMethod("java.net.InetAddress", "getByName"));
+        supportsQuickFix.add(new QMethod("java.net.InetAddress", "getAllByName"));
+        supportsQuickFix.add(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"));
+        supportsQuickFix.add(new QMethod("java.sql.Statement", "executeQuery"));
+        supportsQuickFix.add(new QMethod("java.sql.PreparedStatement", "executeQuery")); 
+      
     }
     
     private class PrescanVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
-        
-        
         
         private TriStatus returnsSelf = TriStatus.UNRESOLVED;
         private String returnTypeOfMethod;
@@ -194,7 +179,6 @@ public class ReturnValueIgnoreResolution extends BugResolution {
                 } else {
                     returnsSelf = TriStatus.FALSE;
                 }
-                //returnsSelf = supportsQuickFix.get(qMethod);
             }
             
             return false;
@@ -205,7 +189,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         public boolean isApplicable() {
             switch (quickFixType) {
             case STORE_TO_NEW_LOCAL:
-                return true;
+                return badMethodInvocation != null;
             case STORE_TO_SELF:
                 return returnsSelf == TriStatus.TRUE;
             case WRAP_WITH_IF:
