@@ -1,9 +1,8 @@
 package quickfix;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
+import java.util.Set;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
@@ -17,6 +16,10 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import util.QMethod;
 
 public class ReturnValueIgnoreResolution extends BugResolution {
+    
+    private enum TriStatus {
+        UNRESOLVED, TRUE, FALSE
+    }
     
     /* I'm thinking having a QMethod map to a condition of (returns same value or not) so I know if I can offer to store to same
      * I think I also want to modify the proper FindBugs plugin to check to see if it should add a resolution or not
@@ -80,12 +83,30 @@ public class ReturnValueIgnoreResolution extends BugResolution {
  
 
      */
+        
+    public enum QuickFixType {
+        STORE_TO_NEW_LOCAL, STORE_TO_SELF;
+//        private String shortName;
+//
+//        private QuickFixType(String shortName) {
+//            this.shortName = shortName;
+//        }
+//
+//        public static QuickFixType fromString(String shortName) {
+//            for (QuickFixType color : QuickFixType.values()) {
+//                if (color.shortName.equals(shortName)) {
+//                    return color;
+//                }
+//            }
+//            throw new IllegalArgumentException("Illegal quickFix name: " + shortName);
+//        }
+    }
     
-    private boolean storeToLocal;
+    private QuickFixType storeToLocal;
 
     @Override
     public void setOptions(Map<String, String> options) {
-        storeToLocal = Boolean.parseBoolean(options.get("resolveWithLocal"));
+        storeToLocal = QuickFixType.valueOf(options.get("resolutionType"));
     }
 
     @Override
@@ -104,24 +125,35 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
     }
     
-    private static Map<QMethod, Boolean> supportsLocalFix = new HashMap<QMethod, Boolean>();
+    private static Set<QMethod> supportsQuickFix = new HashSet<QMethod>();
     
     static {
-        supportsLocalFix.put(new QMethod("java.lang.String", "trim"), Boolean.TRUE);
-        supportsLocalFix.put(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"), Boolean.FALSE);
+        supportsQuickFix.add(new QMethod("java.lang.String", "trim"));
+        supportsQuickFix.add(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"));
     }
     
     private class PrescanVisitor extends ApplicabilityVisitor {
         
-        private boolean applicable = true;
+        
+        
+        private TriStatus returnsSelf = TriStatus.UNRESOLVED;
         
         @Override
         public boolean visit(MethodInvocation node) {
             
             QMethod qMethod = QMethod.make(node);
             
-            if (supportsLocalFix.containsKey(qMethod)) {
-                applicable = supportsLocalFix.get(qMethod);
+            if (supportsQuickFix.contains(qMethod)) {
+                
+                // look at the returned value and see if it equals the same type
+                // as what the method is invoked on. 
+                if (qMethod.qualifiedTypeString.equals(
+                        node.resolveTypeBinding().getQualifiedName())) {
+                    returnsSelf = TriStatus.TRUE;
+                } else {
+                    returnsSelf = TriStatus.FALSE;
+                }
+                //returnsSelf = supportsQuickFix.get(qMethod);
             }
             
             return false;
@@ -130,7 +162,14 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         
         @Override
         public boolean isApplicable() {
-            return applicable || storeToLocal;
+            switch (storeToLocal) {
+            case STORE_TO_NEW_LOCAL:
+                return true;
+            case STORE_TO_SELF:
+                return returnsSelf == TriStatus.TRUE;
+            default:
+                return false;
+            }
         }
         
     }

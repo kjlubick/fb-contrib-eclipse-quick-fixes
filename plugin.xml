@@ -146,14 +146,14 @@
       </quickFix>
       
       <quickFix
-      		arguments="resolveWithLocal=false"
+      		arguments="resolutionType=STORE_TO_SELF"
             class="quickfix.ReturnValueIgnoreResolution"
             label="Store result back to self"
             pattern="RV_RETURN_VALUE_IGNORED">
 	</quickFix>
 	
 	<quickFix
-			arguments="resolveWithLocal=true"
+			arguments="resolutionType=STORE_TO_NEW_LOCAL"
             class="quickfix.ReturnValueIgnoreResolution"
             label="Store result to a local"
             pattern="RV_RETURN_VALUE_IGNORED">
