@@ -1,5 +1,8 @@
 package quickfix;
 
+import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.addImports;
+import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -10,10 +13,14 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
 import util.QMethod;
 
@@ -135,6 +142,8 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     
     private QuickFixType quickFixType;
 
+    private ImportRewrite typeSource;
+
     @Override
     public void setOptions(Map<String, String> options) {
         quickFixType = QuickFixType.valueOf(options.get("resolutionType"));
@@ -147,12 +156,12 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     
     @Override
     protected ASTVisitor getApplicabilityVisitor() {
-        return new PrescanVisitor();
+        return new ReturnValueResolutionVisitor();
     }
     
     @Override
     protected ASTVisitor getLabelFixingVisitor() {
-        return new PrescanVisitor();
+        return new ReturnValueResolutionVisitor();
     }
     
     @Override
@@ -169,11 +178,34 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
-        // TODO Auto-generated method stub
+        ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
+        this.typeSource = ImportRewrite.create(workingUnit, true); // these imports won't get added automatically
 
+        ReturnValueResolutionVisitor rvrFinder = new ReturnValueResolutionVisitor();
+        node.accept(rvrFinder);
+
+        Statement fixedStatement = makeFixedStatement(rewrite, rvrFinder);
+
+        if (fixedStatement != null && rvrFinder.badMethodInvocation != null) {
+            // we have to call getParent() to get the statement.
+            // If we simply replace the MethodInvocation with the ifStatement (or whatever),
+            // we get an extra semicolon on the end.
+            rewrite.replace(rvrFinder.badMethodInvocation.getParent(), fixedStatement, null);
+        }
+        // this is the easiest way to make the new imports (from the type conversion)
+        // actually be added
+        addImports(rewrite, workingUnit, typeSource.getAddedImports());
     }
        
-    private class PrescanVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
+    private Statement makeFixedStatement(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
+        AST rootNode = rewrite.getAST();
+        
+        
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private class ReturnValueResolutionVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
         
         private TriStatus returnsSelf = TriStatus.UNRESOLVED;
         private String returnTypeOfMethod;

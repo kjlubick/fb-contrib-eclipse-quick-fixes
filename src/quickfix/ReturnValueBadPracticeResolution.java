@@ -191,6 +191,8 @@ public class ReturnValueBadPracticeResolution extends BugResolution {
         supportedMethods.add("awaitNanos");
         supportedMethods.add("offer");
         supportedMethods.add("submit");
+        
+        
     }
 
     private class ReturnValueResolutionVisitor extends ASTVisitor implements CustomLabelVisitor {
