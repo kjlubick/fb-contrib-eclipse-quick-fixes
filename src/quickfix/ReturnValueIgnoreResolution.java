@@ -32,6 +32,85 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     public final static String descriptionForStoreToSelf = "Stores the result of the method call back to the original method caller.";
     
     private String description;
+    
+    private static Set<String> immutableTypes = new HashSet<String>();
+    private static Set<QMethod> shouldNotBeIgnored = new HashSet<QMethod>();
+    
+    
+    static {
+        immutableTypes.add("java.lang.String");
+        immutableTypes.add("java.math.BigDecimal");
+        immutableTypes.add("java.math.BigInteger");
+        immutableTypes.add("java.sql.Connection");
+        immutableTypes.add("java.net.InetAddress");  
+        immutableTypes.add("jsr166z.forkjoin.ParallelArray");
+        immutableTypes.add("jsr166z.forkjoin.ParallelLongArray");
+        immutableTypes.add("jsr166z.forkjoin.ParallelDoubleArray");
+        
+       
+        shouldNotBeIgnored.add(new QMethod("java.util.Iterator", "hasNext"));
+        shouldNotBeIgnored.add(new QMethod("java.security.MessageDigest", "digest"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.ReadWriteLock", "readLock"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.ReadWriteLock", "writeLock"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Condition", "await"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.CountDownLatch", "await"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Condition", "awaitUntil"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Condition", "awaitNanos"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.Semaphore", "tryAcquire"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Lock", "tryLock"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Lock", "newCondition"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Lock", "tryLock"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.BlockingQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.ConcurrentLinkedQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.DelayQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.LinkedBlockingQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.LinkedList", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.Queue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.ArrayBlockingQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.SynchronousQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.PriorityQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.PriorityBlockingQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.BlockingQueue", "poll"));
+        shouldNotBeIgnored.add(new QMethod("java.util.Queue", "poll"));
+        shouldNotBeIgnored.add(new QMethod("java.lang.String", "getBytes"));
+        shouldNotBeIgnored.add(new QMethod("java.lang.String", "charAt"));
+        shouldNotBeIgnored.add(new QMethod("java.lang.String", "toString"));
+        shouldNotBeIgnored.add(new QMethod("java.lang.String", "length"));
+        shouldNotBeIgnored.add(new QMethod("java.lang.String", "matches"));
+        shouldNotBeIgnored.add(new QMethod("java.lang.String", "intern"));
+        shouldNotBeIgnored.add(new QMethod("java.lang.String", "<init>"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "inflate"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "precision"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "toBigIntegerExact"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "longValueExact"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "intValueExact"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "shortValueExact"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "byteValueExact"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "<init>"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "intValue"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "stripZerosToMatchScale"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigInteger", "addOne"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigInteger", "subN"));
+        shouldNotBeIgnored.add(new QMethod("java.math.BigInteger", "<init>"));
+        shouldNotBeIgnored.add(new QMethod("java.net.InetAddress", "getByName"));
+        shouldNotBeIgnored.add(new QMethod("java.net.InetAddress", "getAllByName"));
+        shouldNotBeIgnored.add(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"));
+        shouldNotBeIgnored.add(new QMethod("java.sql.Statement", "executeQuery"));
+        shouldNotBeIgnored.add(new QMethod("java.sql.PreparedStatement", "executeQuery"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.LinkedBlockingQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.Queue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.ArrayBlockingQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.SynchronousQueue", "offer"));
+        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.ExecutorService", "submit"));
+        shouldNotBeIgnored.add(new QMethod("java.io.File", "createNewFile"));
+        shouldNotBeIgnored.add(new QMethod("java.io.File", "delete"));
+        shouldNotBeIgnored.add(new QMethod("java.io.File", "mkdir"));
+        shouldNotBeIgnored.add(new QMethod("java.io.File", "mkdirs"));
+        shouldNotBeIgnored.add(new QMethod("java.io.File", "renameTo"));
+        shouldNotBeIgnored.add(new QMethod("java.io.File", "setLastModified"));
+        shouldNotBeIgnored.add(new QMethod("java.io.File", "setReadOnly"));
+        shouldNotBeIgnored.add(new QMethod("java.io.File", "setWritable"));
+    }
 
     
     
@@ -93,76 +172,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         // TODO Auto-generated method stub
 
     }
-    
-    private static Set<String> immutableTypes = new HashSet<String>();
-    private static Set<QMethod> shouldNotBeIgnored = new HashSet<QMethod>();
-    
-    
-    static {
-        immutableTypes.add("java.lang.String");
-        immutableTypes.add("java.math.BigDecimal");
-        immutableTypes.add("java.math.BigInteger");
-        immutableTypes.add("java.sql.Connection");
-        immutableTypes.add("java.net.InetAddress");  
-        immutableTypes.add("jsr166z.forkjoin.ParallelArray");
-        immutableTypes.add("jsr166z.forkjoin.ParallelLongArray");
-        immutableTypes.add("jsr166z.forkjoin.ParallelDoubleArray");
-        
-        
-        //TODO import bad_practice methods and doublecheck String and some other things I may have missed
-        shouldNotBeIgnored.add(new QMethod("java.io.File", "createNewFile"));
-        shouldNotBeIgnored.add(new QMethod("java.util.Iterator", "hasNext"));
-        shouldNotBeIgnored.add(new QMethod("java.security.MessageDigest", "digest"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.ReadWriteLock", "readLock"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.ReadWriteLock", "writeLock"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Condition", "await"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.CountDownLatch", "await"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Condition", "awaitUntil"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Condition", "awaitNanos"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.Semaphore", "tryAcquire"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Lock", "tryLock"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Lock", "newCondition"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.Lock", "tryLock"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.BlockingQueue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.ConcurrentLinkedQueue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.DelayQueue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.LinkedBlockingQueue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.LinkedList", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.Queue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.ArrayBlockingQueue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.SynchronousQueue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.PriorityQueue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.PriorityBlockingQueue", "offer"));
-        shouldNotBeIgnored.add(new QMethod("java.util.concurrent.BlockingQueue", "poll"));
-        shouldNotBeIgnored.add(new QMethod("java.util.Queue", "poll"));
-        shouldNotBeIgnored.add(new QMethod("java.lang.String", "getBytes"));
-        shouldNotBeIgnored.add(new QMethod("java.lang.String", "charAt"));
-        shouldNotBeIgnored.add(new QMethod("java.lang.String", "toString"));
-        shouldNotBeIgnored.add(new QMethod("java.lang.String", "length"));
-        shouldNotBeIgnored.add(new QMethod("java.lang.String", "matches"));
-        shouldNotBeIgnored.add(new QMethod("java.lang.String", "intern"));
-        shouldNotBeIgnored.add(new QMethod("java.lang.String", "<init>"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "inflate"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "precision"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "toBigIntegerExact"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "longValueExact"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "intValueExact"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "shortValueExact"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "byteValueExact"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "<init>"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "intValue"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigDecimal", "stripZerosToMatchScale"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigInteger", "addOne"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigInteger", "subN"));
-        shouldNotBeIgnored.add(new QMethod("java.math.BigInteger", "<init>"));
-        shouldNotBeIgnored.add(new QMethod("java.net.InetAddress", "getByName"));
-        shouldNotBeIgnored.add(new QMethod("java.net.InetAddress", "getAllByName"));
-        shouldNotBeIgnored.add(new QMethod("java.lang.ProcessBuilder", "redirectErrorStream"));
-        shouldNotBeIgnored.add(new QMethod("java.sql.Statement", "executeQuery"));
-        shouldNotBeIgnored.add(new QMethod("java.sql.PreparedStatement", "executeQuery")); 
-      
-    }
-    
+       
     private class PrescanVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
         
         private TriStatus returnsSelf = TriStatus.UNRESOLVED;
@@ -180,7 +190,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
             String returnType = node.resolveTypeBinding().getQualifiedName();
             
             //check for the special cases in shouldNotBeIgnored
-            if (shouldNotBeIgnored.contains(qMethod) && !"void".equals(returnType)) { //TODO check for void return value
+            if (shouldNotBeIgnored.contains(qMethod) && !"void".equals(returnType)) {
                 badMethodInvocation = node;
                 this.returnTypeOfMethod = returnType;
                 
