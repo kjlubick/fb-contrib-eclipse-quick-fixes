@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
+@Deprecated
 public class ReturnValueBadPracticeResolution extends BugResolution {
 
     private final static String labelForBoolean = "Replace with if (YYY) {}";
