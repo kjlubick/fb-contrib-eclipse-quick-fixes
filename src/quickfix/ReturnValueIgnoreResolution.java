@@ -16,6 +16,7 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
@@ -212,8 +213,15 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         case STORE_TO_NEW_LOCAL:
             return makeVariableDeclarationFragment(rewrite, rvrFinder);
         case STORE_TO_SELF:
+            AST rootNode = rewrite.getAST();
+            Assignment newAssignment = rootNode.newAssignment();
             
-            break;
+            newAssignment.setLeftHandSide((Expression) rewrite.createCopyTarget(
+                    rvrFinder.badMethodInvocation.getExpression()));
+            newAssignment.setRightHandSide((Expression) rewrite.createCopyTarget(
+                    rvrFinder.badMethodInvocation));
+ 
+            return rootNode.newExpressionStatement(newAssignment);
         case WRAP_WITH_IF:
             return makeIfStatement(rewrite, rvrFinder, false);
             
@@ -223,7 +231,6 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         default:
             return null;
         }
-        return null;
     }
 
     private Statement makeVariableDeclarationFragment(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
@@ -242,7 +249,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     
     /* 
      * A "proper" way to get the type from a type binding.  It allows the import to be added
-     * if it doesn't exist.  The 
+     * if it doesn't exist.  The return value can be used to write new nodes.
      */
     private Type getTypeFromTypeBinding(ITypeBinding typeBinding, AST rootNode) {
         return typeSource.addImport(typeBinding, rootNode);
@@ -367,6 +374,14 @@ public class ReturnValueIgnoreResolution extends BugResolution {
             }
         }
         
+    }
+    
+    private String foo(String s) {
+        s.trim();
+        
+        s = s.trim();
+        
+        return s;
     }
     
 
