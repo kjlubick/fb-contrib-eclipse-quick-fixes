@@ -16,9 +16,19 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.PrefixExpression;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
@@ -198,11 +208,87 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     }
        
     private Statement makeFixedStatement(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
-        AST rootNode = rewrite.getAST();
-        
-        
-        // TODO Auto-generated method stub
+        switch (quickFixType) {
+        case STORE_TO_NEW_LOCAL:
+            return makeVariableDeclarationFragment(rewrite, rvrFinder);
+        case STORE_TO_SELF:
+            
+            break;
+        case WRAP_WITH_IF:
+            return makeIfStatement(rewrite, rvrFinder, false);
+            
+        case WRAP_WITH_NEGATED_IF:
+            return makeIfStatement(rewrite, rvrFinder, true);
+
+        default:
+            return null;
+        }
         return null;
+    }
+
+    private Statement makeVariableDeclarationFragment(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
+        AST rootNode = rewrite.getAST();
+        VariableDeclarationFragment fragment = rootNode.newVariableDeclarationFragment();
+        fragment.setInitializer((Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation));
+        fragment.setName(rootNode.newSimpleName("local"));
+        VariableDeclarationStatement retVal = rootNode.newVariableDeclarationStatement(fragment);
+
+        Type type = getTypeFromTypeBinding(rvrFinder.badMethodInvocation.resolveTypeBinding(), rootNode);
+
+        retVal.setType(type);
+
+        return retVal;
+    }
+    
+    /* 
+     * A "proper" way to get the type from a type binding.  It allows the import to be added
+     * if it doesn't exist.  The 
+     */
+    private Type getTypeFromTypeBinding(ITypeBinding typeBinding, AST rootNode) {
+        return typeSource.addImport(typeBinding, rootNode);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private Statement makeIfStatement(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder, boolean b) {
+        AST rootNode = rewrite.getAST();
+        IfStatement ifStatement = rootNode.newIfStatement();
+
+        Expression expression = makeIfExpression(rewrite, rvrFinder, b);
+        ifStatement.setExpression(expression);
+
+        // the block surrounds the inner statement with {}
+        Block thenBlock = rootNode.newBlock();
+        Statement thenStatement = makeExceptionalStatement(rootNode);
+        thenBlock.statements().add(thenStatement);
+        ifStatement.setThenStatement(thenBlock);
+
+        return ifStatement;
+    }
+
+    private Expression makeIfExpression(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder, boolean isNegated) {
+        if (isNegated)
+        {
+            AST rootNode = rewrite.getAST();
+            PrefixExpression negation = rootNode.newPrefixExpression();
+            negation.setOperator(PrefixExpression.Operator.NOT);
+            negation.setOperand((Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation));
+            return negation;
+        }
+        return (Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private Statement makeExceptionalStatement(AST rootNode) {
+        // makes a statement `System.out.println("Exceptional return value");`
+        QualifiedName sysout = rootNode.newQualifiedName(rootNode.newSimpleName("System"), rootNode.newSimpleName("out"));
+        StringLiteral literal = rootNode.newStringLiteral();
+        literal.setLiteralValue("Exceptional return value");
+
+        MethodInvocation expression = rootNode.newMethodInvocation();
+        expression.setExpression(sysout);
+        expression.setName(rootNode.newSimpleName("println"));
+        expression.arguments().add(literal);
+        return rootNode.newExpressionStatement(expression);
     }
 
     private class ReturnValueResolutionVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
