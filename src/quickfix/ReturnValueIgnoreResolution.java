@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
@@ -176,6 +177,8 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     }
     
     @Override
+    @SuppressFBWarnings(value="BAS_BLOATED_ASSIGNMENT_SCOPE", 
+    justification="the call to getLabel() is needed to fill out information for custom descriptions")
     public String getDescription() {
         if (description == null) {
             String label = getLabel(); // force traversing, which fills in description
@@ -213,24 +216,28 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         case STORE_TO_NEW_LOCAL:
             return makeVariableDeclarationFragment(rewrite, rvrFinder);
         case STORE_TO_SELF:
-            AST rootNode = rewrite.getAST();
-            Assignment newAssignment = rootNode.newAssignment();
-            
-            newAssignment.setLeftHandSide((Expression) rewrite.createCopyTarget(
-                    rvrFinder.badMethodInvocation.getExpression()));
-            newAssignment.setRightHandSide((Expression) rewrite.createCopyTarget(
-                    rvrFinder.badMethodInvocation));
- 
-            return rootNode.newExpressionStatement(newAssignment);
+            return makeSelfAssignment(rewrite, rvrFinder);
         case WRAP_WITH_IF:
             return makeIfStatement(rewrite, rvrFinder, false);
             
         case WRAP_WITH_NEGATED_IF:
             return makeIfStatement(rewrite, rvrFinder, true);
-
         default:
+            System.err.println("Couldn't make a fixed statement? "+ rvrFinder.badMethodInvocation);
             return null;
         }
+    }
+
+    private Statement makeSelfAssignment(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
+        AST rootNode = rewrite.getAST();
+        Assignment newAssignment = rootNode.newAssignment();
+        
+        newAssignment.setLeftHandSide((Expression) rewrite.createCopyTarget(
+                rvrFinder.badMethodInvocation.getExpression()));
+        newAssignment.setRightHandSide((Expression) rewrite.createCopyTarget(
+                rvrFinder.badMethodInvocation));
+ 
+        return rootNode.newExpressionStatement(newAssignment);
     }
 
     private Statement makeVariableDeclarationFragment(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
@@ -375,14 +382,5 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         }
         
     }
-    
-    private String foo(String s) {
-        s.trim();
-        
-        s = s.trim();
-        
-        return s;
-    }
-    
 
 }

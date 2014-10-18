@@ -10,7 +10,7 @@
       </quickFix>
       
       <quickFix
-      		arguments="isName=false"
+      	arguments="isName=false"
             class="quickfix.CharsetIssuesResolution"
             label="Replace with StandardCharset.YYY"
             pattern="CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET">
@@ -187,28 +187,12 @@
             pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
 	</quickFix>
 	
-<!--	      <quickFix
-      		arguments="isNegated=true,storeToLocal=true"
-            class="quickfix.ReturnValueBadPracticeResolution"
-            label="YYY"
-            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
-      </quickFix>
-      
-      <quickFix
-      		arguments="isNegated=false,storeToLocal=true"
-            class="quickfix.ReturnValueBadPracticeResolution"
-            label="YYY"
-            pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
-      </quickFix> -->
-      
       <quickFix
             class="quickfix.ArrayToStringResolution"
             label="Wrap array with Arrays.toString()"
             pattern="DMI_INVOKING_TOSTRING_ON_ARRAY">
       </quickFix>
-      
-      
-      
+
    </extension>
 
 </plugin>
