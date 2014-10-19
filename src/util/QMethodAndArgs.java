@@ -64,9 +64,7 @@ public class QMethodAndArgs extends QMethod {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((argumentTypes == null) ? 0 : argumentTypes.hashCode());
-        return result;
+        return prime * super.hashCode() + ((argumentTypes == null) ? 0 : argumentTypes.hashCode());
     }
 
     @Override
