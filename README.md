@@ -72,7 +72,7 @@ This project isn't quite ready for release yet.  But, if you really want, check 
 ###Development notes###
 This project comes with a preconfigured Eclipse formatter setting.  These are the same settings used in the FindBugs Eclipse project.  Try not to mix feature additions with formatting corrections - make a standalone "Formatting" commit.
 
-Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/#!/blog/post/3?building-your-first-eclipse-quick-fix)?
+Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/blog/post/3?building-your-first-eclipse-quick-fix)?
 
 ##License##
 [FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html) and [fb-contrib](https://github.com/mebigfatguy/fb-contrib) are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
