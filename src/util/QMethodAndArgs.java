@@ -29,7 +29,7 @@ public class QMethodAndArgs extends QMethod {
      * 
      */
     public QMethodAndArgs(String qualifiedTypeString, String invokedMethodString, List<String> argumentTypes) {
-        super(qualifiedTypeString,invokedMethodString);
+        super(qualifiedTypeString, invokedMethodString);
         this.argumentTypes = Collections.unmodifiableList(argumentTypes);
     }
 

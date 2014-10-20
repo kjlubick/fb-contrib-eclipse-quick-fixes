@@ -36,14 +36,13 @@ public class LiteralStringComparisonResolution extends BugResolution {
         node.accept(lscFinder);
 
         for (ResolutionBundle toResolve : lscFinder.problemsToResolve) {
-            MethodInvocation badMethodInvocation = toResolve.lscMethodInvocation;  
+            MethodInvocation badMethodInvocation = toResolve.lscMethodInvocation;
 
             MethodInvocation fixedMethodInvocation = createFixedMethodInvocation(rewrite, toResolve);
 
             rewrite.replace(badMethodInvocation, fixedMethodInvocation, null);
         }
     }
-
 
     @SuppressWarnings("unchecked")
     private MethodInvocation createFixedMethodInvocation(ASTRewrite rewrite, ResolutionBundle toResolve) {
@@ -58,7 +57,7 @@ public class LiteralStringComparisonResolution extends BugResolution {
         fixedMethodInvocation.arguments().add((Expression) rewrite.createMoveTarget(toResolve.stringVariableExpression));
         return fixedMethodInvocation;
     }
-    
+
     private static class ResolutionBundle {
         public MethodInvocation lscMethodInvocation;
 
@@ -88,7 +87,7 @@ public class LiteralStringComparisonResolution extends BugResolution {
         @Override
         @SuppressWarnings("unchecked")
         public boolean visit(MethodInvocation node) {
-            
+
             // for checking the type of the receiver. Although it is tempting to try
             // node.resolveTypeBinding(), that refers to the return value.
             Expression expression = node.getExpression();

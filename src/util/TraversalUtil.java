@@ -21,9 +21,9 @@ public class TraversalUtil {
         }
         return null;
     }
-    
+
     public static ASTNode backtrackToBlock(ASTNode node) {
-        //finds top-most expression that is not a block
+        // finds top-most expression that is not a block
         while (!(node.getParent() == null || node.getParent() instanceof Block)) {
             node = node.getParent();
         }

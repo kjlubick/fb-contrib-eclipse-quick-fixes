@@ -37,7 +37,7 @@ import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 import util.QMethod;
 
 public class ReturnValueIgnoreResolution extends BugResolution {
-    
+
     private final static String exceptionalSysOut = "System.out.println(\"Exceptional return value\");";
 
     private final static String descriptionForWrapIf = "Replace with <code><pre>if (YYY) {\n\t" + exceptionalSysOut
@@ -45,28 +45,27 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
     private final static String descriptionForNegatedWrapIf = "Replace with <code><pre>if (!YYY) {\n\t" + exceptionalSysOut
             + "\n}</pre></code>";
-    
+
     private final static String descriptionForNewLocal = "Makes a new local variable and assigns the result of the method call to it.";
-    
+
     public final static String descriptionForStoreToSelf = "Stores the result of the method call back to the original method caller.";
-    
+
     private String description;
-    
+
     private static Set<String> immutableTypes = new HashSet<String>();
+
     private static Set<QMethod> shouldNotBeIgnored = new HashSet<QMethod>();
-    
-    
+
     static {
         immutableTypes.add("java.lang.String");
         immutableTypes.add("java.math.BigDecimal");
         immutableTypes.add("java.math.BigInteger");
         immutableTypes.add("java.sql.Connection");
-        immutableTypes.add("java.net.InetAddress");  
+        immutableTypes.add("java.net.InetAddress");
         immutableTypes.add("jsr166z.forkjoin.ParallelArray");
         immutableTypes.add("jsr166z.forkjoin.ParallelLongArray");
         immutableTypes.add("jsr166z.forkjoin.ParallelDoubleArray");
-        
-       
+
         shouldNotBeIgnored.add(new QMethod("java.util.Iterator", "hasNext"));
         shouldNotBeIgnored.add(new QMethod("java.security.MessageDigest", "digest"));
         shouldNotBeIgnored.add(new QMethod("java.util.concurrent.locks.ReadWriteLock", "readLock"));
@@ -131,27 +130,25 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         shouldNotBeIgnored.add(new QMethod("java.io.File", "setWritable"));
     }
 
-    
-    
     private enum TriStatus {
         UNRESOLVED, TRUE, FALSE
     }
-        
+
     private enum QuickFixType {
         STORE_TO_NEW_LOCAL(descriptionForNewLocal), STORE_TO_SELF(descriptionForStoreToSelf),
         WRAP_WITH_IF(descriptionForWrapIf), WRAP_WITH_NEGATED_IF(descriptionForNegatedWrapIf);
-        
+
         private String description;
-        
+
         QuickFixType(String d) {
             description = d;
         }
-        
+
         public String getDescription() {
             return description;
         }
     }
-    
+
     private QuickFixType quickFixType;
 
     private ImportRewrite typeSource;
@@ -165,20 +162,20 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     protected boolean resolveBindings() {
         return true;
     }
-    
+
     @Override
     protected ASTVisitor getApplicabilityVisitor() {
         return new ReturnValueResolutionVisitor();
     }
-    
+
     @Override
     protected ASTVisitor getCustomLabelVisitor() {
         return new ReturnValueResolutionVisitor();
     }
-    
+
     @Override
-    @SuppressFBWarnings(value="BAS_BLOATED_ASSIGNMENT_SCOPE", 
-    justification="the call to getLabel() is needed to fill out information for custom descriptions")
+    @SuppressFBWarnings(value = "BAS_BLOATED_ASSIGNMENT_SCOPE",
+            justification = "the call to getLabel() is needed to fill out information for custom descriptions")
     public String getDescription() {
         if (description == null) {
             String label = getLabel(); // force traversing, which fills in description
@@ -210,7 +207,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         // actually be added
         addImports(rewrite, workingUnit, typeSource.getAddedImports());
     }
-       
+
     private Statement makeFixedStatement(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
         switch (quickFixType) {
         case STORE_TO_NEW_LOCAL:
@@ -219,11 +216,11 @@ public class ReturnValueIgnoreResolution extends BugResolution {
             return makeSelfAssignment(rewrite, rvrFinder);
         case WRAP_WITH_IF:
             return makeIfStatement(rewrite, rvrFinder, false);
-            
+
         case WRAP_WITH_NEGATED_IF:
             return makeIfStatement(rewrite, rvrFinder, true);
         default:
-            System.err.println("Couldn't make a fixed statement? "+ rvrFinder.badMethodInvocation);
+            System.err.println("Couldn't make a fixed statement? " + rvrFinder.badMethodInvocation);
             return null;
         }
     }
@@ -231,12 +228,12 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     private Statement makeSelfAssignment(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
         AST rootNode = rewrite.getAST();
         Assignment newAssignment = rootNode.newAssignment();
-        
+
         newAssignment.setLeftHandSide((Expression) rewrite.createCopyTarget(
                 rvrFinder.badMethodInvocation.getExpression()));
         newAssignment.setRightHandSide((Expression) rewrite.createCopyTarget(
                 rvrFinder.badMethodInvocation));
- 
+
         return rootNode.newExpressionStatement(newAssignment);
     }
 
@@ -253,15 +250,15 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
         return retVal;
     }
-    
-    /* 
-     * A "proper" way to get the type from a type binding.  It allows the import to be added
-     * if it doesn't exist.  The return value can be used to write new nodes.
+
+    /*
+     * A "proper" way to get the type from a type binding. It allows the import to be added
+     * if it doesn't exist. The return value can be used to write new nodes.
      */
     private Type getTypeFromTypeBinding(ITypeBinding typeBinding, AST rootNode) {
         return typeSource.addImport(typeBinding, rootNode);
     }
-    
+
     @SuppressWarnings("unchecked")
     private Statement makeIfStatement(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder, boolean b) {
         AST rootNode = rewrite.getAST();
@@ -290,7 +287,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
         }
         return (Expression) rewrite.createMoveTarget(rvrFinder.badMethodInvocation);
     }
-    
+
     @SuppressWarnings("unchecked")
     private Statement makeExceptionalStatement(AST rootNode) {
         // makes a statement `System.out.println("Exceptional return value");`
@@ -306,46 +303,47 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     }
 
     private class ReturnValueResolutionVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
-        
+
         private TriStatus returnsSelf = TriStatus.UNRESOLVED;
+
         private String returnTypeOfMethod;
+
         private MethodInvocation badMethodInvocation;
-        
+
         @Override
         public boolean visit(MethodInvocation node) {
             if (badMethodInvocation != null) {
                 return false; // only need to go one layer deep. By definition,
                               // if the return value is ignored, it's not nested in anything
             }
-            
+
             QMethod qMethod = QMethod.make(node);
             String returnType = node.resolveTypeBinding().getQualifiedName();
-            
-            //check for the special cases in shouldNotBeIgnored
+
+            // check for the special cases in shouldNotBeIgnored
             if (shouldNotBeIgnored.contains(qMethod) && !"void".equals(returnType)) {
                 badMethodInvocation = node;
                 this.returnTypeOfMethod = returnType;
-                
+
                 // look at the returned value and see if it equals the same type
-                // as what the method is invoked on. 
+                // as what the method is invoked on.
                 if (qMethod.qualifiedTypeString.equals(returnTypeOfMethod)) {
                     returnsSelf = TriStatus.TRUE;
                 } else {
                     returnsSelf = TriStatus.FALSE;
                 }
             }
-            
-            //check for any immutableType methods that return something of the same type
+
+            // check for any immutableType methods that return something of the same type
             if (immutableTypes.contains(returnType) && qMethod.qualifiedTypeString.equals(returnType)) {
                 returnsSelf = TriStatus.TRUE;
-                
+
                 badMethodInvocation = node;
                 this.returnTypeOfMethod = returnType;
             }
-            
+
             return false;
         }
-
 
         @Override
         public boolean isApplicable() {
@@ -363,7 +361,6 @@ public class ReturnValueIgnoreResolution extends BugResolution {
             }
         }
 
-
         @Override
         public String getLabelReplacement() {
             switch (quickFixType) {
@@ -380,7 +377,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
                 return methodSourceCode;
             }
         }
-        
+
     }
 
 }
