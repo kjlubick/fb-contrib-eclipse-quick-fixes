@@ -61,7 +61,9 @@ public class EntrySetResolution extends BugResolution {
     @Override
     public String getDescription() {
         if (descriptionVisitor != null && descriptionVisitor.ancestorForLoop != null) {
-
+            
+            // calls to toString() are okay here because this isn't going to be used as
+            // actual code
             SingleVariableDeclaration key = descriptionVisitor.ancestorForLoop.getParameter();
             String keyType = key.getType().toString();
             String keyVar = key.getName().toString();
