@@ -172,7 +172,7 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     }
     
     @Override
-    protected ASTVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getCustomLabelVisitor() {
         return new ReturnValueResolutionVisitor();
     }
     

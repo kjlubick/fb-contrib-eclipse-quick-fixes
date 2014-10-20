@@ -53,7 +53,7 @@ public class EntrySetResolution extends BugResolution {
     }
 
     @Override
-    protected ASTVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getCustomLabelVisitor() {
         this.descriptionVisitor = new EntrySetResolutionVisitor();
         return descriptionVisitor;
     }

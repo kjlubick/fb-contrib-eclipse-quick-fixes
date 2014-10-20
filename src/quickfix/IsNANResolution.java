@@ -125,7 +125,7 @@ public class IsNANResolution extends BugResolution {
     }
 
     @Override
-    protected ASTVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getCustomLabelVisitor() {
         return new IsNANVisitor();
     }
 

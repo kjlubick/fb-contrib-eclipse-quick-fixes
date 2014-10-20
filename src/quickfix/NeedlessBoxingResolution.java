@@ -26,7 +26,7 @@ public class NeedlessBoxingResolution extends BugResolution {
     private boolean useBooleanConstants;
 
     @Override
-    protected ASTVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getCustomLabelVisitor() {
         return new NeedlessBoxingVisitor();
     }
 

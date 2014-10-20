@@ -46,7 +46,7 @@ public class CharsetIssuesResolution extends BugResolution {
     }
 
     @Override
-    protected ASTVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getCustomLabelVisitor() {
         return new CSIVisitorAndFixer();
     }
 
