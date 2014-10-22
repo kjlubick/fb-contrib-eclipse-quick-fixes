@@ -43,6 +43,7 @@ public class StringToCharResolution extends BugResolution {
 
     private static class StringToCharVisitor extends ASTVisitor {
 
+        //This maps a length 1 string to its appropriate replacement
         Map<StringLiteral, Character> replacements = new HashMap<>();
 
         @Override
