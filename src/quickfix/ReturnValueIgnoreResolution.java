@@ -342,18 +342,20 @@ public class ReturnValueIgnoreResolution extends BugResolution {
                 this.returnTypeOfMethod = returnType;
             }
 
+            // only need to go one layer deep. By definition,
+            // if the return value is ignored, it's not nested in anything
             return false;
         }
 
         @Override
         public boolean isApplicable() {
+         // This answers the question did we find something to replace?
             switch (quickFixType) {
-            case STORE_TO_NEW_LOCAL:
+            case STORE_TO_NEW_LOCAL:  
                 return badMethodInvocation != null;
             case STORE_TO_SELF:
                 return returnsSelf == TriStatus.TRUE;
             case WRAP_WITH_IF:
-                return "boolean".equals(returnTypeOfMethod);
             case WRAP_WITH_NEGATED_IF:
                 return "boolean".equals(returnTypeOfMethod);
             default:
@@ -363,6 +365,8 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
         @Override
         public String getLabelReplacement() {
+            // The if fixes have both a custom label and a custom description.
+            // Everything else has a nice static label.
             switch (quickFixType) {
             case STORE_TO_NEW_LOCAL:
             case STORE_TO_SELF:
