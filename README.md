@@ -72,6 +72,9 @@ This project isn't quite ready for release yet.  But, if you really want, check 
 ###Development notes###
 This project comes with a preconfigured Eclipse formatter setting.  These are the same settings used in the FindBugs Eclipse project.  Try not to mix feature additions with formatting corrections - make a standalone "Formatting" commit.
 
+The build script will use the FindBugs Eclipse Plugin and the fb-contrib that you **have installed**, so if (like me), you have a dev version of either, those won't be built on.  
+Additionally, the launch configuration will use the workspace version of fb-contrib, but the installed version of the FindBugs Eclipse Plugin. You can easily make a launch configuration that uses the version from your workspace if you want.  
+
 Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/blog/post/3?building-your-first-eclipse-quick-fix)?
 
 ##License##
