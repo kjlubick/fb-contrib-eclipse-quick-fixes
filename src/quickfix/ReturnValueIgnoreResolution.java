@@ -349,9 +349,9 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
         @Override
         public boolean isApplicable() {
-         // This answers the question did we find something to replace?
+            // This answers the question did we find something to replace?
             switch (quickFixType) {
-            case STORE_TO_NEW_LOCAL:  
+            case STORE_TO_NEW_LOCAL:
                 return badMethodInvocation != null;
             case STORE_TO_SELF:
                 return returnsSelf == TriStatus.TRUE;
