@@ -23,7 +23,7 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 import util.TraversalUtil;
 
-public class FixDeadShadowStore extends BugResolution {
+public class DeadShadowStoreResolution extends BugResolution {
 
     @Override
     protected boolean resolveBindings() {
