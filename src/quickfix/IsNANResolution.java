@@ -4,12 +4,13 @@ import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNod
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -20,7 +21,7 @@ import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
-public class IsNANResolution extends CustomLabelBugResolution {
+public class IsNANResolution extends BugResolution {
 
     @Override
     protected boolean resolveBindings() {
@@ -67,7 +68,7 @@ public class IsNANResolution extends CustomLabelBugResolution {
         return fixedMethod;
     }
 
-    private static class IsNANVisitor extends CustomLabelVisitor {
+    private static class IsNANVisitor extends ASTVisitor implements CustomLabelVisitor {
 
         public InfixExpression infixToReplace;
 
@@ -124,7 +125,7 @@ public class IsNANResolution extends CustomLabelBugResolution {
     }
 
     @Override
-    protected CustomLabelVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getCustomLabelVisitor() {
         return new IsNANVisitor();
     }
 

@@ -14,13 +14,14 @@ import javax.annotation.Nonnull;
 import com.mebigfatguy.fbcontrib.detect.CharsetIssues;
 
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelBugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.apache.bcel.generic.Type;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
@@ -30,7 +31,7 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 import util.QMethodAndArgs;
 
-public class CharsetIssuesResolution extends CustomLabelBugResolution {
+public class CharsetIssuesResolution extends BugResolution {
 
     private boolean isName;
 
@@ -45,7 +46,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
     }
 
     @Override
-    protected CustomLabelVisitor getLabelFixingVisitor() {
+    protected ASTVisitor getCustomLabelVisitor() {
         return new CSIVisitorAndFixer();
     }
 
@@ -62,7 +63,7 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
         addImports(rewrite, workingUnit, "java.nio.charset.StandardCharsets");
     }
 
-    private final class CSIVisitorAndFixer extends CustomLabelVisitor {
+    private final class CSIVisitorAndFixer extends ASTVisitor implements CustomLabelVisitor {
 
         private Map<QMethodAndArgs, Object> csiConstructors;
 
@@ -88,9 +89,9 @@ public class CharsetIssuesResolution extends CustomLabelBugResolution {
 
         public CSIVisitorAndFixer() { // for label traversing
             if (isName) {
-                parseToTypeArgs(CharsetIssues.UNREPLACEABLE_ENCODING_METHODS);
+                parseToTypeArgs(CharsetIssues.getUnreplaceableCharsetEncodings());
             } else {
-                parseToTypeArgs(CharsetIssues.REPLACEABLE_ENCODING_METHODS);
+                parseToTypeArgs(CharsetIssues.getReplaceableCharsetEncodings());
             }
         }
 
