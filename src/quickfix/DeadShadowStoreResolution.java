@@ -38,19 +38,28 @@ public class DeadShadowStoreResolution extends BugResolution {
         DeadStoreVisitor visitor = new DeadStoreVisitor();
         node.accept(visitor);
         
-        SimpleName leftSide = visitor.badLeftSideName; //TODO
+        SimpleName leftSide = visitor.badLeftSideName; 
         
-        AST ast = rewrite.getAST();
-        
-        FieldAccess newField = ast.newFieldAccess();
-        newField.setExpression(ast.newThisExpression());
-        newField.setName((SimpleName) rewrite.createMoveTarget(leftSide));
-        
-        rewrite.replace(leftSide, newField, null);
+        if (leftSide != null) {
+            AST ast = rewrite.getAST();
+
+            FieldAccess newField = ast.newFieldAccess();
+            newField.setExpression(ast.newThisExpression());
+            newField.setName((SimpleName) rewrite.createMoveTarget(leftSide));
+
+            rewrite.replace(leftSide, newField, null);
+        } else {
+            System.err.println("Could not find a local assignment to replace.");
+        }
+    }
+    
+    @Override
+    public String getDescription() {
+        return "Turns the assignment to a local shadow variable into a field assignment "
+                + "by adding a this. to the variable";
     }
     
     private static class DeadStoreVisitor extends ASTVisitor {
-        
         
         public SimpleName badLeftSideName;
 
@@ -67,22 +76,5 @@ public class DeadShadowStoreResolution extends BugResolution {
             }
             return true;
         }
-    }
-    
-    
-    String str;
-    public void set(String str) {
-        str = "foo".replace("bar", str);
-    }
-
-    
-    public void set2(String str) {
-        this.str = "foo".replace("bar", str);
-    }
-    
-    Rectangle r;
-    
-    public void set3(Rectangle r) {
-        r.x = r.x + 3;
     }
 }
