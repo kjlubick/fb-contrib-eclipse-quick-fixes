@@ -36,16 +36,21 @@ public class DeadShadowStoreResolution extends BugResolution {
         SimpleName leftSide = visitor.badLeftSideName;
 
         if (leftSide != null) {
-            AST ast = rewrite.getAST();
-
-            FieldAccess newField = ast.newFieldAccess();
-            newField.setExpression(ast.newThisExpression());
-            newField.setName((SimpleName) rewrite.createMoveTarget(leftSide));
+            FieldAccess newField = makeFieldAccess(rewrite, leftSide);
 
             rewrite.replace(leftSide, newField, null);
         } else {
             System.err.println("Could not find a local assignment to replace.");
         }
+    }
+
+    private FieldAccess makeFieldAccess(ASTRewrite rewrite, SimpleName leftSide) {
+        AST ast = rewrite.getAST();
+
+        FieldAccess newField = ast.newFieldAccess();
+        newField.setExpression(ast.newThisExpression());
+        newField.setName((SimpleName) rewrite.createMoveTarget(leftSide));
+        return newField;
     }
 
     @Override
