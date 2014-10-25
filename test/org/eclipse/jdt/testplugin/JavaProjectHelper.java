@@ -20,8 +20,6 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.zip.ZipFile;
 
-import junit.framework.Assert;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -53,8 +51,6 @@ import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.eclipse.ui.wizards.datatransfer.ZipFileStructureProvider;
 import org.osgi.framework.Bundle;
-
-import plugin.Activator;
 
 /**
  * Helper methods to set up a IJavaProject.
