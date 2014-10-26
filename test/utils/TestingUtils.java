@@ -20,8 +20,6 @@ public class TestingUtils {
     public static void copyBrokenFiles(File dirOfBrokenClasses, IFolder targetFolder) throws CoreException, IOException {
     
         for(File fileToCopy : dirOfBrokenClasses.listFiles()) {
-            
-            
             if (fileToCopy.isFile()) {
                 URL url = fileToCopy.getAbsoluteFile().toURI().toURL();
                 IFile file = targetFolder.getFile(new Path(fileToCopy.getName()));
