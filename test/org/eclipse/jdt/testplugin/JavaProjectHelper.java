@@ -23,15 +23,6 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.zip.ZipFile;
 
-import junit.framework.TestCase;
-
-import org.osgi.framework.Bundle;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Synchronizer;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -41,9 +32,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.ui.dialogs.IOverwriteQuery;
-import org.eclipse.ui.wizards.datatransfer.ImportOperation;
-import org.eclipse.ui.wizards.datatransfer.ZipFileStructureProvider;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -51,13 +43,14 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.search.IJavaSearchConstants;
-import org.eclipse.jdt.core.search.IJavaSearchScope;
-import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.core.search.SearchPattern;
-import org.eclipse.jdt.core.search.TypeNameRequestor;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.util.CoreUtility;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Synchronizer;
+import org.eclipse.ui.dialogs.IOverwriteQuery;
+import org.eclipse.ui.wizards.datatransfer.ImportOperation;
+import org.eclipse.ui.wizards.datatransfer.ZipFileStructureProvider;
+import org.osgi.framework.Bundle;
 
 
 /**
@@ -65,14 +58,9 @@ import org.eclipse.jdt.internal.ui.util.CoreUtility;
  * 
  * https://git.eclipse.org/c/jdt/eclipse.jdt.ui.git/plain/org.eclipse.jdt.ui.tests/test%20plugin/org/eclipse/jdt/testplugin/JavaProjectHelper.java
  */
-@SuppressWarnings("restriction")
+@SuppressWarnings({"restriction", "rawtypes"})
 public class JavaProjectHelper {
 
-	/**
-	 * XXX: Flag to enable/disable dummy search to synchronize with indexer. See https://bugs.eclipse.org/391927 .
-	 */
-	private static final boolean PERFORM_DUMMY_SEARCH= false;
-	
 	/**
 	 * @deprecated use {@link #RT_STUBS_15}
 	 */
@@ -103,18 +91,6 @@ public class JavaProjectHelper {
 	public static final int COUNT_CLASSES_JUNIT_SRC_381= 76;
 	public static final int COUNT_INTERFACES_JUNIT_SRC_381= 8;
 	public static final int COUNT_CLASSES_MYLIB= 3;
-
-	/**
-	 * If set to <code>true</code> all resources that are
-	 * deleted using {@link #delete(IJavaElement)} and that contain mixed
-	 * line delimiters will result in a test failure.
-	 * <p>
-	 * Should be <code>false</code> during normal and Releng test runs
-	 * due to performance impact and because the search plug-in gets
-	 * loaded which results in a test failure.
-	 * </p>
-	 */
-	private static final boolean ASSERT_NO_MIXED_LINE_DELIMIERS= false;
 
 	/**
 	 * Creates a IJavaProject.
@@ -159,32 +135,6 @@ public class JavaProjectHelper {
 		return jproject;
 	}
 
-	/**
-	 * Creates a Java project with JUnit source and rt.jar from
-	 * {@link #addVariableRTJar(IJavaProject, String, String, String)}.
-	 *
-	 * @param projectName the project name
-	 * @param srcContainerName the source container name
-	 * @param outputFolderName the output folder name
-	 * @return the IJavaProject
-	 * @throws CoreException
-	 * @throws IOException
-	 * @throws InvocationTargetException
-	 * @since 3.1
-	 */
-	public static IJavaProject createJavaProjectWithJUnitSource(String projectName, String srcContainerName, String outputFolderName) throws CoreException, IOException, InvocationTargetException {
-		IJavaProject project= createJavaProject(projectName, outputFolderName);
-
-		IPackageFragmentRoot jdk= JavaProjectHelper.addVariableRTJar(project, "JRE_LIB_TEST", null, null);//$NON-NLS-1$
-		TestCase.assertNotNull(jdk);
-
-		File junitSrcArchive= JavaTestPlugin.getDefault().getFileInPlugin(JUNIT_SRC_381);
-		TestCase.assertTrue(junitSrcArchive != null && junitSrcArchive.exists());
-
-		JavaProjectHelper.addSourceContainerWithImport(project, srcContainerName, junitSrcArchive, JUNIT_SRC_ENCODING);
-
-		return project;
-	}
 
 	/**
 	 * Sets the compiler options to 1.8 for the given project.
@@ -245,7 +195,7 @@ public class JavaProjectHelper {
 	 * @since 3.10
 	 */
 	public static void set18CompilerOptions(Map options) {
-		JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
+		//JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
 	}
 
 	/**
@@ -297,12 +247,9 @@ public class JavaProjectHelper {
 	 * @see #ASSERT_NO_MIXED_LINE_DELIMIERS
 	 */
 	public static void delete(final IJavaElement elem) throws CoreException {
-		if (ASSERT_NO_MIXED_LINE_DELIMIERS)
-			MixedLineDelimiterDetector.assertNoMixedLineDelimiters(elem);
-
 		IWorkspaceRunnable runnable= new IWorkspaceRunnable() {
-			public void run(IProgressMonitor monitor) throws CoreException {
-				performDummySearch();
+			@Override
+            public void run(IProgressMonitor monitor) throws CoreException {
 				if (elem instanceof IJavaProject) {
 					IJavaProject jproject= (IJavaProject) elem;
 					jproject.setRawClasspath(new IClasspathEntry[0], jproject.getProject().getFullPath(), null);
@@ -373,9 +320,9 @@ public class JavaProjectHelper {
 	 * @throws Exception Clearing the project failed
 	 */
 	public static void clear(final IJavaProject jproject, final IClasspathEntry[] entries) throws Exception {
-		performDummySearch();
 		IWorkspaceRunnable runnable= new IWorkspaceRunnable() {
-			public void run(IProgressMonitor monitor) throws CoreException {
+			@Override
+            public void run(IProgressMonitor monitor) throws CoreException {
 				jproject.setRawClasspath(entries, null);
 
 				IResource[] resources= jproject.getProject().members();
@@ -389,52 +336,6 @@ public class JavaProjectHelper {
 		ResourcesPlugin.getWorkspace().run(runnable, null);
 
 		JavaProjectHelper.emptyDisplayLoop();
-	}
-
-
-	public static void mustPerformDummySearch() throws JavaModelException {
-		performDummySearch(SearchEngine.createWorkspaceScope(), true);
-	}
-
-	public static void mustPerformDummySearch(IJavaElement element) throws JavaModelException {
-		performDummySearch(SearchEngine.createJavaSearchScope(new IJavaElement[] { element }), true);
-	}
-	
-	public static void performDummySearch() throws JavaModelException {
-		performDummySearch(SearchEngine.createWorkspaceScope(), PERFORM_DUMMY_SEARCH);
-	}
-
-	public static void performDummySearch(IJavaElement element) throws JavaModelException {
-		performDummySearch(SearchEngine.createJavaSearchScope(new IJavaElement[] { element }), PERFORM_DUMMY_SEARCH);
-	}
-
-	private static void performDummySearch(IJavaSearchScope searchScope, boolean doIt) throws JavaModelException {
-		/*
-		 * Workaround for intermittent test failures. The problem is that the Java indexer
-		 * may still be reading a file that has just been created, but a test already tries to delete
-		 * the file again.
-		 * 
-		 * This can theoretically also happen in real life, but it's expected to be very rare,
-		 * and there's no good solution for the problem, since the Java indexer should not
-		 * take a workspace lock for these files.
-		 * 
-		 * performDummySearch() was found to be a performance bottleneck, so we've disabled it in most situations.
-		 * Use a mustPerformDummySearch() method if you really need it and you can't
-		 * use a delete(..) method that retries a few times before failing.
-		 */
-		if (!doIt)
-			return;
-		
-		new SearchEngine().searchAllTypeNames(
-				null,
-				SearchPattern.R_EXACT_MATCH,
-				"XXXXXXXXX".toCharArray(), // make sure we search a concrete name. This is faster according to Kent
-				SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE,
-				IJavaSearchConstants.CLASS,
-				searchScope,
-				new Requestor(),
-				IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,
-				null);
 	}
 
 	/**
@@ -800,7 +701,8 @@ public class JavaProjectHelper {
 		addToClasspath(jproject, cpe);
 	}
 
-	public static void removeFromClasspath(IJavaProject jproject, IPath path) throws JavaModelException {
+	@SuppressWarnings("unchecked")
+    public static void removeFromClasspath(IJavaProject jproject, IPath path) throws JavaModelException {
 		IClasspathEntry[] oldEntries= jproject.getRawClasspath();
 		int nEntries= oldEntries.length;
 		ArrayList list= new ArrayList(nEntries);
@@ -829,19 +731,14 @@ public class JavaProjectHelper {
 	}
 
 	/**
+	 * Updated to not need the Plugin
 	 * @param rtStubsPath the path to the RT stubs
 	 * @return a rt.jar (stubs only)
 	 * @throws CoreException
 	 */
 	public static IPath[] findRtJar(IPath rtStubsPath) throws CoreException {
-		File rtStubs= JavaTestPlugin.getDefault().getFileInPlugin(rtStubsPath);
-		TestCase.assertNotNull(rtStubs);
-		TestCase.assertTrue(rtStubs.exists());
-		return new IPath[] {
-			Path.fromOSString(rtStubs.getPath()),
-			null,
-			null
-		};
+	    File rtStubs = rtStubsPath.toFile();
+        return new IPath[] { Path.fromOSString(rtStubs.getAbsolutePath()), null, null};
 	}
 
 	private static void addNatureToProject(IProject proj, String natureId, IProgressMonitor monitor) throws CoreException {
@@ -892,12 +789,10 @@ public class JavaProjectHelper {
 	}
 
 	private static class ImportOverwriteQuery implements IOverwriteQuery {
-		public String queryOverwrite(String file) {
+		@Override
+        public String queryOverwrite(String file) {
 			return ALL;
 		}
-	}
-
-	private static class Requestor extends TypeNameRequestor{
 	}
 
 	public static void emptyDisplayLoop() {
