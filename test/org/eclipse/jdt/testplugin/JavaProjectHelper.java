@@ -54,11 +54,18 @@ import org.osgi.framework.Bundle;
 
 /**
  * Helper methods to set up a IJavaProject.
+ * 
+ * Lots of info from
+ * https://eclipse.googlesource.com/jdt/eclipse.jdt.ui/+/BETA_JAVA7/org.eclipse.jdt.ui.tests/test%20plugin/org/eclipse/jdt/testplugin/JavaProjectHelper.java
  */
 @SuppressWarnings("restriction")
 public class JavaProjectHelper {
 
+    //Downloaded from https://eclipse.googlesource.com/jdt/eclipse.jdt.ui/+/refs/heads/master/org.eclipse.jdt.ui.tests/testresources/
     public static final IPath RT_STUBS_15 = new Path("testresources/rtstubs15.jar");
+    public static final IPath RT_STUBS_16 = new Path("testresources/rtstubs16.jar");
+    public static final IPath RT_STUBS_17 = new Path("testresources/rtstubs17.jar");
+    public static final IPath RT_STUBS_18 = new Path("testresources/rtstubs18.jar");
 
     private static final int MAX_RETRY = 5;
 
@@ -107,6 +114,24 @@ public class JavaProjectHelper {
         jproject.setRawClasspath(new IClasspathEntry[0], null);
 
         return jproject;
+    }
+    
+    /**
+     * Sets the compiler options to 1.7 for the given project.
+     * @param project the java project
+     */
+    public static void set17CompilerOptions(IJavaProject project) {
+        Map options= project.getOptions(false);
+        JavaProjectHelper.set17CompilerOptions(options);
+        project.setOptions(options);
+    }
+    
+    /**
+     * Sets the compiler options to 1.7
+     * @param options The compiler options to configure
+     */
+    public static void set17CompilerOptions(Map options) {
+        JavaCore.setComplianceOptions(JavaCore.VERSION_1_7, options);
     }
 
     /**
@@ -472,9 +497,15 @@ public class JavaProjectHelper {
      * @return the new package fragment root
      * @throws CoreException
      */
-    public static IPackageFragmentRoot addRTJar(IJavaProject jproject) throws CoreException {
+    public static IPackageFragmentRoot addRTJar15(IJavaProject jproject) throws CoreException {
         IPath[] rtJarPath = findRtJar(RT_STUBS_15);
         set15CompilerOptions(jproject);
+        return addLibrary(jproject, rtJarPath[0], rtJarPath[1], rtJarPath[2]);
+    }
+    
+    public static IPackageFragmentRoot addRTJar17(IJavaProject jproject) throws CoreException {
+        IPath[] rtJarPath= findRtJar(RT_STUBS_17);
+        set17CompilerOptions(jproject);
         return addLibrary(jproject, rtJarPath[0], rtJarPath[1], rtJarPath[2]);
     }
 
