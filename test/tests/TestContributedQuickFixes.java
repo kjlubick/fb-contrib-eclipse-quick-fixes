@@ -84,6 +84,8 @@ public class TestContributedQuickFixes {
     public void test() throws Exception {
         System.out.println("Beginning scan");
         scanForBugs("CharsetIssuesBugs.java");
+        
+        
         System.out.println("Scan completed");
         //TestingUtils.waitForUiEvents(40000);
         assertTrue(true);

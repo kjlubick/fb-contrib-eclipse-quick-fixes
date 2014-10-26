@@ -1,5 +1,5 @@
 #FindBugs User Preferences
-#Tue Sep 02 13:41:38 EDT 2014
+#Sun Oct 26 11:16:43 EDT 2014
 cloud_id=edu.umd.cs.findbugs.cloud.doNothingCloud
 detectorAbnormalFinallyBlockReturn=AbnormalFinallyBlockReturn|true
 detectorAbstractClassEmptyMethods=AbstractClassEmptyMethods|true
@@ -50,6 +50,7 @@ detectorConfusingAutoboxedOverloading=ConfusingAutoboxedOverloading|true
 detectorConfusingFunctionSemantics=ConfusingFunctionSemantics|true
 detectorConfusionBetweenInheritedAndOuterMethod=ConfusionBetweenInheritedAndOuterMethod|true
 detectorConstantListIndex=ConstantListIndex|true
+detectorContainsBasedConditional=ContainsBasedConditional|true
 detectorContraVariantArrayAssignment=ContraVariantArrayAssignment|true
 detectorCookieDetector=CookieDetector|false
 detectorCopiedOverriddenMethod=CopiedOverriddenMethod|true
@@ -212,6 +213,7 @@ detectorOCSDebugger=OCSDebugger|true
 detectorOptionalReturnNull=OptionalReturnNull|true
 detectorOrphanedDOMNode=OrphanedDOMNode|true
 detectorOverlyConcreteParameter=OverlyConcreteParameter|true
+detectorOverlyPermissiveMethod=OverlyPermissiveMethod|true
 detectorOverridingEqualsNotSymmetrical=OverridingEqualsNotSymmetrical|true
 detectorOverzealousCasting=OverzealousCasting|true
 detectorParallelLists=ParallelLists|true
