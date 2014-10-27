@@ -68,8 +68,8 @@ public class TestingUtils {
             @Override
             public int compare(IMarker marker1, IMarker marker2) {
                 String pattern1 = MarkerUtil.getBugPatternString(marker1);
-                String pattern2 = MarkerUtil.getBugPatternString(marker2);
                 if (pattern1 != null) {
+                    String pattern2 = MarkerUtil.getBugPatternString(marker2);
                     if (pattern1.equals(pattern2)) {
                         return MarkerUtil.findPrimaryLineForMaker(marker1) -
                                 MarkerUtil.findPrimaryLineForMaker(marker2);

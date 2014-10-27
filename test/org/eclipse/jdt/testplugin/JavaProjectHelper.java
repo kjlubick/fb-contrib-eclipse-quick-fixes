@@ -151,18 +151,18 @@ public class JavaProjectHelper {
         return jproject;
     }
 
-    /**
-     * Sets the compiler options to 1.8 for the given project.
-     * 
-     * @param project
-     *            the java project
-     * @since 3.10
-     */
-    public static void set18CompilerOptions(IJavaProject project) {
-        Map options = project.getOptions(false);
-        set18CompilerOptions(options);
-        project.setOptions(options);
-    }
+//    /**
+//     * Sets the compiler options to 1.8 for the given project.
+//     * 
+//     * @param project
+//     *            the java project
+//     * @since 3.10
+//     */
+//    public static void set18CompilerOptions(IJavaProject project) {
+//        Map options = project.getOptions(false);
+//        set18CompilerOptions(options);
+//        project.setOptions(options);
+//    }
 
     /**
      * Sets the compiler options to 1.7 for the given project.
@@ -212,16 +212,16 @@ public class JavaProjectHelper {
         project.setOptions(options);
     }
 
-    /**
-     * Sets the compiler options to 1.8
-     * 
-     * @param options
-     *            the compiler options to configure
-     * @since 3.10
-     */
-    public static void set18CompilerOptions(Map options) {
-        // JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
-    }
+//    /**
+//     * Sets the compiler options to 1.8
+//     * 
+//     * @param options
+//     *            the compiler options to configure
+//     * @since 3.10
+//     */
+//    public static void set18CompilerOptions(Map options) {
+//         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
+//    }
 
     /**
      * Sets the compiler options to 1.7
@@ -560,7 +560,7 @@ public class JavaProjectHelper {
     }
 
     /**
-     * Adds a library entry to a IJavaProject.
+     * Adds a library entry with no source or javadoc attachments to a IJavaProject.
      * 
      * @param jproject
      *            The parent project
@@ -708,38 +708,38 @@ public class JavaProjectHelper {
     }
 
     public static IPackageFragmentRoot addRTJar13(IJavaProject jproject) throws CoreException {
-        IPath[] rtJarPath = findRtJar(RT_STUBS_13);
+        IPath rtJarPath = findRtJar(RT_STUBS_13);
 
         Map options = jproject.getOptions(false);
         JavaProjectHelper.set13CompilerOptions(options);
         jproject.setOptions(options);
 
-        return addLibrary(jproject, rtJarPath[0], rtJarPath[1], rtJarPath[2]);
+        return addLibrary(jproject, rtJarPath);
     }
 
     public static IPackageFragmentRoot addRTJar15(IJavaProject jproject) throws CoreException, JavaModelException {
-        IPath[] rtJarPath = findRtJar(RT_STUBS_15);
+        IPath rtJarPath = findRtJar(RT_STUBS_15);
         set15CompilerOptions(jproject);
-        return addLibrary(jproject, rtJarPath[0], rtJarPath[1], rtJarPath[2]);
+        return addLibrary(jproject, rtJarPath);
     }
 
     public static IPackageFragmentRoot addRTJar16(IJavaProject jproject) throws CoreException {
-        IPath[] rtJarPath = findRtJar(RT_STUBS_16);
+        IPath rtJarPath = findRtJar(RT_STUBS_16);
         set16CompilerOptions(jproject);
-        return addLibrary(jproject, rtJarPath[0], rtJarPath[1], rtJarPath[2]);
+        return addLibrary(jproject, rtJarPath);
     }
 
     public static IPackageFragmentRoot addRTJar17(IJavaProject jproject) throws CoreException {
-        IPath[] rtJarPath = findRtJar(RT_STUBS_17);
+        IPath rtJarPath = findRtJar(RT_STUBS_17);
         set17CompilerOptions(jproject);
-        return addLibrary(jproject, rtJarPath[0], rtJarPath[1], rtJarPath[2]);
+        return addLibrary(jproject, rtJarPath);
     }
 
-    public static IPackageFragmentRoot addRTJar18(IJavaProject jproject) throws CoreException {
-        IPath[] rtJarPath = findRtJar(RT_STUBS_18);
-        set18CompilerOptions(jproject);
-        return addLibrary(jproject, rtJarPath[0], rtJarPath[1], rtJarPath[2]);
-    }
+//    public static IPackageFragmentRoot addRTJar18(IJavaProject jproject) throws CoreException {
+//        IPath rtJarPath = findRtJar(RT_STUBS_18);
+//        set18CompilerOptions(jproject);
+//        return addLibrary(jproject, rtJarPath);
+//    }
 
     /**
      * Adds a variable entry with source attachment to a IJavaProject.
@@ -816,18 +816,18 @@ public class JavaProjectHelper {
      */
     private static IPackageFragmentRoot addVariableRTJar(IJavaProject jproject, IPath rtStubsPath, String libVarName,
             String srcVarName, String srcrootVarName) throws CoreException {
-        IPath[] rtJarPaths = findRtJar(rtStubsPath);
+        IPath rtJarPaths = findRtJar(rtStubsPath);
         IPath libVarPath = new Path(libVarName);
         IPath srcVarPath = null;
         IPath srcrootVarPath = null;
-        JavaCore.setClasspathVariable(libVarName, rtJarPaths[0], null);
+        JavaCore.setClasspathVariable(libVarName, rtJarPaths, null);
         if (srcVarName != null) {
-            IPath varValue = rtJarPaths[1] != null ? rtJarPaths[1] : Path.EMPTY;
+            IPath varValue = Path.EMPTY;
             JavaCore.setClasspathVariable(srcVarName, varValue, null);
             srcVarPath = new Path(srcVarName);
         }
         if (srcrootVarName != null) {
-            IPath varValue = rtJarPaths[2] != null ? rtJarPaths[2] : Path.EMPTY;
+            IPath varValue = Path.EMPTY;
             JavaCore.setClasspathVariable(srcrootVarName, varValue, null);
             srcrootVarPath = new Path(srcrootVarName);
         }
@@ -886,9 +886,9 @@ public class JavaProjectHelper {
      * @return a rt.jar (stubs only)
      * @throws CoreException
      */
-    public static IPath[] findRtJar(IPath rtStubsPath) throws CoreException {
+    public static IPath findRtJar(IPath rtStubsPath) throws CoreException {
         File rtStubs = rtStubsPath.toFile();
-        return new IPath[] { Path.fromOSString(rtStubs.getAbsolutePath()), null, null };
+        return Path.fromOSString(rtStubs.getAbsolutePath());
     }
 
     private static void addNatureToProject(IProject proj, String natureId, IProgressMonitor monitor) throws CoreException {
@@ -931,7 +931,7 @@ public class JavaProjectHelper {
     public static void importResources(IContainer importTarget, Bundle bundle, String bundleSourcePath) throws CoreException,
             IOException {
         Enumeration entryPaths = bundle.getEntryPaths(bundleSourcePath);
-        while (entryPaths.hasMoreElements()) {
+        while (entryPaths != null && entryPaths.hasMoreElements()) {
             String path = (String) entryPaths.nextElement();
             IPath name = new Path(path.substring(bundleSourcePath.length()));
             if (path.endsWith("/")) {
@@ -940,8 +940,12 @@ public class JavaProjectHelper {
                 importResources(folder, bundle, path);
             } else {
                 URL url = bundle.getEntry(path);
-                IFile file = importTarget.getFile(name);
-                file.create(url.openStream(), true, null);
+                if (url != null) {
+                    IFile file = importTarget.getFile(name);
+                    file.create(url.openStream(), true, null);
+                } else {
+                    System.err.println(path + " gave a null URL");
+                }
             }
         }
     }
