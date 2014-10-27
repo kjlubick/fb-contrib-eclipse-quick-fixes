@@ -31,7 +31,7 @@ public class QMethodAndArgs extends QMethod {
      * 
      */
     public QMethodAndArgs(String qualifiedTypeString, String invokedMethodString, List<String> argumentTypes) {
-        super(qualifiedTypeString,invokedMethodString);
+        super(qualifiedTypeString, invokedMethodString);
         this.argumentTypes = Collections.unmodifiableList(argumentTypes);
     }
 
@@ -60,7 +60,7 @@ public class QMethodAndArgs extends QMethod {
 
     private static List<String> expressionsToTypeStrings(ITypeBinding[] typeArguments) {
         List<String> retVal = new ArrayList<>();
-        for(ITypeBinding binding:typeArguments) {
+        for (ITypeBinding binding : typeArguments) {
             retVal.add(binding.getQualifiedName());
         }
         return retVal;

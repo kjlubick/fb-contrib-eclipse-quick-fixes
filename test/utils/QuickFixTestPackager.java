@@ -6,13 +6,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-
 import static org.junit.Assert.*;
 
 public class QuickFixTestPackager {
 
     private final List<QuickFixTestPackage> packages = new ArrayList<>();
-
 
     public void addBugPatterns(String... expectedPatterns) {
         for (int i = 0; i < expectedPatterns.length; i++) {
@@ -27,6 +25,7 @@ public class QuickFixTestPackager {
     /**
      * Validates and sorts the compiled QuickFixTestPackaages by pattern name,
      * then by line number
+     * 
      * @return a sorted list of QuickFixTestPackages to be used in assertions.
      */
     public List<QuickFixTestPackage> asList() {
@@ -45,8 +44,8 @@ public class QuickFixTestPackager {
     }
 
     private void validatePackages() {
-        assertNotEquals("Did you forget to add anything to the packager?",0, packages.size());
-        for(QuickFixTestPackage p : packages) {
+        assertNotEquals("Did you forget to add anything to the packager?", 0, packages.size());
+        for (QuickFixTestPackage p : packages) {
             assertNotNull("Not all labels were initialized", p.expectedLabels);
             assertNotNull("Not all patterns were initialized", p.expectedPattern);
             assertNotEquals("Not all line numbers were initialized", -1, p.lineNumber);
@@ -60,7 +59,7 @@ public class QuickFixTestPackager {
         while (packages.size() <= index) {
             packages.add(new QuickFixTestPackage());
         }
-         packages.get(index).expectedLabels = Arrays.asList(expectedLabels);
+        packages.get(index).expectedLabels = Arrays.asList(expectedLabels);
 
     }
 

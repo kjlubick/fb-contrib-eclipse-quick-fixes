@@ -5,7 +5,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 
 public class QMethod {
     public final static String CONSTRUCTOR_METHOD = "<init>";
-    
+
     public final String qualifiedTypeString; // the type that this method is invoked on (dot seperated)
 
     public final String invokedMethodString; // the name of the method invoked
@@ -14,7 +14,7 @@ public class QMethod {
         this.qualifiedTypeString = qualifiedTypeString;
         this.invokedMethodString = invokedMethodString;
     }
-    
+
     public static QMethod make(ClassInstanceCreation node) {
         String qtype = node.getType().resolveBinding().getQualifiedName();
         String method = CONSTRUCTOR_METHOD;
@@ -56,6 +56,5 @@ public class QMethod {
             return false;
         return true;
     }
-
 
 }

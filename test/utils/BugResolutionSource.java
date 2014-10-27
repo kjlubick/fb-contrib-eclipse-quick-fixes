@@ -8,5 +8,5 @@ public interface BugResolutionSource {
     IMarkerResolution[] getResolutions(IMarker marker);
 
     boolean hasResolutions(IMarker marker);
-    
+
 }

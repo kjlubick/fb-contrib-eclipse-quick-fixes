@@ -36,8 +36,8 @@ public class TestingUtils {
     }
 
     public static void copyBrokenFiles(File dirOfBrokenClasses, IFolder targetFolder) throws CoreException, IOException {
-    
-        for(File fileToCopy : dirOfBrokenClasses.listFiles()) {
+
+        for (File fileToCopy : dirOfBrokenClasses.listFiles()) {
             if (fileToCopy.isFile()) {
                 URL url = fileToCopy.getAbsoluteFile().toURI().toURL();
                 IFile file = targetFolder.getFile(new Path(fileToCopy.getName()));
@@ -46,22 +46,22 @@ public class TestingUtils {
                 } else {
                     file.setContents(url.openStream(), true, false, null);
                 }
-            } else {    //is directory, make a recursive call to copy
+            } else { // is directory, make a recursive call to copy
                 if (!(fileToCopy.isHidden() || fileToCopy.getName().startsWith("."))) {
                     IFolder newFolder = targetFolder.getFolder(fileToCopy.getName());
                     if (newFolder.exists()) {
-                        newFolder.delete(true, null);  //force deletion
+                        newFolder.delete(true, null); // force deletion
                     }
-                    newFolder.create(true, true, null); //force a local folder
-                    
+                    newFolder.create(true, true, null); // force a local folder
+
                     copyBrokenFiles(fileToCopy, newFolder);
                 } else {
-                    System.out.println("Skipping hidden folder "+fileToCopy);
+                    System.out.println("Skipping hidden folder " + fileToCopy);
                 }
             }
         }
     }
-    
+
     public static void sortMarkersByPatterns(IMarker[] markers) {
         Arrays.sort(markers, new Comparator<IMarker>() {
 
@@ -77,7 +77,7 @@ public class TestingUtils {
                     return pattern1.compareTo(pattern2);
                 }
                 try {
-                    fail("A marker did not have a bug pattern string "+marker1.getAttributes());
+                    fail("A marker did not have a bug pattern string " + marker1.getAttributes());
                 } catch (CoreException e) {
                     e.printStackTrace();
                     fail("Core exception");
@@ -86,10 +86,10 @@ public class TestingUtils {
             }
         });
     }
-    
+
     public static void waitForUiEvents(long duration) {
         long start = System.currentTimeMillis();
-        long sleepTime = duration > 30? 30 : duration;
+        long sleepTime = duration > 30 ? 30 : duration;
         while (true) {
             try {
                 Thread.sleep(sleepTime);
@@ -97,7 +97,7 @@ public class TestingUtils {
                 e.printStackTrace();
             }
             handleAllUiEvents();
-            if(System.currentTimeMillis() - start > duration){
+            if (System.currentTimeMillis() - start > duration) {
                 break;
             }
         }
@@ -105,7 +105,7 @@ public class TestingUtils {
 
     private static void handleAllUiEvents() {
         while (Display.getDefault().readAndDispatch()) {
-            //do nothing, handle UI Events
+            // do nothing, handle UI Events
         }
     }
 
@@ -124,11 +124,12 @@ public class TestingUtils {
     public static void assertBugPatternsMatch(List<QuickFixTestPackage> packages, IMarker[] markers) {
         for (int i = 0; i < packages.size(); i++) {
             String actualBugpattern = MarkerUtil.getBugPatternString(markers[i]);
-            assertEquals("Bug Pattern should match" , packages.get(i).expectedPattern, actualBugpattern);
+            assertEquals("Bug Pattern should match", packages.get(i).expectedPattern, actualBugpattern);
         }
     }
 
-    public static void assertPresentLabels(List<QuickFixTestPackage> packages, IMarker[] markers, BugResolutionSource resolutionSource) {
+    public static void assertPresentLabels(List<QuickFixTestPackage> packages, IMarker[] markers,
+            BugResolutionSource resolutionSource) {
         for (int i = 0; i < packages.size(); i++) {
             IMarker marker = markers[i];
             List<String> expectedLabels = new ArrayList<>(packages.get(i).expectedLabels);
@@ -139,19 +140,19 @@ public class TestingUtils {
             for (int j = 0; j < resolutions.length; j++) {
                 BugResolution resolution = (BugResolution) resolutions[j];
                 String label = resolution.getLabel();
-                assertTrue("Should not have seen label: "+label, expectedLabels.contains(label));
+                assertTrue("Should not have seen label: " + label, expectedLabels.contains(label));
                 expectedLabels.remove(label);
             }
         }
     }
-    
+
     public static void assertLineNumbersMatch(List<QuickFixTestPackage> packages, IMarker[] markers) {
         for (int i = 0; i < packages.size(); i++) {
             int lineNumber = MarkerUtil.findPrimaryLineForMaker(markers[i]);
-            assertEquals("Line number should match" , packages.get(i).lineNumber, lineNumber);
+            assertEquals("Line number should match", packages.get(i).lineNumber, lineNumber);
         }
     }
-    
+
     public static void assertAllMarkersHaveResolutions(IMarker[] markers, BugResolutionSource resolutionSource) {
         for (int i = 0; i < markers.length; i++) {
             IMarker marker = markers[i];
@@ -159,8 +160,9 @@ public class TestingUtils {
                     resolutionSource.hasResolutions(marker));
         }
     }
-    
-    public static void assertOutputAndInputFilesMatch(URL expectedFile, IJavaElement actualFile) throws IOException, JavaModelException {
+
+    public static void assertOutputAndInputFilesMatch(URL expectedFile, IJavaElement actualFile) throws IOException,
+            JavaModelException {
         if (actualFile instanceof ICompilationUnit) {
             ICompilationUnit compilationUnit = (ICompilationUnit) actualFile;
 
@@ -176,12 +178,12 @@ public class TestingUtils {
         // as StringBuilder (http://stackoverflow.com/questions/2980805/string-assembly-by-stringbuilder-vs-stringwriter-and-printwriter)
         // and it handles the url streams better (the int to char conversion, specifically)
         StringWriter writer = new StringWriter(100);
-        try (InputStream input = url.openStream();){
+        try (InputStream input = url.openStream();) {
             int nextChar;
             while ((nextChar = input.read()) != -1) {
                 writer.write(nextChar);
             }
-        } 
+        }
         return writer.toString();
     }
 

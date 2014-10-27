@@ -1,4 +1,5 @@
 package tests;
+
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -36,14 +37,17 @@ import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
 import utils.TestingUtils;
 
-@RunWith(JUnit4.class)  
+@RunWith(JUnit4.class)
 public class TestContributedQuickFixes {
-    
+
     public final static String PROJECT_NAME = "fb-contrib-test-quick-fixes";
+
     public final static String BIN_FOLDER_NAME = "bin";
+
     public final static String SRC_FOLDER_NAME = "src";
+
     private static IJavaProject testProject;
-    
+
     @BeforeClass
     public static void loadFilesThatNeedFixing() throws CoreException, IOException {
         makeJavaProject();
@@ -57,12 +61,13 @@ public class TestContributedQuickFixes {
     }
 
     private BugResolutionGenerator resolutionGenerator;
+
     private BugResolutionSource resolutionSource;
-    
+
     @Before
     public void setup() {
         resolutionGenerator = new BugResolutionGenerator();
-        //we wrap this in case the underlying generator interface changes.
+        // we wrap this in case the underlying generator interface changes.
         resolutionSource = new BugResolutionSource() {
             @Override
             public IMarkerResolution[] getResolutions(IMarker marker) {
@@ -75,38 +80,37 @@ public class TestContributedQuickFixes {
             }
         };
     }
-    
+
     private static void makeJavaProject() throws CoreException {
         testProject = JavaProjectHelper.createJavaProject(PROJECT_NAME, BIN_FOLDER_NAME);
         JavaProjectHelper.addRTJar17(testProject);
         JavaProjectHelper.addSourceContainer(testProject, SRC_FOLDER_NAME);
     }
-    
-    
+
     public void scanForBugs(String className) throws CoreException {
         final AtomicBoolean isWorking = new AtomicBoolean(true);
-        FindBugsWorker worker = new FindBugsWorker(testProject.getProject(), new NullProgressMonitor(){
+        FindBugsWorker worker = new FindBugsWorker(testProject.getProject(), new NullProgressMonitor() {
             @Override
             public void done() {
                 isWorking.set(false);
             }
         });
-        
+
         IJavaElement element = testProject.findElement(new Path(className));
-    
+
         if (element != null) {
-            //wait for the findBugsWorker to finish
+            // wait for the findBugsWorker to finish
             worker.work(Collections.singletonList(new WorkItem(element)));
-          //half a second reduces the chance that the IMarkers haven't loaded yet 
-            //(see JavaProjectHelper discussion about performDummySearch for more info
-            TestingUtils.waitForUiEvents(500);      
+            // half a second reduces the chance that the IMarkers haven't loaded yet
+            // (see JavaProjectHelper discussion about performDummySearch for more info
+            TestingUtils.waitForUiEvents(500);
             while (isWorking.get()) {
                 TestingUtils.waitForUiEvents(100);
             }
         } else {
-            fail("Could not find java class "+className);
+            fail("Could not find java class " + className);
         }
-        
+
     }
 
     @Test
@@ -142,23 +146,23 @@ public class TestContributedQuickFixes {
     private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) throws CoreException,
             JavaModelException, IOException, MalformedURLException {
         scanForBugs(testResource);
-        
-        IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);  
+
+        IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
         TestingUtils.sortMarkersByPatterns(markers);
-        
-        //packages and markers should now be lined up to match up one to one.
+
+        // packages and markers should now be lined up to match up one to one.
         assertEquals(packages.size(), markers.length);
-        
-        TestingUtils.assertBugPatternsMatch(packages, markers);   
+
+        TestingUtils.assertBugPatternsMatch(packages, markers);
         TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
         TestingUtils.assertLineNumbersMatch(packages, markers);
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
-        
+
         executeResolutions(packages, markers);
-        
-        File expectedFile = new File("fixedClasses",testResource);
-        
-        TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(), 
+
+        File expectedFile = new File("fixedClasses", testResource);
+
+        TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(),
                 TestingUtils.elementFromProject(testProject, testResource));
     }
 
