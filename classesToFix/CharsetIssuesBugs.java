@@ -24,8 +24,8 @@ public class CharsetIssuesBugs {
 
         String oddlyConstructedString = new String(bytes, "US-ASCII");
 
-        // no tag
-        bytes = oddlyConstructedString.getBytes(StandardCharsets.UTF_16);
+        System.out.println(oddlyConstructedString);
+        
 
         oddlyConstructedString = new String(bytes, 0, 10, "UTF-16");
         

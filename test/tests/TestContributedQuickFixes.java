@@ -1,30 +1,38 @@
 package tests;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.*;
-import de.tobject.findbugs.FindbugsPlugin;
 import de.tobject.findbugs.builder.FindBugsWorker;
 import de.tobject.findbugs.builder.WorkItem;
-import de.tobject.findbugs.view.explorer.ResourceChangeListener;
 
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolutionGenerator;
+
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.testplugin.JavaProjectHelper;
+import org.eclipse.ui.IMarkerResolution;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import utils.BugResolutionSource;
+import utils.QuickFixTestPackage;
+import utils.QuickFixTestPackager;
 import utils.TestingUtils;
 
 @RunWith(JUnit4.class)  
@@ -45,8 +53,26 @@ public class TestContributedQuickFixes {
         // Compiles the code
         testIProject.refreshLocal(IResource.DEPTH_INFINITE, null);
         testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
-        
-        
+    }
+
+    private BugResolutionGenerator resolutionGenerator;
+    private BugResolutionSource resolutionSource;
+    
+    @Before
+    public void setup() {
+        resolutionGenerator = new BugResolutionGenerator();
+        //we wrap this in case the underlying generator interface changes.
+        resolutionSource = new BugResolutionSource() {
+            @Override
+            public IMarkerResolution[] getResolutions(IMarker marker) {
+                return resolutionGenerator.getResolutions(marker);
+            }
+
+            @Override
+            public boolean hasResolutions(IMarker marker) {
+                return resolutionGenerator.hasResolutions(marker);
+            }
+        };
     }
     
     private static void makeJavaProject() throws CoreException {
@@ -81,14 +107,49 @@ public class TestContributedQuickFixes {
     }
 
     @Test
-    public void test() throws Exception {
-        System.out.println("Beginning scan");
+    public void testCharsetIssuesResolution() throws Exception {
         scanForBugs("CharsetIssuesBugs.java");
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.addExpectedLines(16,23,25,30,32,34,    // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET 
+                40,44,48,52,57,61);  // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
         
+        packager.addBugPatterns("CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME","CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME","CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME");
+
+        packager.setExpectedLabels(0, "Replace with StandardCharset.UTF_8");
+        packager.setExpectedLabels(1, "Replace with StandardCharset.ISO_8859_1");
+        packager.setExpectedLabels(2, "Replace with StandardCharset.US_ASCII");
+        packager.setExpectedLabels(3, "Replace with StandardCharset.UTF_16");
+        packager.setExpectedLabels(4, "Replace with StandardCharset.UTF_16LE");
+        packager.setExpectedLabels(5, "Replace with StandardCharset.UTF_16BE");
         
-        System.out.println("Scan completed");
-        //TestingUtils.waitForUiEvents(40000);
-        assertTrue(true);
+        packager.setExpectedLabels(6, "Replace with StandardCharset.UTF_8.name()");
+        packager.setExpectedLabels(7, "Replace with StandardCharset.UTF_16.name()");
+        packager.setExpectedLabels(8, "Replace with StandardCharset.UTF_16LE.name()");
+        packager.setExpectedLabels(9, "Replace with StandardCharset.UTF_16BE.name()");
+        packager.setExpectedLabels(10, "Replace with StandardCharset.US_ASCII.name()");
+        packager.setExpectedLabels(11, "Replace with StandardCharset.ISO_8859_1.name()");
+        
+        List<QuickFixTestPackage> packages = packager.asList();
+        
+        IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, "CharsetIssuesBugs.java");
+        
+        TestingUtils.sortMarkersByPatterns(markers);
+        
+        //packages and markers should now be lined up to match up one to one.
+        TestingUtils.assertBugPatternsMatch(packages, markers);
+        
+        TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
+        TestingUtils.assertLineNumbersMatch(packages, markers);
+
+        TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
+        
+        System.out.println("Done");
     }
 
 }

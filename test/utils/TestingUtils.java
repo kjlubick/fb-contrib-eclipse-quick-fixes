@@ -1,15 +1,29 @@
 package utils;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
+
+import de.tobject.findbugs.reporter.MarkerUtil;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IMarkerResolution;
 
 public class TestingUtils {
 
@@ -43,7 +57,32 @@ public class TestingUtils {
             }
         }
     }
+    
+    public static void sortMarkersByPatterns(IMarker[] markers) {
+        Arrays.sort(markers, new Comparator<IMarker>() {
 
+            @Override
+            public int compare(IMarker marker1, IMarker marker2) {
+                String pattern1 = MarkerUtil.getBugPatternString(marker1);
+                String pattern2 = MarkerUtil.getBugPatternString(marker2);
+                if (pattern1 != null) {
+                    if (pattern1.equals(pattern2)) {
+                        return MarkerUtil.findPrimaryLineForMaker(marker1) -
+                                MarkerUtil.findPrimaryLineForMaker(marker2);
+                    }
+                    return pattern1.compareTo(pattern2);
+                }
+                try {
+                    fail("A marker did not have a bug pattern string "+marker1.getAttributes());
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                    fail("Core exception");
+                }
+                return 0;
+            }
+        });
+    }
+    
     public static void waitForUiEvents(long duration) {
         long start = System.currentTimeMillis();
         long sleepTime = duration > 30? 30 : duration;
@@ -65,7 +104,52 @@ public class TestingUtils {
             //do nothing, handle UI Events
         }
     }
+
+    public static IMarker[] getAllMarkersInResource(IResource resource) {
+        return MarkerUtil.getAllMarkers(resource);
+    }
+
+    public static IMarker[] getAllMarkersInResource(IJavaProject testProject, String fileName) throws JavaModelException {
+        return getAllMarkersInResource(testProject.findElement(new Path(fileName)).getCorrespondingResource());
+    }
+
+    public static void assertBugPatternsMatch(List<QuickFixTestPackage> packages, IMarker[] markers) {
+        for (int i = 0; i < packages.size(); i++) {
+            String actualBugpattern = MarkerUtil.getBugPatternString(markers[i]);
+            assertEquals("Bug Pattern should match" , packages.get(i).expectedPattern, actualBugpattern);
+        }
+    }
+
+    public static void assertPresentLabels(List<QuickFixTestPackage> packages, IMarker[] markers, BugResolutionSource resolutionSource) {
+        for (int i = 0; i < packages.size(); i++) {
+            IMarker marker = markers[i];
+            List<String> expectedLabels = new ArrayList<>(packages.get(i).expectedLabels);
+            IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
+
+            assertEquals("The expected number of resolutions availible was wrong", expectedLabels.size(), resolutions.length);
+
+            for (int j = 0; j < resolutions.length; j++) {
+                BugResolution resolution = (BugResolution) resolutions[j];
+                String label = resolution.getLabel();
+                assertTrue("Should not have seen label: "+label, expectedLabels.contains(label));
+                expectedLabels.remove(label);
+            }
+        }
+    }
     
+    public static void assertLineNumbersMatch(List<QuickFixTestPackage> packages, IMarker[] markers) {
+        for (int i = 0; i < packages.size(); i++) {
+            int lineNumber = MarkerUtil.findPrimaryLineForMaker(markers[i]);
+            assertEquals("Line number should match" , packages.get(i).lineNumber, lineNumber);
+        }
+    }
     
-    
+    public static void assertAllMarkersHaveResolutions(IMarker[] markers, BugResolutionSource resolutionSource) {
+        for (int i = 0; i < markers.length; i++) {
+            IMarker marker = markers[i];
+            assertTrue("no resolution for: " + MarkerUtil.getBugPatternString(marker),
+                    resolutionSource.hasResolutions(marker));
+        }
+    }
+
 }
