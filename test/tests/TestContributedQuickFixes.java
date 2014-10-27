@@ -149,6 +149,8 @@ public class TestContributedQuickFixes {
 
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
         
+        //TODO make resolution happen and compare to "fixed" code.
+        
         System.out.println("Done");
     }
 
