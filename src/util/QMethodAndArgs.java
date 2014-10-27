@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
 /**
@@ -47,11 +49,21 @@ public class QMethodAndArgs extends QMethod {
                 + ", argumentTypes=" + argumentTypes + ']';
     }
 
-    @SuppressWarnings("unchecked")
     public static QMethodAndArgs make(ClassInstanceCreation node) {
         String qtype = node.getType().resolveBinding().getQualifiedName();
         String method = CONSTRUCTOR_METHOD;
-        return new QMethodAndArgs(qtype, method, expressionsToTypeStrings(node.arguments()));
+        // can't use node.arguments() because those are the concrete types, not necessarily
+        // the types of the methods
+        IMethodBinding constructor = node.resolveConstructorBinding();
+        return new QMethodAndArgs(qtype, method, expressionsToTypeStrings(constructor.getParameterTypes()));
+    }
+
+    private static List<String> expressionsToTypeStrings(ITypeBinding[] typeArguments) {
+        List<String> retVal = new ArrayList<>();
+        for (ITypeBinding binding : typeArguments) {
+            retVal.add(binding.getQualifiedName());
+        }
+        return retVal;
     }
 
     @SuppressWarnings("unchecked")

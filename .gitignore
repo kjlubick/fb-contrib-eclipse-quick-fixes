@@ -42,3 +42,4 @@ bin_build/
 dist/
 zips/
 local.properties
+*.log
