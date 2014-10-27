@@ -1,6 +1,5 @@
 package tests;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -87,7 +86,6 @@ public class TestContributedQuickFixes {
         FindBugsWorker worker = new FindBugsWorker(testProject.getProject(), new NullProgressMonitor(){
             @Override
             public void done() {
-                System.out.println("got done message");
                 isWorking.set(false);
             }
         });
@@ -95,8 +93,11 @@ public class TestContributedQuickFixes {
         IJavaElement element = testProject.findElement(new Path(className));
     
         if (element != null) {
+            //wait for the findBugsWorker to finish
             worker.work(Collections.singletonList(new WorkItem(element)));
-            TestingUtils.waitForUiEvents(500);
+          //half a second reduces the chance that the IMarkers haven't loaded yet 
+            //(see JavaProjectHelper discussion about performDummySearch for more info
+            TestingUtils.waitForUiEvents(500);      
             while (isWorking.get()) {
                 TestingUtils.waitForUiEvents(100);
             }
@@ -108,8 +109,6 @@ public class TestContributedQuickFixes {
 
     @Test
     public void testCharsetIssuesResolution() throws Exception {
-        scanForBugs("CharsetIssuesBugs.java");
-
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.addExpectedLines(16,23,25,30,32,34,    // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET 
                 40,44,48,52,57,61);  // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
@@ -137,11 +136,15 @@ public class TestContributedQuickFixes {
         
         List<QuickFixTestPackage> packages = packager.asList();
         
+        scanForBugs("CharsetIssuesBugs.java");
+        
         IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, "CharsetIssuesBugs.java");
         
         TestingUtils.sortMarkersByPatterns(markers);
         
         //packages and markers should now be lined up to match up one to one.
+        assertEquals(packages.size(), markers.length);
+        
         TestingUtils.assertBugPatternsMatch(packages, markers);
         
         TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
@@ -149,9 +152,24 @@ public class TestContributedQuickFixes {
 
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
         
-        //TODO make resolution happen and compare to "fixed" code.
+        executeResolutions(packages, markers);
+        
+        File expectedFile = new File("fixedClasses","CharsetIssuesBugs.java");
+        
+        TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(), 
+                TestingUtils.elementFromProject(testProject, "CharsetIssuesBugs.java"));
         
         System.out.println("Done");
+    }
+
+    private void executeResolutions(List<QuickFixTestPackage> packages, IMarker[] markers) {
+        for (int i = 0; i < markers.length; i++) {
+            QuickFixTestPackage qfPackage = packages.get(i);
+            IMarker marker = markers[i];
+            IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
+            assertTrue(resolutions.length > qfPackage.resolutionToExecute);
+            resolutions[qfPackage.resolutionToExecute].run(marker);
+        }
     }
 
 }
