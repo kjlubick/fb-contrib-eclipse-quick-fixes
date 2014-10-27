@@ -3,6 +3,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +22,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.testplugin.JavaProjectHelper;
 import org.eclipse.ui.IMarkerResolution;
 import org.junit.Before;
@@ -110,15 +112,15 @@ public class TestContributedQuickFixes {
     @Test
     public void testCharsetIssuesResolution() throws Exception {
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.addExpectedLines(16,23,25,30,32,34,    // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET 
-                40,44,48,52,57,61);  // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
-        
+        packager.addExpectedLines(16, 23, 25, 30, 32, 34, // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
+                40, 44, 48, 52, 57, 61); // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
+
         packager.addBugPatterns("CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
                 "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
                 "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
                 "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
-                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME","CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
-                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME","CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME");
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME");
 
         packager.setExpectedLabels(0, "Replace with StandardCharset.UTF_8");
         packager.setExpectedLabels(1, "Replace with StandardCharset.ISO_8859_1");
@@ -126,40 +128,38 @@ public class TestContributedQuickFixes {
         packager.setExpectedLabels(3, "Replace with StandardCharset.UTF_16");
         packager.setExpectedLabels(4, "Replace with StandardCharset.UTF_16LE");
         packager.setExpectedLabels(5, "Replace with StandardCharset.UTF_16BE");
-        
+
         packager.setExpectedLabels(6, "Replace with StandardCharset.UTF_8.name()");
         packager.setExpectedLabels(7, "Replace with StandardCharset.UTF_16.name()");
         packager.setExpectedLabels(8, "Replace with StandardCharset.UTF_16LE.name()");
         packager.setExpectedLabels(9, "Replace with StandardCharset.UTF_16BE.name()");
         packager.setExpectedLabels(10, "Replace with StandardCharset.US_ASCII.name()");
         packager.setExpectedLabels(11, "Replace with StandardCharset.ISO_8859_1.name()");
+
+        checkBugsAndPerformResolution(packager.asList(), "CharsetIssuesBugs.java");
+    }
+
+    private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) throws CoreException,
+            JavaModelException, IOException, MalformedURLException {
+        scanForBugs(testResource);
         
-        List<QuickFixTestPackage> packages = packager.asList();
-        
-        scanForBugs("CharsetIssuesBugs.java");
-        
-        IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, "CharsetIssuesBugs.java");
-        
+        IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);  
         TestingUtils.sortMarkersByPatterns(markers);
         
         //packages and markers should now be lined up to match up one to one.
         assertEquals(packages.size(), markers.length);
         
-        TestingUtils.assertBugPatternsMatch(packages, markers);
-        
+        TestingUtils.assertBugPatternsMatch(packages, markers);   
         TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
         TestingUtils.assertLineNumbersMatch(packages, markers);
-
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
         
         executeResolutions(packages, markers);
         
-        File expectedFile = new File("fixedClasses","CharsetIssuesBugs.java");
+        File expectedFile = new File("fixedClasses",testResource);
         
         TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(), 
-                TestingUtils.elementFromProject(testProject, "CharsetIssuesBugs.java"));
-        
-        System.out.println("Done");
+                TestingUtils.elementFromProject(testProject, testResource));
     }
 
     private void executeResolutions(List<QuickFixTestPackage> packages, IMarker[] markers) {
