@@ -183,6 +183,13 @@ public class TestContributedQuickFixes {
         packager.setExpectedLines(8, 13, 19, 23, 27);
         packager.fillExpectedBugPatterns("UCPM_USE_CHARACTER_PARAMETERIZED_METHOD");
         
+        packager.setExpectedLabels(0,"Replace with the char equivalent method call","Use StringBuilder for String concatenation");
+        packager.setExpectedLabels(1,"Replace with the char equivalent method call","Use StringBuilder for String concatenation");
+        packager.setExpectedLabels(2,"Use StringBuilder for String concatenation"); //char equivalent won't work
+        packager.setExpectedLabels(3,"Use StringBuilder for String concatenation"); //char equivalent won't work
+        packager.setExpectedLabels(4,"Replace with the char equivalent method call","Use StringBuilder for String concatenation");
+        
+        checkBugsAndPerformResolution(packager.asList(), "SingleLengthStringBugs.java");
     }
 
 }
