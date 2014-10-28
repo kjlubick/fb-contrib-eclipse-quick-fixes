@@ -87,7 +87,7 @@ public class TestContributedQuickFixes {
         JavaProjectHelper.addSourceContainer(testProject, SRC_FOLDER_NAME);
     }
 
-    public void scanForBugs(String className) throws CoreException {
+    private void scanForBugs(String className) throws CoreException {
         final AtomicBoolean isWorking = new AtomicBoolean(true);
         FindBugsWorker worker = new FindBugsWorker(testProject.getProject(), new NullProgressMonitor() {
             @Override
@@ -111,36 +111,6 @@ public class TestContributedQuickFixes {
             fail("Could not find java class " + className);
         }
 
-    }
-
-    @Test
-    public void testCharsetIssuesResolution() throws Exception {
-        QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.addExpectedLines(16, 23, 25, 30, 32, 34, // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
-                40, 44, 48, 52, 57, 61); // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
-
-        packager.addBugPatterns("CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
-                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
-                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
-                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
-                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
-                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME");
-
-        packager.setExpectedLabels(0, "Replace with StandardCharset.UTF_8");
-        packager.setExpectedLabels(1, "Replace with StandardCharset.ISO_8859_1");
-        packager.setExpectedLabels(2, "Replace with StandardCharset.US_ASCII");
-        packager.setExpectedLabels(3, "Replace with StandardCharset.UTF_16");
-        packager.setExpectedLabels(4, "Replace with StandardCharset.UTF_16LE");
-        packager.setExpectedLabels(5, "Replace with StandardCharset.UTF_16BE");
-
-        packager.setExpectedLabels(6, "Replace with StandardCharset.UTF_8.name()");
-        packager.setExpectedLabels(7, "Replace with StandardCharset.UTF_16.name()");
-        packager.setExpectedLabels(8, "Replace with StandardCharset.UTF_16LE.name()");
-        packager.setExpectedLabels(9, "Replace with StandardCharset.UTF_16BE.name()");
-        packager.setExpectedLabels(10, "Replace with StandardCharset.US_ASCII.name()");
-        packager.setExpectedLabels(11, "Replace with StandardCharset.ISO_8859_1.name()");
-
-        checkBugsAndPerformResolution(packager.asList(), "CharsetIssuesBugs.java");
     }
 
     private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) throws CoreException,
@@ -174,6 +144,45 @@ public class TestContributedQuickFixes {
             assertTrue(resolutions.length > qfPackage.resolutionToExecute);
             resolutions[qfPackage.resolutionToExecute].run(marker);
         }
+    }
+
+    @Test
+    public void testCharsetIssuesResolution() throws Exception {
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(16, 23, 25, 30, 32, 34, // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
+                40, 44, 48, 52, 57, 61); // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
+    
+        packager.setExpectedBugPatterns("CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
+                "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME");
+    
+        packager.setExpectedLabels(0, "Replace with StandardCharset.UTF_8");
+        packager.setExpectedLabels(1, "Replace with StandardCharset.ISO_8859_1");
+        packager.setExpectedLabels(2, "Replace with StandardCharset.US_ASCII");
+        packager.setExpectedLabels(3, "Replace with StandardCharset.UTF_16");
+        packager.setExpectedLabels(4, "Replace with StandardCharset.UTF_16LE");
+        packager.setExpectedLabels(5, "Replace with StandardCharset.UTF_16BE");
+    
+        packager.setExpectedLabels(6, "Replace with StandardCharset.UTF_8.name()");
+        packager.setExpectedLabels(7, "Replace with StandardCharset.UTF_16.name()");
+        packager.setExpectedLabels(8, "Replace with StandardCharset.UTF_16LE.name()");
+        packager.setExpectedLabels(9, "Replace with StandardCharset.UTF_16BE.name()");
+        packager.setExpectedLabels(10, "Replace with StandardCharset.US_ASCII.name()");
+        packager.setExpectedLabels(11, "Replace with StandardCharset.ISO_8859_1.name()");
+    
+        checkBugsAndPerformResolution(packager.asList(), "CharsetIssuesBugs.java");
+    }
+    
+    @Test
+    public void testuseCharacterParameterizedMethod() throws Exception {
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        
+        packager.setExpectedLines(8, 13, 19, 23, 27);
+        packager.fillExpectedBugPatterns("UCPM_USE_CHARACTER_PARAMETERIZED_METHOD");
+        
     }
 
 }
