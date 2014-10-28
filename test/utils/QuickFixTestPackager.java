@@ -8,19 +8,32 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+/**
+ * A utility class to concisely generate lists of QuickFixTestPackage
+ * (via <code>asList()</code>) to be used to effectively assert bug patterns
+ * generated match expected behavior.
+ * 
+ * A typical use looks like:
+ * <pre>
+ * {@code
+ * QuickFixTestPackager packager = new QuickFixTestPackager();
+ * packager.addExpectedLines(13, 17, ... /* line numbers * /);
+ * packager.addExpectedBugPatterns("FOO_BUG_PATTERN", "FOO_OTHER_PATTERN", ... /* bugPatterns * /);
+ * packager.setExpectedLabels(0, "Replace with WIDGET", "Swap order of arguments", .../* expected labels * /);
+ * packager.setExpectedLabels(1, /* expected labels * /);
+ * packager.setExpectedLabels(2, /* expected labels * /);
+ * //...
+ * doTest(packager.asList());  //will junit.fail if any components are not fully specified
+ * }
+ * </pre>
+ * 
+ * 
+ * @author Kevin Lubick
+ *
+ */
 public class QuickFixTestPackager {
 
     private final List<QuickFixTestPackage> packages = new ArrayList<>();
-
-    public void addBugPatterns(String... expectedPatterns) {
-        for (int i = 0; i < expectedPatterns.length; i++) {
-            String pattern = expectedPatterns[i];
-            if (packages.size() <= i) {
-                packages.add(new QuickFixTestPackage());
-            }
-            packages.get(i).expectedPattern = pattern;
-        }
-    }
 
     /**
      * Validates and sorts the compiled QuickFixTestPackaages by pattern name,
@@ -52,24 +65,96 @@ public class QuickFixTestPackager {
         }
     }
 
-    /*
-     * Could be more than one at a given index, so they need to be specified individually
+    /**
+     * Sets the expected labels for the bug marker at the given index.
+     * If the package does not exist, it will be created.
+     * 
+     * Since each bug marker can have more than one resolution, these might need
+     * to be specified by index for resolutions that offer custom labels.
+     * 
+     * The order should not matter for assertion, as that is not well defined.
+     * 
+     * @param index
+     *            the index of the package to update.
+     * @param expectedLabels
+     *            one or more labels to be associated
      */
-    public void setExpectedLabels(int index, String... expectedLabels) {
+    public void setExpectedLabels(int index, String... expectedLabels) {  //there is no "add" options because the underlying lists are fixed sized
+        //if package does not exist, create empty packages
         while (packages.size() <= index) {
             packages.add(new QuickFixTestPackage());
         }
+        //set the labels
         packages.get(index).expectedLabels = Arrays.asList(expectedLabels);
 
     }
+    
+    /**
+     * A convenience form of setExpectedLabels, if all labels will be the same.
+     * 
+     * Sets all created packages to have the one or more specified
+     * expectedLabels.
+     * 
+     * @param expectedLabels
+     */
+    public void fillExpectedLabels(String... expectedLabels) { // there is no "add" options because the underlying lists are fixed sized
+        for (QuickFixTestPackage p : packages) {
+            // make a separate list to avoid cross contamination of modification
+            p.expectedLabels = Arrays.asList(expectedLabels);
+        }
+    }
 
-    public void addExpectedLines(int... lineNumbers) {
+    /**
+     * Sets the expected line numbers, assigning the first pattern
+     * to the first package, the second pattern to the second package
+     * and so on.
+     * 
+     * If any packages do not exist, they will be created.
+     * 
+     * @param lineNumbers
+     *            the list of line numbers to be used
+     */
+    public void setExpectedLines(int... lineNumbers) {
         for (int i = 0; i < lineNumbers.length; i++) {
             int lineNumber = lineNumbers[i];
             if (packages.size() <= i) {
                 packages.add(new QuickFixTestPackage());
             }
             packages.get(i).lineNumber = lineNumber;
+        }
+    }
+
+    /**
+     * Sets the expected bugPatterns, assigning the first pattern
+     * to the first package, the second pattern to the second package
+     * and so on.
+     * 
+     * If any packages do not exist, they will be created.
+     * 
+     * @param expectedPatterns
+     *            the list of patterns to be used
+     */
+    public void setExpectedBugPatterns(String... expectedPatterns) {
+        for (int i = 0; i < expectedPatterns.length; i++) {
+            String pattern = expectedPatterns[i];
+            if (packages.size() <= i) {
+                packages.add(new QuickFixTestPackage());
+            }
+            packages.get(i).expectedPattern = pattern;
+        }
+    }
+
+    /**
+     * A convenience form of setExpectedBugPatterns, 
+     * if all BugPatterns will be the same.
+     * 
+     * Sets all created packages to have the specified pattern
+     * 
+     * @param expectedPattern the bug pattern that all packages should get
+     */
+    public void fillExpectedBugPatterns(String expectedPattern) {
+        for (QuickFixTestPackage p : packages) {
+            p.expectedPattern = expectedPattern;
         }
     }
 
