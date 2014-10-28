@@ -9,8 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import de.tobject.findbugs.FindbugsPlugin;
 import de.tobject.findbugs.builder.FindBugsWorker;
 import de.tobject.findbugs.builder.WorkItem;
+import de.tobject.findbugs.reporter.MarkerUtil;
 
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolutionGenerator;
 
@@ -58,6 +60,12 @@ public class TestContributedQuickFixes {
         // Compiles the code
         testIProject.refreshLocal(IResource.DEPTH_INFINITE, null);
         testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
+        
+        //clears old markers
+        MarkerUtil.removeMarkers(testIProject);
+        FindbugsPlugin.getBugCollection(testIProject, null, false).clearBugInstances();
+        
+        TestingUtils.waitForUiEvents(100);
     }
 
     private BugResolutionGenerator resolutionGenerator;
@@ -127,6 +135,8 @@ public class TestContributedQuickFixes {
         TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
         TestingUtils.assertLineNumbersMatch(packages, markers);
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
+        
+        TestingUtils.waitForUiEvents(30000);
 
         executeResolutions(packages, markers);
 
@@ -137,12 +147,14 @@ public class TestContributedQuickFixes {
     }
 
     private void executeResolutions(List<QuickFixTestPackage> packages, IMarker[] markers) {
+        
         for (int i = 0; i < markers.length; i++) {
             QuickFixTestPackage qfPackage = packages.get(i);
             IMarker marker = markers[i];
             IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
             assertTrue(resolutions.length > qfPackage.resolutionToExecute);
             resolutions[qfPackage.resolutionToExecute].run(marker);
+            
         }
     }
 

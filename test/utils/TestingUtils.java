@@ -87,6 +87,10 @@ public class TestingUtils {
         });
     }
 
+    /**
+     * Run all UI events for at least the duration specified.
+     * @param duration
+     */
     public static void waitForUiEvents(long duration) {
         long start = System.currentTimeMillis();
         long sleepTime = duration > 30 ? 30 : duration;
