@@ -14,6 +14,9 @@ import de.tobject.findbugs.builder.FindBugsWorker;
 import de.tobject.findbugs.builder.WorkItem;
 import de.tobject.findbugs.reporter.MarkerUtil;
 
+import edu.umd.cs.findbugs.DetectorFactory;
+import edu.umd.cs.findbugs.DetectorFactoryCollection;
+import edu.umd.cs.findbugs.detect.FindNullDeref;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolutionGenerator;
 
 import org.eclipse.core.resources.IMarker;
@@ -23,11 +26,13 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.testplugin.JavaProjectHelper;
 import org.eclipse.ui.IMarkerResolution;
+import org.hamcrest.Factory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,11 +66,15 @@ public class TestContributedQuickFixes {
         testIProject.refreshLocal(IResource.DEPTH_INFINITE, null);
         testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
         
-        //clears old markers
-        MarkerUtil.removeMarkers(testIProject);
-        FindbugsPlugin.getBugCollection(testIProject, null, false).clearBugInstances();
+        FindbugsPlugin.setProjectSettingsEnabled(testIProject, null, true);
         
         TestingUtils.waitForUiEvents(100);
+    }
+
+    private static void clearMarkersAndBugs() throws CoreException {
+        IProject testIProject = testProject.getProject();
+        MarkerUtil.removeMarkers(testIProject);
+        FindbugsPlugin.getBugCollection(testIProject, null, false).clearBugInstances();
     }
 
     private BugResolutionGenerator resolutionGenerator;
@@ -96,6 +105,15 @@ public class TestContributedQuickFixes {
     }
 
     private void scanForBugs(String className) throws CoreException {
+        IJavaElement element = testProject.findElement(new Path(className));  
+        if (element != null) {
+            scanForBugs(element);
+        } else {
+            fail("Could not find java class " + className);
+        }
+    }
+
+    private void scanForBugs(IJavaElement element) throws CoreException {
         final AtomicBoolean isWorking = new AtomicBoolean(true);
         FindBugsWorker worker = new FindBugsWorker(testProject.getProject(), new NullProgressMonitor() {
             @Override
@@ -104,21 +122,14 @@ public class TestContributedQuickFixes {
             }
         });
 
-        IJavaElement element = testProject.findElement(new Path(className));
-
-        if (element != null) {
-            // wait for the findBugsWorker to finish
-            worker.work(Collections.singletonList(new WorkItem(element)));
-            // half a second reduces the chance that the IMarkers haven't loaded yet
-            // (see JavaProjectHelper discussion about performDummySearch for more info
-            TestingUtils.waitForUiEvents(500);
-            while (isWorking.get()) {
-                TestingUtils.waitForUiEvents(100);
-            }
-        } else {
-            fail("Could not find java class " + className);
+        // wait for the findBugsWorker to finish
+        worker.work(Collections.singletonList(new WorkItem(element)));
+        // half a second reduces the chance that the IMarkers haven't loaded yet
+        // (see JavaProjectHelper discussion about performDummySearch for more info
+        TestingUtils.waitForUiEvents(500);
+        while (isWorking.get()) {
+            TestingUtils.waitForUiEvents(100);
         }
-
     }
 
     private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) throws CoreException,
@@ -136,21 +147,38 @@ public class TestContributedQuickFixes {
         TestingUtils.assertLineNumbersMatch(packages, markers);
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
         
-        TestingUtils.waitForUiEvents(30000);
-
-        executeResolutions(packages, markers);
+        executeResolutions(packages, testResource);
 
         File expectedFile = new File("fixedClasses", testResource);
 
-        TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(),
-                TestingUtils.elementFromProject(testProject, testResource));
+        IJavaElement actualFile = TestingUtils.elementFromProject(testProject, testResource);
+        TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(), actualFile);
+
     }
 
-    private void executeResolutions(List<QuickFixTestPackage> packages, IMarker[] markers) {
-        
-        for (int i = 0; i < markers.length; i++) {
+    private void executeResolutions(List<QuickFixTestPackage> packages, String testResource) throws CoreException 
+    {  
+        for (int i = 0; i < packages.size(); i++) {
+            
+            if (i != 0) {
+                testProject.getProject().refreshLocal(IResource.DEPTH_ONE, null);
+                testProject.getProject().build(IncrementalProjectBuilder.FULL_BUILD, null);
+                clearMarkersAndBugs();
+                scanForBugs(testResource);   //we've already been scanned
+            }
+            IJavaElement actualFile = TestingUtils.elementFromProject(testProject, testResource);
+            
+            if (!(actualFile instanceof ICompilationUnit))
+            {
+                fail("The specified 'actual' file is not a file, but something else " + actualFile);
+            } 
+            
+            IMarker[] markers = TestingUtils.getAllMarkersInResource(actualFile.getCorrespondingResource());
+            TestingUtils.sortMarkersByPatterns(markers);
+            
+            assertEquals("We ran out of markers too early", packages.size() - i, markers.length);
             QuickFixTestPackage qfPackage = packages.get(i);
-            IMarker marker = markers[i];
+            IMarker marker = markers[0];
             IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
             assertTrue(resolutions.length > qfPackage.resolutionToExecute);
             resolutions[qfPackage.resolutionToExecute].run(marker);
@@ -160,6 +188,11 @@ public class TestContributedQuickFixes {
 
     @Test
     public void testCharsetIssuesResolution() throws Exception {
+        //disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because of the rt7.jar
+        DetectorFactory factory = DetectorFactoryCollection.instance().getFactoryByClassName("edu.umd.cs.findbugs.detect.FindNullDeref");
+       FindbugsPlugin.getUserPreferences(testProject.getProject()).enableDetector(factory, false);
+        
+        
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(16, 23, 25, 30, 32, 34, // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
                 40, 44, 48, 52, 57, 61); // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
@@ -189,7 +222,7 @@ public class TestContributedQuickFixes {
     }
     
     @Test
-    public void testuseCharacterParameterizedMethod() throws Exception {
+    public void testUseCharacterParameterizedMethod() throws Exception {
         QuickFixTestPackager packager = new QuickFixTestPackager();
         
         packager.setExpectedLines(8, 13, 19, 23, 27);

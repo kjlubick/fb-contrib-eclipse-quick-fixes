@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 
+
 public class CharsetIssuesBugs {
 
     public void fooReplaceWithCharset(String fileName) throws UnsupportedEncodingException {
