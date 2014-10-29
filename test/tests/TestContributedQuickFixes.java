@@ -16,7 +16,6 @@ import de.tobject.findbugs.reporter.MarkerUtil;
 
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
-import edu.umd.cs.findbugs.detect.FindNullDeref;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolutionGenerator;
 
 import org.eclipse.core.resources.IMarker;
@@ -32,7 +31,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.testplugin.JavaProjectHelper;
 import org.eclipse.ui.IMarkerResolution;
-import org.hamcrest.Factory;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -138,7 +136,7 @@ public class TestContributedQuickFixes {
 
         IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
         TestingUtils.sortMarkersByPatterns(markers);
-
+        
         // packages and markers should now be lined up to match up one to one.
         assertEquals(packages.size(), markers.length);
 
@@ -186,11 +184,31 @@ public class TestContributedQuickFixes {
         }
     }
 
+    private void setDetector(String dotSeperatedDetectorClass, boolean enabled) {
+        DetectorFactory factory = DetectorFactoryCollection.instance().getFactoryByClassName(dotSeperatedDetectorClass);
+        FindbugsPlugin.getUserPreferences(testProject.getProject()).enableDetector(factory, enabled);
+    }
+
+    /**
+     * Set minimum warning priority threshold.
+     *
+     * @param minPriority
+     *            the priority threshold: one of "High", "Medium", or "Low"
+     */
+    private void setPriority(String minPriority) {
+        FindbugsPlugin.getProjectPreferences(testProject.getProject(), false).getFilterSettings().setMinPriority(minPriority);
+    }
+    
+    private void setRank(int minRank) {
+        FindbugsPlugin.getProjectPreferences(testProject.getProject(), false).getFilterSettings().setMinRank(minRank);
+    }
+
     @Test
     public void testCharsetIssuesResolution() throws Exception {
+        setPriority("Medium");
+        setRank(15);
         //disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because of the rt7.jar
-        DetectorFactory factory = DetectorFactoryCollection.instance().getFactoryByClassName("edu.umd.cs.findbugs.detect.FindNullDeref");
-       FindbugsPlugin.getUserPreferences(testProject.getProject()).enableDetector(factory, false);
+        setDetector("edu.umd.cs.findbugs.detect.FindNullDeref", false);
         
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
@@ -220,9 +238,11 @@ public class TestContributedQuickFixes {
     
         checkBugsAndPerformResolution(packager.asList(), "CharsetIssuesBugs.java");
     }
-    
+
     @Test
     public void testUseCharacterParameterizedMethod() throws Exception {
+        setPriority("Medium");
+        setRank(20);
         QuickFixTestPackager packager = new QuickFixTestPackager();
         
         packager.setExpectedLines(8, 13, 19, 23, 27);
