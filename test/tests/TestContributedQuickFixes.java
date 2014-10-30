@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,11 +52,14 @@ public class TestContributedQuickFixes {
 
     private static IJavaProject testProject;
 
+    private static IProject testIProject;
+   
+    private BugResolutionSource resolutionSource;
+
     @BeforeClass
     public static void loadFilesThatNeedFixing() throws CoreException, IOException {
         makeJavaProject();
 
-        IProject testIProject = testProject.getProject();
         TestingUtils.copyBrokenFiles(new File("classesToFix/"), testIProject.getFolder(SRC_FOLDER_NAME));
 
         // Compiles the code
@@ -70,18 +72,20 @@ public class TestContributedQuickFixes {
     }
 
     private static void clearMarkersAndBugs() throws CoreException {
-        IProject testIProject = testProject.getProject();
         MarkerUtil.removeMarkers(testIProject);
         FindbugsPlugin.getBugCollection(testIProject, null, false).clearBugInstances();
     }
 
-    private BugResolutionGenerator resolutionGenerator;
-
-    private BugResolutionSource resolutionSource;
+    private static void makeJavaProject() throws CoreException {
+        testProject = JavaProjectHelper.createJavaProject(PROJECT_NAME, BIN_FOLDER_NAME);
+        JavaProjectHelper.addRTJar17(testProject);
+        JavaProjectHelper.addSourceContainer(testProject, SRC_FOLDER_NAME);
+        testIProject = testProject.getProject();
+    }
 
     @Before
     public void setup() {
-        resolutionGenerator = new BugResolutionGenerator();
+        final BugResolutionGenerator resolutionGenerator = new BugResolutionGenerator();
         // we wrap this in case the underlying generator interface changes.
         resolutionSource = new BugResolutionSource() {
             @Override
@@ -96,22 +100,35 @@ public class TestContributedQuickFixes {
         };
     }
 
-    private static void makeJavaProject() throws CoreException {
-        testProject = JavaProjectHelper.createJavaProject(PROJECT_NAME, BIN_FOLDER_NAME);
-        JavaProjectHelper.addRTJar17(testProject);
-        JavaProjectHelper.addSourceContainer(testProject, SRC_FOLDER_NAME);
+    private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) {
+        try {
+            scanForBugs(testResource);  
+            assertBugPatternsMatch(packages, testResource);   
+            executeResolutions(packages, testResource); 
+            assertOutputAndInputFilesMatch(testResource);
+        } 
+        catch (CoreException | IOException e) {
+            e.printStackTrace();
+            fail("Exception thrown while performing resolution on "+testResource);
+        }
+        
+    
     }
 
+    /**
+     * Blocks until FindBugs has finished scanning
+     * 
+     * @param className
+     *            file in this project to scan
+     * @throws CoreException
+     */
     private void scanForBugs(String className) throws CoreException {
         IJavaElement element = testProject.findElement(new Path(className));  
-        if (element != null) {
-            scanForBugs(element);
-        } else {
+        if (element == null) 
+        {
             fail("Could not find java class " + className);
+            return;
         }
-    }
-
-    private void scanForBugs(IJavaElement element) throws CoreException {
         final AtomicBoolean isWorking = new AtomicBoolean(true);
         FindBugsWorker worker = new FindBugsWorker(testProject.getProject(), new NullProgressMonitor() {
             @Override
@@ -123,84 +140,112 @@ public class TestContributedQuickFixes {
         // wait for the findBugsWorker to finish
         worker.work(Collections.singletonList(new WorkItem(element)));
         // half a second reduces the chance that the IMarkers haven't loaded yet
-        // (see JavaProjectHelper discussion about performDummySearch for more info
+        // and the tests will fail unpredictably
+        // (see JavaProjectHelper discussion about performDummySearch for more info)
         TestingUtils.waitForUiEvents(500);
         while (isWorking.get()) {
             TestingUtils.waitForUiEvents(100);
         }
     }
 
-    private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) throws CoreException,
-            JavaModelException, IOException, MalformedURLException {
-        scanForBugs(testResource);
-
+    private void assertBugPatternsMatch(List<QuickFixTestPackage> packages, String testResource) throws JavaModelException {
         IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
         TestingUtils.sortMarkersByPatterns(markers);
         
         // packages and markers should now be lined up to match up one to one.
         assertEquals(packages.size(), markers.length);
-
+    
         TestingUtils.assertBugPatternsMatch(packages, markers);
         TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
         TestingUtils.assertLineNumbersMatch(packages, markers);
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
-        
-        executeResolutions(packages, testResource);
-
-        File expectedFile = new File("fixedClasses", testResource);
-
-        IJavaElement actualFile = TestingUtils.elementFromProject(testProject, testResource);
-        TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(), actualFile);
-
     }
 
     private void executeResolutions(List<QuickFixTestPackage> packages, String testResource) throws CoreException 
     {  
         for (int i = 0; i < packages.size(); i++) {
             
-            if (i != 0) {
-                testProject.getProject().refreshLocal(IResource.DEPTH_ONE, null);
-                testProject.getProject().build(IncrementalProjectBuilder.FULL_BUILD, null);
+            if (i != 0) {   // Refresh, rebuild, and scan for bugs again
+                // We only need to do this after the first time, as we expect the file to have
+                // been scanned and checked for consistency (see checkBugsAndPerformResolution)
+                testIProject.refreshLocal(IResource.DEPTH_ONE, null);
+                testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
                 clearMarkersAndBugs();
-                scanForBugs(testResource);   //we've already been scanned
+                scanForBugs(testResource);   
             }
-            IJavaElement actualFile = TestingUtils.elementFromProject(testProject, testResource);
             
-            if (!(actualFile instanceof ICompilationUnit))
-            {
-                fail("The specified 'actual' file is not a file, but something else " + actualFile);
-            } 
+            IMarker[] markers = getSortedMarkersFromFile(testResource);
             
-            IMarker[] markers = TestingUtils.getAllMarkersInResource(actualFile.getCorrespondingResource());
-            TestingUtils.sortMarkersByPatterns(markers);
+            assertEquals("Bug marker number was different than anticipated "
+                    + "Check to see if another bug marker was introduced by fixing another.",
+                    packages.size() - i, markers.length);
             
-            assertEquals("We ran out of markers too early", packages.size() - i, markers.length);
-            QuickFixTestPackage qfPackage = packages.get(i);
-            IMarker marker = markers[0];
-            IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
-            assertTrue(resolutions.length > qfPackage.resolutionToExecute);
-            resolutions[qfPackage.resolutionToExecute].run(marker);
-            
+            performResolution(packages.get(i), markers[0]);       // resolve the first bug marker
         }
     }
 
-    private void setDetector(String dotSeperatedDetectorClass, boolean enabled) {
-        DetectorFactory factory = DetectorFactoryCollection.instance().getFactoryByClassName(dotSeperatedDetectorClass);
-        FindbugsPlugin.getUserPreferences(testProject.getProject()).enableDetector(factory, enabled);
+    private IMarker[] getSortedMarkersFromFile(String fileName) throws JavaModelException {
+        IJavaElement fileToScan = TestingUtils.elementFromProject(testProject, fileName);
+        IMarker[] markers = TestingUtils.getAllMarkersInResource(fileToScan.getCorrespondingResource());
+        // the markers get sorted first by bug name, then by line number, just like
+        // the QuickFixTestPackages, so we have a reliable way to fix them
+        // so we can assert properties more accurately.
+        TestingUtils.sortMarkersByPatterns(markers);
+        return markers;
+    }
+
+    private void performResolution(QuickFixTestPackage qfPackage, IMarker marker) {
+        // This doesn't actually click on the bug marker, but it programmatically
+        // does the same thing
+        IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
+        
+        assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute +
+                " but there were only " + resolutions.length +" to choose from."
+                ,resolutions.length > qfPackage.resolutionToExecute);
+        resolutions[qfPackage.resolutionToExecute].run(marker);
+    }
+
+    private void assertOutputAndInputFilesMatch(String testResource) throws JavaModelException, IOException {
+        File expectedFile = new File("fixedClasses", testResource);
+        IJavaElement actualFile = TestingUtils.elementFromProject(testProject, testResource);
+        TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(), actualFile);
     }
 
     /**
-     * Set minimum warning priority threshold.
+     * Enables or disables a detector. This can only disable an entire detector (class-level),
+     * not just one bug pattern.
+     * 
+     * @param dotSeperatedDetectorClass
+     *            A string with the dot-seperated-class of the detector to enable/disable
+     * @param enabled
+     */
+    private void setDetector(String dotSeperatedDetectorClass, boolean enabled) {
+        DetectorFactory factory = DetectorFactoryCollection.instance().getFactoryByClassName(dotSeperatedDetectorClass);
+        FindbugsPlugin.getUserPreferences(testIProject).enableDetector(factory, enabled);
+    }
+
+    /**
+     * Set minimum warning priority threshold to be used for scanning
+     * 
+     * Project defaults to "Medium"
      *
      * @param minPriority
      *            the priority threshold: one of "High", "Medium", or "Low"
      */
     private void setPriority(String minPriority) {
-        FindbugsPlugin.getProjectPreferences(testProject.getProject(), false).getFilterSettings().setMinPriority(minPriority);
+        FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinPriority(minPriority);
     }
     
+    /**
+     * Set minimum bugRank to show up for scanning
+     * 
+     * Project defaults to 15
+     *
+     * @param minPriority
+     *            the priority threshold: one of "High", "Medium", or "Low"
+     */
     private void setRank(int minRank) {
-        FindbugsPlugin.getProjectPreferences(testProject.getProject(), false).getFilterSettings().setMinRank(minRank);
+        FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinRank(minRank);
     }
 
     @Test
