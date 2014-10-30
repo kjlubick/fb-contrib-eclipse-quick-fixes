@@ -27,4 +27,13 @@ public class SingleLengthStringBugs {
         return "The sum of " + i + " and " + j + ":" + (i + j);
     }
     
+    public String testFirstIsToString(List<SingleLengthStringBugs> list, Object other) {
+        return list.toString() + ":" + other;
+    }
+    
+    private static final String SEPERATOR_STRING = ":";
+    
+    public String testInts2(int i, int j) {
+        return i + SEPERATOR_STRING + j;
+    }
 }

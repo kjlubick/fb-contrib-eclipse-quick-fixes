@@ -98,8 +98,16 @@
       </quickFix>
       
       <quickFix
+      		arguments="useStringBuilder=false"
             class="quickfix.StringToCharResolution"
             label="Replace with the char equivalent method call"
+            pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
+      </quickFix>
+      
+      <quickFix
+      		arguments="useStringBuilder=true"
+            class="quickfix.StringToCharResolution"
+            label="Use StringBuilder for String concatenation"
             pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
       </quickFix>
       
