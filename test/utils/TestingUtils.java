@@ -139,7 +139,7 @@ public class TestingUtils {
             List<String> expectedLabels = new ArrayList<>(packages.get(i).expectedLabels);
             IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
 
-            assertEquals("The expected number of resolutions available was wrong", expectedLabels.size(), resolutions.length);
+            assertEquals("The expected number of resolutions available was wrong " +packages.get(i), expectedLabels.size(), resolutions.length);
 
             for (int j = 0; j < resolutions.length; j++) {
                 BugResolution resolution = (BugResolution) resolutions[j];

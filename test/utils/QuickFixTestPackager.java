@@ -158,4 +158,20 @@ public class QuickFixTestPackager {
         }
     }
 
+    /**
+     * Sets the fix to implement for a given package.
+     * 
+     * @param indexOfPackageToChange
+     * @param indexOfFixToImplement
+     */
+    public void setFixToPerform(int indexOfPackageToChange, int indexOfFixToImplement) {
+      //if package does not exist, create empty packages
+        while (packages.size() <= indexOfPackageToChange) {
+            packages.add(new QuickFixTestPackage());
+        }
+        //set the fixToImplement
+        packages.get(indexOfPackageToChange).resolutionToExecute = indexOfFixToImplement;
+
+    }
+
 }

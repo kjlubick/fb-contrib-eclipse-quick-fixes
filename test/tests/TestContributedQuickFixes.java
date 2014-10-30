@@ -24,7 +24,6 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
@@ -250,9 +249,11 @@ public class TestContributedQuickFixes {
 
     @Test
     public void testCharsetIssuesResolution() throws Exception {
+        // CharsetIssuesResolution.java
         setPriority("Medium");
         setRank(15);
-        //disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because of the rt7.jar
+        // disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because the rtstubs17.jar
+        // defines the constants as null
         setDetector("edu.umd.cs.findbugs.detect.FindNullDeref", false);
         
         
@@ -286,19 +287,30 @@ public class TestContributedQuickFixes {
 
     @Test
     public void testUseCharacterParameterizedMethod() throws Exception {
+        // StringToCharResolution.java
         setPriority("Medium");
         setRank(20);
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        
-        packager.setExpectedLines(8, 13, 19, 23, 27);
+
+        packager.setExpectedLines(8, 13, 19, 23, 27, 31, 37);
         packager.fillExpectedBugPatterns("UCPM_USE_CHARACTER_PARAMETERIZED_METHOD");
+
+        packager.setExpectedLabels(0, "Replace with the char equivalent method call",
+                "Use StringBuilder for String concatenation");
+        packager.setExpectedLabels(1, "Replace with the char equivalent method call",
+                "Use StringBuilder for String concatenation");
+        packager.setExpectedLabels(2, "Use StringBuilder for String concatenation"); // char equivalent won't work
+        packager.setExpectedLabels(3, "Use StringBuilder for String concatenation"); // char equivalent won't work
+        packager.setExpectedLabels(4, "Replace with the char equivalent method call",
+                "Use StringBuilder for String concatenation");
+        packager.setExpectedLabels(5, "Replace with the char equivalent method call",
+                "Use StringBuilder for String concatenation");
+        packager.setExpectedLabels(6, "Replace with the char equivalent method call",   //TODO This first resolution won't do anything
+                "Use StringBuilder for String concatenation");                          // but will require more complex applicability code
         
-        packager.setExpectedLabels(0,"Replace with the char equivalent method call","Use StringBuilder for String concatenation");
-        packager.setExpectedLabels(1,"Replace with the char equivalent method call","Use StringBuilder for String concatenation");
-        packager.setExpectedLabels(2,"Use StringBuilder for String concatenation"); //char equivalent won't work
-        packager.setExpectedLabels(3,"Use StringBuilder for String concatenation"); //char equivalent won't work
-        packager.setExpectedLabels(4,"Replace with the char equivalent method call","Use StringBuilder for String concatenation");
-        
+        packager.setFixToPerform(5,1);
+        packager.setFixToPerform(6,1);
+
         checkBugsAndPerformResolution(packager.asList(), "SingleLengthStringBugs.java");
     }
 
