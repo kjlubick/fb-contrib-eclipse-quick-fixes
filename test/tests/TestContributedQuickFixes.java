@@ -199,7 +199,7 @@ public class TestContributedQuickFixes {
         assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute +
                 " but there were only " + resolutions.length + " to choose from."
                 , resolutions.length > qfPackage.resolutionToExecute);
-        // the order isn't guarenteed, so we have to check the labels.
+        // the order isn't guaranteed, so we have to check the labels.
         String resolutionToDo = qfPackage.expectedLabels.get(qfPackage.resolutionToExecute);
         for (IMarkerResolution resolution : resolutions) {
             if (resolution.getLabel().equals(resolutionToDo)) {
