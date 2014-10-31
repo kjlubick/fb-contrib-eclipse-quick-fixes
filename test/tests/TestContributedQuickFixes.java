@@ -201,7 +201,13 @@ public class TestContributedQuickFixes {
         assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute +
                 " but there were only " + resolutions.length +" to choose from."
                 ,resolutions.length > qfPackage.resolutionToExecute);
-        resolutions[qfPackage.resolutionToExecute].run(marker);
+        //the order isn't guarenteed, so we have to check the labels.
+        String resolutionToDo = qfPackage.expectedLabels.get(qfPackage.resolutionToExecute);
+        for(IMarkerResolution resolution: resolutions) {
+            if (resolution.getLabel().equals(resolutionToDo)) {
+                resolution.run(marker);
+            }
+        }
     }
 
     private void assertOutputAndInputFilesMatch(String testResource) throws JavaModelException, IOException {
@@ -290,9 +296,12 @@ public class TestContributedQuickFixes {
         // StringToCharResolution.java
         setPriority("Medium");
         setRank(20);
+        //this pops up when fixing the bug on line 31 (not the fixes fault, but the tests)
+        setDetector("com.mebigfatguy.fbcontrib.detect.InefficientStringBuffering", false);
+        //setDetector(dotSeperatedDetectorClass, enabled);
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
-        packager.setExpectedLines(8, 13, 19, 23, 27, 31, 37, 41, 45);
+        packager.setExpectedLines(8, 13, 19, 23, 27, 31, 35, 39);
         packager.fillExpectedBugPatterns("UCPM_USE_CHARACTER_PARAMETERIZED_METHOD");
 
         packager.setExpectedLabels(0, "Replace with the char equivalent method call",
@@ -305,13 +314,10 @@ public class TestContributedQuickFixes {
                 "Use StringBuilder for String concatenation");
         packager.setExpectedLabels(5, "Replace with the char equivalent method call",
                 "Use StringBuilder for String concatenation");
-        packager.setExpectedLabels(6, "Replace with the char equivalent method call",   //TODO This first resolution won't do anything
-                "Use StringBuilder for String concatenation");                          // but will require more complex applicability code
+        packager.setExpectedLabels(6, "Replace with the char equivalent method call"); 
         packager.setExpectedLabels(7, "Replace with the char equivalent method call"); 
-        packager.setExpectedLabels(8, "Replace with the char equivalent method call"); 
         
         packager.setFixToPerform(5,1);
-        packager.setFixToPerform(6,1);
 
         checkBugsAndPerformResolution(packager.asList(), "SingleLengthStringBugs.java");
     }

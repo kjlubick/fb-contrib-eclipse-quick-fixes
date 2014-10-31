@@ -31,12 +31,6 @@ public class SingleLengthStringBugs {
         return list.toString() + ":" + other;
     }
     
-    private static final String SEPERATOR_STRING = ":";
-    
-    public String testInts2(int i, int j) {
-        return i + SEPERATOR_STRING + j;
-    }
-    
     public String testReplace(String str) {
         return str.replace("f", "g");
     }

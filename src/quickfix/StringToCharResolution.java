@@ -156,6 +156,11 @@ public class StringToCharResolution extends BugResolution {
         
         @Override
         public boolean visit(StringLiteral node) {
+            
+            if (!(node.getParent() instanceof MethodInvocation)) {  //if a StringLiteral is not in a method invocation, we don't care about it (e.g. ternary 
+                return false;
+            }
+            
             String literalValue = node.getLiteralValue();
             if (literalValue.length() == 1) {
                 replacements.put(node, literalValue.charAt(0));
@@ -173,7 +178,9 @@ public class StringToCharResolution extends BugResolution {
             if (!replacements.isEmpty()) {
                 return true;
             }
-            
+            if (infixExpression == null) {
+                return false;
+            }
             if (isNonReplaceableString(infixExpression.getLeftOperand())) {
                 return true;
             }
@@ -182,7 +189,7 @@ public class StringToCharResolution extends BugResolution {
         }
 
         private boolean isNonReplaceableString(Expression expression) {
-            // TODO worry about String constants?  See unit test, line 37 for more
+            // TODO worry about String constants? I can't really fix them...
             if (expression instanceof StringLiteral) {
                 if (((StringLiteral) expression).getLiteralValue().length() > 1) {
                     return true;  

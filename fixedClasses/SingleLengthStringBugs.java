@@ -20,21 +20,17 @@ public class SingleLengthStringBugs {
     }
     
     public String testInts(int i, int j) {
-        return new StringBuilder().append(i).append('+').append(j).toString();
+        return new StringBuilder().append(i).append('+').append(j)
+				.toString();
     }
     
     public String testSum(int i, int j) {
         return "The sum of " + i + " and " + j + ':' + (i + j);
     }
     
-    public String testFirstIsToString(Set<SingleLengthStringBugs> set, Object other) {
-        return new StringBuilder().append(set.toString()).append(':').append(other).toString();
-    }
-    
-    private static final String SEPERATOR_STRING = ":";
-    
-    public String testInts2(int i, int j) {
-        return new StringBuilder().append(i).append(SEPERATOR_STRING).append(j).toString();
+    public String testFirstIsToString(List<SingleLengthStringBugs> list, Object other) {
+        return new StringBuilder().append(list.toString()).append(':').append(other)
+				.toString();
     }
     
     public String testReplace(String str) {
