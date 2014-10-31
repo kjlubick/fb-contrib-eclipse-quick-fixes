@@ -36,4 +36,12 @@ public class SingleLengthStringBugs {
     public String testInts2(int i, int j) {
         return new StringBuilder().append(i).append(SEPERATOR_STRING).append(j).toString();
     }
+    
+    public String testReplace(String str) {
+        return str.replace('f', 'g');
+    }
+    
+    public int testIndexOf(String str) {
+        return str.indexOf('q');
+    }
 }

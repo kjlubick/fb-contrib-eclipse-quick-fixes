@@ -292,7 +292,7 @@ public class TestContributedQuickFixes {
         setRank(20);
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
-        packager.setExpectedLines(8, 13, 19, 23, 27, 31, 37);
+        packager.setExpectedLines(8, 13, 19, 23, 27, 31, 37, 41, 45);
         packager.fillExpectedBugPatterns("UCPM_USE_CHARACTER_PARAMETERIZED_METHOD");
 
         packager.setExpectedLabels(0, "Replace with the char equivalent method call",
@@ -307,6 +307,8 @@ public class TestContributedQuickFixes {
                 "Use StringBuilder for String concatenation");
         packager.setExpectedLabels(6, "Replace with the char equivalent method call",   //TODO This first resolution won't do anything
                 "Use StringBuilder for String concatenation");                          // but will require more complex applicability code
+        packager.setExpectedLabels(7, "Replace with the char equivalent method call"); 
+        packager.setExpectedLabels(8, "Replace with the char equivalent method call"); 
         
         packager.setFixToPerform(5,1);
         packager.setFixToPerform(6,1);
