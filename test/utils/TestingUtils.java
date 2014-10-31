@@ -68,8 +68,8 @@ public class TestingUtils {
             @Override
             public int compare(IMarker marker1, IMarker marker2) {
                 String pattern1 = MarkerUtil.getBugPatternString(marker1);
-                String pattern2 = MarkerUtil.getBugPatternString(marker2);
                 if (pattern1 != null) {
+                    String pattern2 = MarkerUtil.getBugPatternString(marker2);
                     if (pattern1.equals(pattern2)) {
                         return MarkerUtil.findPrimaryLineForMaker(marker1) -
                                 MarkerUtil.findPrimaryLineForMaker(marker2);
@@ -87,6 +87,11 @@ public class TestingUtils {
         });
     }
 
+    /**
+     * Run all UI events for at least the duration specified.
+     * 
+     * @param duration
+     */
     public static void waitForUiEvents(long duration) {
         long start = System.currentTimeMillis();
         long sleepTime = duration > 30 ? 30 : duration;
@@ -135,7 +140,8 @@ public class TestingUtils {
             List<String> expectedLabels = new ArrayList<>(packages.get(i).expectedLabels);
             IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
 
-            assertEquals("The expected number of resolutions availible was wrong", expectedLabels.size(), resolutions.length);
+            assertEquals("The expected number of resolutions available was wrong " + packages.get(i), expectedLabels.size(),
+                    resolutions.length);
 
             for (int j = 0; j < resolutions.length; j++) {
                 BugResolution resolution = (BugResolution) resolutions[j];

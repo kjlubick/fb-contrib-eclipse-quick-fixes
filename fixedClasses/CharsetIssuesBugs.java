@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
+
 public class CharsetIssuesBugs {
 
     public void fooReplaceWithCharset(String fileName) throws UnsupportedEncodingException {
