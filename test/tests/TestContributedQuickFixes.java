@@ -52,7 +52,7 @@ public class TestContributedQuickFixes {
     private static IJavaProject testProject;
 
     private static IProject testIProject;
-   
+
     private BugResolutionSource resolutionSource;
 
     @BeforeClass
@@ -64,9 +64,9 @@ public class TestContributedQuickFixes {
         // Compiles the code
         testIProject.refreshLocal(IResource.DEPTH_INFINITE, null);
         testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
-        
+
         FindbugsPlugin.setProjectSettingsEnabled(testIProject, null, true);
-        
+
         TestingUtils.waitForUiEvents(100);
     }
 
@@ -101,17 +101,15 @@ public class TestContributedQuickFixes {
 
     private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) {
         try {
-            scanForBugs(testResource);  
-            assertBugPatternsMatch(packages, testResource);   
-            executeResolutions(packages, testResource); 
+            scanForBugs(testResource);
+            assertBugPatternsMatch(packages, testResource);
+            executeResolutions(packages, testResource);
             assertOutputAndInputFilesMatch(testResource);
-        } 
-        catch (CoreException | IOException e) {
+        } catch (CoreException | IOException e) {
             e.printStackTrace();
-            fail("Exception thrown while performing resolution on "+testResource);
+            fail("Exception thrown while performing resolution on " + testResource);
         }
-        
-    
+
     }
 
     /**
@@ -122,8 +120,8 @@ public class TestContributedQuickFixes {
      * @throws CoreException
      */
     private void scanForBugs(String className) throws CoreException {
-        IJavaElement element = testProject.findElement(new Path(className));  
-        if (element == null) 
+        IJavaElement element = testProject.findElement(new Path(className));
+        if (element == null)
         {
             fail("Could not find java class " + className);
             return;
@@ -150,36 +148,36 @@ public class TestContributedQuickFixes {
     private void assertBugPatternsMatch(List<QuickFixTestPackage> packages, String testResource) throws JavaModelException {
         IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
         TestingUtils.sortMarkersByPatterns(markers);
-        
+
         // packages and markers should now be lined up to match up one to one.
         assertEquals(packages.size(), markers.length);
-    
+
         TestingUtils.assertBugPatternsMatch(packages, markers);
         TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
         TestingUtils.assertLineNumbersMatch(packages, markers);
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
     }
 
-    private void executeResolutions(List<QuickFixTestPackage> packages, String testResource) throws CoreException 
-    {  
+    private void executeResolutions(List<QuickFixTestPackage> packages, String testResource) throws CoreException
+    {
         for (int i = 0; i < packages.size(); i++) {
-            
-            if (i != 0) {   // Refresh, rebuild, and scan for bugs again
+
+            if (i != 0) { // Refresh, rebuild, and scan for bugs again
                 // We only need to do this after the first time, as we expect the file to have
                 // been scanned and checked for consistency (see checkBugsAndPerformResolution)
                 testIProject.refreshLocal(IResource.DEPTH_ONE, null);
                 testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
                 clearMarkersAndBugs();
-                scanForBugs(testResource);   
+                scanForBugs(testResource);
             }
-            
+
             IMarker[] markers = getSortedMarkersFromFile(testResource);
-            
+
             assertEquals("Bug marker number was different than anticipated "
                     + "Check to see if another bug marker was introduced by fixing another.",
                     packages.size() - i, markers.length);
-            
-            performResolution(packages.get(i), markers[0]);       // resolve the first bug marker
+
+            performResolution(packages.get(i), markers[0]); // resolve the first bug marker
         }
     }
 
@@ -197,13 +195,13 @@ public class TestContributedQuickFixes {
         // This doesn't actually click on the bug marker, but it programmatically
         // does the same thing
         IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
-        
+
         assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute +
-                " but there were only " + resolutions.length +" to choose from."
-                ,resolutions.length > qfPackage.resolutionToExecute);
-        //the order isn't guarenteed, so we have to check the labels.
+                " but there were only " + resolutions.length + " to choose from."
+                , resolutions.length > qfPackage.resolutionToExecute);
+        // the order isn't guarenteed, so we have to check the labels.
         String resolutionToDo = qfPackage.expectedLabels.get(qfPackage.resolutionToExecute);
-        for(IMarkerResolution resolution: resolutions) {
+        for (IMarkerResolution resolution : resolutions) {
             if (resolution.getLabel().equals(resolutionToDo)) {
                 resolution.run(marker);
             }
@@ -233,19 +231,19 @@ public class TestContributedQuickFixes {
      * Set minimum warning priority threshold to be used for scanning
      * 
      * Project defaults to "Medium"
-     *
+     * 
      * @param minPriority
      *            the priority threshold: one of "High", "Medium", or "Low"
      */
     private void setPriority(String minPriority) {
         FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinPriority(minPriority);
     }
-    
+
     /**
      * Set minimum bugRank to show up for scanning
      * 
      * Project defaults to 15
-     *
+     * 
      * @param minPriority
      *            the priority threshold: one of "High", "Medium", or "Low"
      */
@@ -261,33 +259,32 @@ public class TestContributedQuickFixes {
         // disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because the rtstubs17.jar
         // defines the constants as null
         setDetector("edu.umd.cs.findbugs.detect.FindNullDeref", false);
-        
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(16, 23, 25, 30, 32, 34, // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
                 40, 44, 48, 52, 57, 61); // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
-    
+
         packager.setExpectedBugPatterns("CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
                 "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
                 "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET",
                 "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
                 "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME",
                 "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME", "CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME");
-    
+
         packager.setExpectedLabels(0, "Replace with StandardCharset.UTF_8");
         packager.setExpectedLabels(1, "Replace with StandardCharset.ISO_8859_1");
         packager.setExpectedLabels(2, "Replace with StandardCharset.US_ASCII");
         packager.setExpectedLabels(3, "Replace with StandardCharset.UTF_16");
         packager.setExpectedLabels(4, "Replace with StandardCharset.UTF_16LE");
         packager.setExpectedLabels(5, "Replace with StandardCharset.UTF_16BE");
-    
+
         packager.setExpectedLabels(6, "Replace with StandardCharset.UTF_8.name()");
         packager.setExpectedLabels(7, "Replace with StandardCharset.UTF_16.name()");
         packager.setExpectedLabels(8, "Replace with StandardCharset.UTF_16LE.name()");
         packager.setExpectedLabels(9, "Replace with StandardCharset.UTF_16BE.name()");
         packager.setExpectedLabels(10, "Replace with StandardCharset.US_ASCII.name()");
         packager.setExpectedLabels(11, "Replace with StandardCharset.ISO_8859_1.name()");
-    
+
         checkBugsAndPerformResolution(packager.asList(), "CharsetIssuesBugs.java");
     }
 
@@ -296,9 +293,9 @@ public class TestContributedQuickFixes {
         // StringToCharResolution.java
         setPriority("Medium");
         setRank(20);
-        //this pops up when fixing the bug on line 31 (not the fixes fault, but the tests)
+        // this pops up when fixing the bug on line 31 (not the fixes fault, but the tests)
         setDetector("com.mebigfatguy.fbcontrib.detect.InefficientStringBuffering", false);
-        //setDetector(dotSeperatedDetectorClass, enabled);
+        // setDetector(dotSeperatedDetectorClass, enabled);
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
         packager.setExpectedLines(8, 13, 19, 23, 27, 31, 35, 39);
@@ -314,10 +311,10 @@ public class TestContributedQuickFixes {
                 "Use StringBuilder for String concatenation");
         packager.setExpectedLabels(5, "Replace with the char equivalent method call",
                 "Use StringBuilder for String concatenation");
-        packager.setExpectedLabels(6, "Replace with the char equivalent method call"); 
-        packager.setExpectedLabels(7, "Replace with the char equivalent method call"); 
-        
-        packager.setFixToPerform(5,1);
+        packager.setExpectedLabels(6, "Replace with the char equivalent method call"); // not a concatenation
+        packager.setExpectedLabels(7, "Replace with the char equivalent method call"); // not a concatenation
+
+        packager.setFixToPerform(5, 1);
 
         checkBugsAndPerformResolution(packager.asList(), "SingleLengthStringBugs.java");
     }

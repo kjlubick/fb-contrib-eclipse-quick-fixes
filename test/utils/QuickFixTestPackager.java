@@ -14,6 +14,7 @@ import static org.junit.Assert.*;
  * generated match expected behavior.
  * 
  * A typical use looks like:
+ * 
  * <pre>
  * {@code
  * QuickFixTestPackager packager = new QuickFixTestPackager();
@@ -29,7 +30,7 @@ import static org.junit.Assert.*;
  * 
  * 
  * @author Kevin Lubick
- *
+ * 
  */
 public class QuickFixTestPackager {
 
@@ -79,16 +80,16 @@ public class QuickFixTestPackager {
      * @param expectedLabels
      *            one or more labels to be associated
      */
-    public void setExpectedLabels(int index, String... expectedLabels) {  //there is no "add" options because the underlying lists are fixed sized
-        //if package does not exist, create empty packages
+    public void setExpectedLabels(int index, String... expectedLabels) { // there is no "add" options because the underlying lists are fixed sized
+        // if package does not exist, create empty packages
         while (packages.size() <= index) {
             packages.add(new QuickFixTestPackage());
         }
-        //set the labels
+        // set the labels
         packages.get(index).expectedLabels = Arrays.asList(expectedLabels);
 
     }
-    
+
     /**
      * A convenience form of setExpectedLabels, if all labels will be the same.
      * 
@@ -145,12 +146,13 @@ public class QuickFixTestPackager {
     }
 
     /**
-     * A convenience form of setExpectedBugPatterns, 
+     * A convenience form of setExpectedBugPatterns,
      * if all BugPatterns will be the same.
      * 
      * Sets all created packages to have the specified pattern
      * 
-     * @param expectedPattern the bug pattern that all packages should get
+     * @param expectedPattern
+     *            the bug pattern that all packages should get
      */
     public void fillExpectedBugPatterns(String expectedPattern) {
         for (QuickFixTestPackage p : packages) {
@@ -165,11 +167,11 @@ public class QuickFixTestPackager {
      * @param indexOfFixToImplement
      */
     public void setFixToPerform(int indexOfPackageToChange, int indexOfFixToImplement) {
-      //if package does not exist, create empty packages
+        // if package does not exist, create empty packages
         while (packages.size() <= indexOfPackageToChange) {
             packages.add(new QuickFixTestPackage());
         }
-        //set the fixToImplement
+        // set the fixToImplement
         packages.get(indexOfPackageToChange).resolutionToExecute = indexOfFixToImplement;
 
     }

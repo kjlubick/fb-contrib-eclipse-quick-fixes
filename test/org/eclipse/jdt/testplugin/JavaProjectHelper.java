@@ -151,18 +151,18 @@ public class JavaProjectHelper {
         return jproject;
     }
 
-//    /**
-//     * Sets the compiler options to 1.8 for the given project.
-//     * 
-//     * @param project
-//     *            the java project
-//     * @since 3.10
-//     */
-//    public static void set18CompilerOptions(IJavaProject project) {
-//        Map options = project.getOptions(false);
-//        set18CompilerOptions(options);
-//        project.setOptions(options);
-//    }
+    // /**
+    // * Sets the compiler options to 1.8 for the given project.
+    // *
+    // * @param project
+    // * the java project
+    // * @since 3.10
+    // */
+    // public static void set18CompilerOptions(IJavaProject project) {
+    // Map options = project.getOptions(false);
+    // set18CompilerOptions(options);
+    // project.setOptions(options);
+    // }
 
     /**
      * Sets the compiler options to 1.7 for the given project.
@@ -212,16 +212,16 @@ public class JavaProjectHelper {
         project.setOptions(options);
     }
 
-//    /**
-//     * Sets the compiler options to 1.8
-//     * 
-//     * @param options
-//     *            the compiler options to configure
-//     * @since 3.10
-//     */
-//    public static void set18CompilerOptions(Map options) {
-//         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
-//    }
+    // /**
+    // * Sets the compiler options to 1.8
+    // *
+    // * @param options
+    // * the compiler options to configure
+    // * @since 3.10
+    // */
+    // public static void set18CompilerOptions(Map options) {
+    // JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
+    // }
 
     /**
      * Sets the compiler options to 1.7
@@ -735,11 +735,11 @@ public class JavaProjectHelper {
         return addLibrary(jproject, rtJarPath);
     }
 
-//    public static IPackageFragmentRoot addRTJar18(IJavaProject jproject) throws CoreException {
-//        IPath rtJarPath = findRtJar(RT_STUBS_18);
-//        set18CompilerOptions(jproject);
-//        return addLibrary(jproject, rtJarPath);
-//    }
+    // public static IPackageFragmentRoot addRTJar18(IJavaProject jproject) throws CoreException {
+    // IPath rtJarPath = findRtJar(RT_STUBS_18);
+    // set18CompilerOptions(jproject);
+    // return addLibrary(jproject, rtJarPath);
+    // }
 
     /**
      * Adds a variable entry with source attachment to a IJavaProject.
