@@ -195,11 +195,17 @@
             pattern="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">
 	</quickFix>
 	
-      <quickFix
+    <quickFix
             class="quickfix.ArrayToStringResolution"
             label="Wrap array with Arrays.toString()"
             pattern="DMI_INVOKING_TOSTRING_ON_ARRAY">
-      </quickFix>
+    </quickFix>
+
+    <quickFix
+            class="quickfix.DeadShadowStoreResolution"
+            label="Prefix assignment to store to field"
+            pattern="DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD">
+    </quickFix>
 
    </extension>
 
