@@ -295,7 +295,6 @@ public class TestContributedQuickFixes {
         setRank(20);
         // this pops up when fixing the bug on line 31 (not the fixes fault, but the tests)
         setDetector("com.mebigfatguy.fbcontrib.detect.InefficientStringBuffering", false);
-        // setDetector(dotSeperatedDetectorClass, enabled);
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
         packager.setExpectedLines(8, 13, 19, 23, 27, 31, 35, 39);
@@ -317,6 +316,22 @@ public class TestContributedQuickFixes {
         packager.setFixToPerform(5, 1);
 
         checkBugsAndPerformResolution(packager.asList(), "SingleLengthStringBugs.java");
+    }
+    
+    @Test
+    public void testWrongMapIteratorResolution() throws Exception {
+        // EntrySetResolution.java
+        setPriority("Medium");
+        setRank(18);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(8, 14);
+        packager.fillExpectedBugPatterns("WMI_WRONG_MAP_ITERATOR");
+
+        packager.fillExpectedLabels("Replace with a foreach loop using entrySet()");
+
+        checkBugsAndPerformResolution(packager.asList(), "WrongMapIteratorBugs.java");
     }
 
 }
