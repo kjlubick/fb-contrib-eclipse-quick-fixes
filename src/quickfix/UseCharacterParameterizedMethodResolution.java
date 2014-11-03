@@ -40,7 +40,7 @@ import util.TraversalUtil;
  * @author KevinLubick
  * 
  */
-public class StringToCharResolution extends BugResolution {
+public class UseCharacterParameterizedMethodResolution extends BugResolution {
 
     private boolean useStringBuilder;
 

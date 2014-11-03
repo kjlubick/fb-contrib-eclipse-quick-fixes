@@ -289,7 +289,7 @@ public class TestContributedQuickFixes {
     }
 
     @Test
-    public void testUseCharacterParameterizedMethod() throws Exception {
+    public void testUseCharacterParameterizedMethodResolution() throws Exception {
         // StringToCharResolution.java
         setPriority("Medium");
         setRank(20);
@@ -332,6 +332,24 @@ public class TestContributedQuickFixes {
         packager.fillExpectedLabels("Replace with a foreach loop using entrySet()");
 
         checkBugsAndPerformResolution(packager.asList(), "WrongMapIteratorBugs.java");
+    }
+    
+    @Test
+    public void testDeadShadowStoreResolution() throws Exception {
+        // DeadShadowStoreResolution.java
+        setPriority("Medium");
+        setRank(15);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(9);
+        packager.fillExpectedBugPatterns("DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD");
+        
+        // TODO make more robust
+
+        packager.fillExpectedLabels("Prefix assignment to store to field");
+
+        checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
     }
 
 }
