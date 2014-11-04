@@ -1,3 +1,6 @@
+import java.util.Collections;
+import java.util.List;
+
 
 public class DeadLocalStoreBugs {
     
@@ -31,9 +34,12 @@ public class DeadLocalStoreBugs {
             name = "foo" + className;
         }
         
-        void setClassName(String className) {
+        void setClassName(String className, List<Integer> otherArg) {
             System.out.println(className);
             className = "foo" + name;       //not a DLS shadow bug detected (rank 15)
+            
+            System.out.println(otherArg);
+            otherArg = Collections.emptyList();
         }
         
         @Override

@@ -338,14 +338,17 @@ public class TestContributedQuickFixes {
     public void testDeadShadowStoreResolution() throws Exception {
         // DeadShadowStoreResolution.java
         setPriority("Medium");
-        setRank(10);
+        setRank(15);
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
-        packager.setExpectedLines(9, 31);
-        packager.fillExpectedBugPatterns("DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD");
-        packager.fillExpectedLabels("Prefix assignment to store to field");
-
+        packager.setExpectedLines(9, 31, 39, 42);
+        packager.setExpectedBugPatterns("DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD", "DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD",
+                "DLS_DEAD_LOCAL_STORE","DLS_DEAD_LOCAL_STORE");
+        packager.setExpectedLabels(0,"Prefix assignment to store to field");
+        packager.setExpectedLabels(1,"Prefix assignment to store to field");
+        packager.setExpectedLabels(2,"Prefix assignment like DeadLocalStoreBugs.this.className");
+        packager.setExpectedLabels(3);      //no resolutions
         checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
     }
 
