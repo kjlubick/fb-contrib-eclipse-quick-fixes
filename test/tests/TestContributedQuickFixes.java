@@ -160,6 +160,8 @@ public class TestContributedQuickFixes {
 
     private void executeResolutions(List<QuickFixTestPackage> packages, String testResource) throws CoreException
     {
+        int ignoredResolutions = 0;
+        
         for (int i = 0; i < packages.size(); i++) {
 
             if (i != 0) { // Refresh, rebuild, and scan for bugs again
@@ -175,9 +177,11 @@ public class TestContributedQuickFixes {
 
             assertEquals("Bug marker number was different than anticipated "
                     + "Check to see if another bug marker was introduced by fixing another.",
-                    packages.size() - i, markers.length);
+                    packages.size() - i, markers.length - ignoredResolutions);
 
-            performResolution(packages.get(i), markers[0]); // resolve the first bug marker
+            if (!performResolution(packages.get(i), markers[ignoredResolutions])) { // resolve the first bug marker
+                ignoredResolutions++;
+            }
         }
     }
 
@@ -191,14 +195,21 @@ public class TestContributedQuickFixes {
         return markers;
     }
 
-    private void performResolution(QuickFixTestPackage qfPackage, IMarker marker) {
+    //returns true if a resolution was performed, false if it was ignored
+    private boolean performResolution(QuickFixTestPackage qfPackage, IMarker marker) {
         // This doesn't actually click on the bug marker, but it programmatically
         // does the same thing
         IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
 
-        assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute +
+        if (qfPackage.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
+            return false;
+        }
+        
+        assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute + " of " +qfPackage+
                 " but there were only " + resolutions.length + " to choose from."
                 , resolutions.length > qfPackage.resolutionToExecute);
+        
+        
         // the order isn't guaranteed, so we have to check the labels.
         String resolutionToDo = qfPackage.expectedLabels.get(qfPackage.resolutionToExecute);
         for (IMarkerResolution resolution : resolutions) {
@@ -206,6 +217,7 @@ public class TestContributedQuickFixes {
                 resolution.run(marker);
             }
         }
+        return true;
     }
 
     private void assertOutputAndInputFilesMatch(String testResource) throws JavaModelException, IOException {
@@ -342,13 +354,15 @@ public class TestContributedQuickFixes {
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
-        packager.setExpectedLines(9, 31, 39, 42);
+        packager.setExpectedLines(12, 34, 39, 42);
         packager.setExpectedBugPatterns("DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD", "DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD",
                 "DLS_DEAD_LOCAL_STORE","DLS_DEAD_LOCAL_STORE");
         packager.setExpectedLabels(0,"Prefix assignment to store to field");
         packager.setExpectedLabels(1,"Prefix assignment to store to field");
         packager.setExpectedLabels(2,"Prefix assignment like DeadLocalStoreBugs.this.className");
         packager.setExpectedLabels(3);      //no resolutions
+        
+        packager.setFixToPerform(3, QuickFixTestPackage.IGNORE_FIX);
         checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
     }
 

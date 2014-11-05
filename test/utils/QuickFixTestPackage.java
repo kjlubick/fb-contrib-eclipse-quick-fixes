@@ -4,6 +4,8 @@ import java.util.List;
 
 public class QuickFixTestPackage {
 
+    public static final int IGNORE_FIX = -1;
+
     public String expectedPattern = null;
 
     public List<String> expectedLabels = null;
