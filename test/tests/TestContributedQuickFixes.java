@@ -134,10 +134,9 @@ public class TestContributedQuickFixes {
             }
         });
 
-        // wait for the findBugsWorker to finish
         worker.work(Collections.singletonList(new WorkItem(element)));
-        // half a second reduces the chance that the IMarkers haven't loaded yet
-        // and the tests will fail unpredictably
+        // wait for the findBugsWorker to finish
+        // 500ms reduces the chance that the IMarkers haven't loaded yet and the tests will fail unpredictably
         // (see JavaProjectHelper discussion about performDummySearch for more info)
         TestingUtils.waitForUiEvents(500);
         while (isWorking.get()) {
@@ -160,8 +159,12 @@ public class TestContributedQuickFixes {
 
     private void executeResolutions(List<QuickFixTestPackage> packages, String testResource) throws CoreException
     {
-        int ignoredResolutions = 0;
-        
+        // Some resolutions can be ignored. One example is a detector that has one or more sometimes 
+        // applicable quickfixes, but occasionally none apply.  These are useful to include in the 
+        // test cases (e.g. DeadLocalStoreBugs.java), and need to be properly handled.
+        // we keep a count of the ignored resolutions (QuickFixTestPackage.IGNORE_FIX) and correct 
+        // our progress using that
+        int ignoredResolutions = 0;  
         for (int i = 0; i < packages.size(); i++) {
 
             if (i != 0) { // Refresh, rebuild, and scan for bugs again
@@ -175,11 +178,13 @@ public class TestContributedQuickFixes {
 
             IMarker[] markers = getSortedMarkersFromFile(testResource);
 
-            assertEquals("Bug marker number was different than anticipated "
+            assertEquals("Bug marker number was different than anticipated.  " 
                     + "Check to see if another bug marker was introduced by fixing another.",
                     packages.size() - i, markers.length - ignoredResolutions);
 
-            if (!performResolution(packages.get(i), markers[ignoredResolutions])) { // resolve the first bug marker
+            IMarker nextNonIgnoredMarker = markers[ignoredResolutions]; // Bug markers we ignore float to the "top" of the stack
+                                                                        // ignoredResolutions can act as an index for that
+            if (!performResolution(packages.get(i), nextNonIgnoredMarker)) {
                 ignoredResolutions++;
             }
         }
@@ -195,21 +200,17 @@ public class TestContributedQuickFixes {
         return markers;
     }
 
-    //returns true if a resolution was performed, false if it was ignored
     private boolean performResolution(QuickFixTestPackage qfPackage, IMarker marker) {
-        // This doesn't actually click on the bug marker, but it programmatically
-        // does the same thing
-        IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
-
         if (qfPackage.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
-            return false;
+            return false; // false means the marker should be ignored.
         }
-        
-        assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute + " of " +qfPackage+
+        // This doesn't actually click on the bug marker, but it programmatically
+        // gets the same resolutions.
+        IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
+        assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute + " of " + qfPackage +
                 " but there were only " + resolutions.length + " to choose from."
                 , resolutions.length > qfPackage.resolutionToExecute);
-        
-        
+
         // the order isn't guaranteed, so we have to check the labels.
         String resolutionToDo = qfPackage.expectedLabels.get(qfPackage.resolutionToExecute);
         for (IMarkerResolution resolution : resolutions) {
@@ -217,7 +218,7 @@ public class TestContributedQuickFixes {
                 resolution.run(marker);
             }
         }
-        return true;
+        return true; // a resolution was performed and we expect the bug marker to disappear.
     }
 
     private void assertOutputAndInputFilesMatch(String testResource) throws JavaModelException, IOException {
@@ -360,7 +361,7 @@ public class TestContributedQuickFixes {
         packager.setExpectedLabels(0,"Prefix assignment to store to field");
         packager.setExpectedLabels(1,"Prefix assignment to store to field");
         packager.setExpectedLabels(2,"Prefix assignment like DeadLocalStoreBugs.this.className");
-        packager.setExpectedLabels(3);      //no resolutions
+        packager.setExpectedLabels(3);      //no resolutions, it doesn't apply
         
         packager.setFixToPerform(3, QuickFixTestPackage.IGNORE_FIX);
         checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
