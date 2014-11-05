@@ -4,7 +4,7 @@ import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings(value="UWF_NULL_FIELD",justification="This is a struct class.")
+@SuppressFBWarnings(value = "UWF_NULL_FIELD", justification = "This is a struct class.")
 public class QuickFixTestPackage {
 
     public static final int IGNORE_FIX = -1;

@@ -34,9 +34,9 @@ public class DeadShadowStoreResolution extends BugResolution {
 
     @Override
     protected boolean resolveBindings() {
-        return true; 
+        return true;
     }
-    
+
     @Override
     public void setOptions(Map<String, String> options) {
         searchParentClass = Boolean.parseBoolean(options.get("searchParentClass"));
@@ -60,7 +60,7 @@ public class DeadShadowStoreResolution extends BugResolution {
             System.err.println("Could not find a local assignment to replace.");
         }
     }
-    
+
     @Override
     protected ASTVisitor getApplicabilityVisitor() {
         if (searchParentClass) {
@@ -69,7 +69,7 @@ public class DeadShadowStoreResolution extends BugResolution {
         // don't need applicability if we don't search the enclosing classes
         return null;
     }
-    
+
     @Override
     protected ASTVisitor getCustomLabelVisitor() {
         if (searchParentClass) {
@@ -101,6 +101,7 @@ public class DeadShadowStoreResolution extends BugResolution {
     private class DeadStoreVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
 
         public SimpleName badLeftSideName;
+
         public String simpleNameOfEnclosingType;
 
         @Override
@@ -112,7 +113,7 @@ public class DeadShadowStoreResolution extends BugResolution {
             Expression left = node.getLeftHandSide();
             if (left instanceof SimpleName) {
                 badLeftSideName = (SimpleName) left;
-                
+
                 checkParentScope(node);
                 return false;
             }
@@ -123,14 +124,14 @@ public class DeadShadowStoreResolution extends BugResolution {
             if (!searchParentClass || node == null) {
                 return;
             }
-            
+
             if (node instanceof TypeDeclaration) {
-                if (searchForField((TypeDeclaration)node)) {
+                if (searchForField((TypeDeclaration) node)) {
                     simpleNameOfEnclosingType = ((TypeDeclaration) node).resolveBinding().getName();
                     return;
                 }
             }
-            
+
             checkParentScope(node.getParent());
         }
 

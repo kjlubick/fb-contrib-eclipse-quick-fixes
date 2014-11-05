@@ -15,6 +15,7 @@ import de.tobject.findbugs.reporter.MarkerUtil;
 
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolutionGenerator;
 
 import org.eclipse.core.resources.IMarker;
@@ -159,12 +160,12 @@ public class TestContributedQuickFixes {
 
     private void executeResolutions(List<QuickFixTestPackage> packages, String testResource) throws CoreException
     {
-        // Some resolutions can be ignored. One example is a detector that has one or more sometimes 
-        // applicable quickfixes, but occasionally none apply.  These are useful to include in the 
+        // Some resolutions can be ignored. One example is a detector that has one or more sometimes
+        // applicable quickfixes, but occasionally none apply. These are useful to include in the
         // test cases (e.g. DeadLocalStoreBugs.java), and need to be properly handled.
-        // we keep a count of the ignored resolutions (QuickFixTestPackage.IGNORE_FIX) and correct 
+        // we keep a count of the ignored resolutions (QuickFixTestPackage.IGNORE_FIX) and correct
         // our progress using that
-        int ignoredResolutions = 0;  
+        int ignoredResolutions = 0;
         for (int i = 0; i < packages.size(); i++) {
 
             if (i != 0) { // Refresh, rebuild, and scan for bugs again
@@ -178,7 +179,7 @@ public class TestContributedQuickFixes {
 
             IMarker[] markers = getSortedMarkersFromFile(testResource);
 
-            assertEquals("Bug marker number was different than anticipated.  " 
+            assertEquals("Bug marker number was different than anticipated.  "
                     + "Check to see if another bug marker was introduced by fixing another.",
                     packages.size() - i, markers.length - ignoredResolutions);
 
@@ -212,6 +213,7 @@ public class TestContributedQuickFixes {
                 , resolutions.length > qfPackage.resolutionToExecute);
 
         // the order isn't guaranteed, so we have to check the labels.
+        @SuppressFBWarnings("NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
         String resolutionToDo = qfPackage.expectedLabels.get(qfPackage.resolutionToExecute);
         for (IMarkerResolution resolution : resolutions) {
             if (resolution.getLabel().equals(resolutionToDo)) {
@@ -330,7 +332,7 @@ public class TestContributedQuickFixes {
 
         checkBugsAndPerformResolution(packager.asList(), "SingleLengthStringBugs.java");
     }
-    
+
     @Test
     public void testWrongMapIteratorResolution() throws Exception {
         // EntrySetResolution.java
@@ -346,7 +348,7 @@ public class TestContributedQuickFixes {
 
         checkBugsAndPerformResolution(packager.asList(), "WrongMapIteratorBugs.java");
     }
-    
+
     @Test
     public void testDeadShadowStoreResolution() throws Exception {
         // DeadShadowStoreResolution.java
@@ -357,12 +359,12 @@ public class TestContributedQuickFixes {
 
         packager.setExpectedLines(12, 34, 39, 42);
         packager.setExpectedBugPatterns("DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD", "DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD",
-                "DLS_DEAD_LOCAL_STORE","DLS_DEAD_LOCAL_STORE");
-        packager.setExpectedLabels(0,"Prefix assignment to store to field");
-        packager.setExpectedLabels(1,"Prefix assignment to store to field");
-        packager.setExpectedLabels(2,"Prefix assignment like DeadLocalStoreBugs.this.className");
-        packager.setExpectedLabels(3);      //no resolutions, it doesn't apply
-        
+                "DLS_DEAD_LOCAL_STORE", "DLS_DEAD_LOCAL_STORE");
+        packager.setExpectedLabels(0, "Prefix assignment to store to field");
+        packager.setExpectedLabels(1, "Prefix assignment to store to field");
+        packager.setExpectedLabels(2, "Prefix assignment like DeadLocalStoreBugs.this.className");
+        packager.setExpectedLabels(3); // no resolutions, it doesn't apply
+
         packager.setFixToPerform(3, QuickFixTestPackage.IGNORE_FIX);
         checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
     }
