@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.testplugin.JavaProjectHelper;
 import org.eclipse.ui.IMarkerResolution;
@@ -80,6 +81,7 @@ public class TestContributedQuickFixes {
         testProject = JavaProjectHelper.createJavaProject(PROJECT_NAME, BIN_FOLDER_NAME);
         JavaProjectHelper.addRTJar17(testProject);
         JavaProjectHelper.addSourceContainer(testProject, SRC_FOLDER_NAME);
+        testProject.setOption("org.eclipse.jdt.core.formatter.tabulation.char", JavaCore.SPACE);
         testIProject = testProject.getProject();
     }
 
@@ -234,7 +236,7 @@ public class TestContributedQuickFixes {
      * not just one bug pattern.
      * 
      * @param dotSeperatedDetectorClass
-     *            A string with the dot-seperated-class of the detector to enable/disable
+     *            A string with the dot-separated-class of the detector to enable/disable
      * @param enabled
      */
     private void setDetector(String dotSeperatedDetectorClass, boolean enabled) {
@@ -334,14 +336,14 @@ public class TestContributedQuickFixes {
     }
 
     @Test
-    public void testWrongMapIteratorResolution() throws Exception {
+    public void testEntrySetResolution() throws Exception {
         // EntrySetResolution.java
         setPriority("Medium");
         setRank(18);
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
-        packager.setExpectedLines(8, 14);
+        packager.setExpectedLines(10, 16, 23, 30);
         packager.fillExpectedBugPatterns("WMI_WRONG_MAP_ITERATOR");
 
         packager.fillExpectedLabels("Replace with a foreach loop using entrySet()");
