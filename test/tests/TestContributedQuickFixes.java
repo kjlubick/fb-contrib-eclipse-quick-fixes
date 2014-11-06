@@ -370,5 +370,24 @@ public class TestContributedQuickFixes {
         packager.setFixToPerform(3, QuickFixTestPackage.IGNORE_FIX);
         checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
     }
+    
+    
+    @Test
+    public void testLiteralStringComparisonResolution() throws Exception {
+        // LiteralStringComparisonResolution.java
+        setPriority("Medium");
+        setRank(10);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(6, 12, 13, 15);
+        packager.fillExpectedBugPatterns("LSC_LITERAL_STRING_COMPARISON");
+        packager.fillExpectedLabels("Swap string variable and string literal");
+        
+        packager.setFixToPerform(1, QuickFixTestPackage.IGNORE_FIX);
+        packager.setFixToPerform(2, QuickFixTestPackage.IGNORE_FIX);
+
+        checkBugsAndPerformResolution(packager.asList(), "LiteralStringComparisonBugs.java");
+    }
 
 }
