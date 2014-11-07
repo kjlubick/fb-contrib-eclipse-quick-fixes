@@ -384,10 +384,28 @@ public class TestContributedQuickFixes {
         packager.fillExpectedBugPatterns("LSC_LITERAL_STRING_COMPARISON");
         packager.fillExpectedLabels("Swap string variable and string literal");
         
-        packager.setFixToPerform(1, QuickFixTestPackage.IGNORE_FIX);
-        packager.setFixToPerform(2, QuickFixTestPackage.IGNORE_FIX);
+        packager.setFixToPerform(1, QuickFixTestPackage.IGNORE_FIX); //the last fix will fix all three problems
+        packager.setFixToPerform(2, QuickFixTestPackage.IGNORE_FIX); // I ignore 1 and 2 because that integrates with the framework
 
         checkBugsAndPerformResolution(packager.asList(), "LiteralStringComparisonBugs.java");
     }
 
+    @Test
+    public void testInsecureRandomResolution() throws Exception {
+        // InsecureRandomResolution.java
+        setPriority("Low");
+        setRank(20);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(6, 8);
+        packager.fillExpectedBugPatterns("MDM_RANDOM_SEED");
+        packager.fillExpectedLabels("Initialize with seed from SecureRandom", "Replace using a SecureRandom object");
+        
+        packager.setFixToPerform(0, 0);
+        packager.setFixToPerform(1, 1);
+
+        checkBugsAndPerformResolution(packager.asList(), "InsecureRandomBugs.java");
+    }
+    
 }
