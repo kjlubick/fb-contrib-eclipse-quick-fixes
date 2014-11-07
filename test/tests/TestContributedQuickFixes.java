@@ -349,6 +349,8 @@ public class TestContributedQuickFixes {
         packager.fillExpectedLabels("Replace with a foreach loop using entrySet()");
 
         checkBugsAndPerformResolution(packager.asList(), "WrongMapIteratorBugs.java");
+        
+        // TODO check Description
     }
 
     @Test
