@@ -30,6 +30,8 @@ import util.TraversalUtil;
 
 public class DeadShadowStoreResolution extends BugResolution {
 
+    public static final String DSS_DESC = "Turns the assignment to a local shadow variable into a field assignment "
+            + "by adding a this. to the variable";
     private boolean searchParentClass;
 
     @Override
@@ -94,8 +96,7 @@ public class DeadShadowStoreResolution extends BugResolution {
 
     @Override
     public String getDescription() {
-        return "Turns the assignment to a local shadow variable into a field assignment "
-                + "by adding a this. to the variable";
+        return DSS_DESC;
     }
 
     private class DeadStoreVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {

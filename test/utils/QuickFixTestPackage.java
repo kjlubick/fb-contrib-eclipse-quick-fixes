@@ -12,6 +12,8 @@ public class QuickFixTestPackage {
     public String expectedPattern = null;
 
     public List<String> expectedLabels = null;
+    
+    public List<String> expectedDescriptions = null;
 
     public int lineNumber = -1;
 

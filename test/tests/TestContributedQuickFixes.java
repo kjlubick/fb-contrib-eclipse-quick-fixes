@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.tobject.findbugs.FindbugsPlugin;
@@ -37,6 +39,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import quickfix.DeadShadowStoreResolution;
+import quickfix.InsecureRandomResolution;
 import utils.BugResolutionSource;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
@@ -155,7 +159,7 @@ public class TestContributedQuickFixes {
         assertEquals(packages.size(), markers.length);
 
         TestingUtils.assertBugPatternsMatch(packages, markers);
-        TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
+        TestingUtils.assertLabelsAndDescriptionsMatch(packages, markers, resolutionSource);
         TestingUtils.assertLineNumbersMatch(packages, markers);
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
     }
@@ -347,10 +351,15 @@ public class TestContributedQuickFixes {
         packager.fillExpectedBugPatterns("WMI_WRONG_MAP_ITERATOR");
 
         packager.fillExpectedLabels("Replace with a foreach loop using entrySet()");
+        
+        packager.setExpectedDescriptions(0, "for(Map.Entry&lt;String,Integer&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Integer tempVar = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(1, "for(Map.Entry&lt;String,Integer&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Integer i = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(2, "for(Map.Entry&lt;String,List<Integer>&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>List<Integer> someVal = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(3, "for(Map.Entry&lt;String,Set<String>&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Set<String> tempVar = entry.getValue();<br/>...<br/>}");
+        
 
         checkBugsAndPerformResolution(packager.asList(), "WrongMapIteratorBugs.java");
         
-        // TODO check Description
     }
 
     @Test
@@ -368,7 +377,9 @@ public class TestContributedQuickFixes {
         packager.setExpectedLabels(1, "Prefix assignment to store to field");
         packager.setExpectedLabels(2, "Prefix assignment like DeadLocalStoreBugs.this.className");
         packager.setExpectedLabels(3); // no resolutions, it doesn't apply
-
+        packager.fillExpectedDescriptions(DeadShadowStoreResolution.DSS_DESC);
+        packager.setExpectedDescriptions(3); //no descriptions either
+        
         packager.setFixToPerform(3, QuickFixTestPackage.IGNORE_FIX);
         checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
     }
@@ -403,7 +414,8 @@ public class TestContributedQuickFixes {
         packager.setExpectedLines(6, 8);
         packager.fillExpectedBugPatterns("MDM_RANDOM_SEED");
         packager.fillExpectedLabels("Initialize with seed from SecureRandom", "Replace using a SecureRandom object");
-        
+        packager.fillExpectedDescriptions(InsecureRandomResolution.GENERATE_SEED_DESC,
+                InsecureRandomResolution.SECURE_RENAME_DESC);
         packager.setFixToPerform(0, 0);
         packager.setFixToPerform(1, 1);
 

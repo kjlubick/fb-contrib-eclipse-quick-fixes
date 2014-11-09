@@ -61,8 +61,21 @@ public class QuickFixTestPackager {
         assertNotEquals("Did you forget to add anything to the packager?", 0, packages.size());
         for (QuickFixTestPackage p : packages) {
             assertNotNull("Not all labels were initialized", p.expectedLabels);
+            if (p.expectedDescriptions == null) {
+                p.expectedDescriptions = p.expectedLabels;
+            } else {
+                assertEquals("The number of descriptions shoud match the number of labels",
+                        p.expectedLabels.size(), p.expectedDescriptions.size());
+            }
             assertNotNull("Not all patterns were initialized", p.expectedPattern);
             assertNotEquals("Not all line numbers were initialized", -1, p.lineNumber);
+        }
+    }
+
+    private void addBlankPackagesToIndex(int indexOfPackageToChange) {
+        // if package does not exist, create empty packages
+        while (packages.size() <= indexOfPackageToChange) {
+            packages.add(new QuickFixTestPackage());
         }
     }
 
@@ -81,10 +94,7 @@ public class QuickFixTestPackager {
      *            one or more labels to be associated
      */
     public void setExpectedLabels(int index, String... expectedLabels) { // there is no "add" options because the underlying lists are fixed sized
-        // if package does not exist, create empty packages
-        while (packages.size() <= index) {
-            packages.add(new QuickFixTestPackage());
-        }
+        addBlankPackagesToIndex(index);
         // set the labels
         packages.get(index).expectedLabels = Arrays.asList(expectedLabels);
 
@@ -102,6 +112,42 @@ public class QuickFixTestPackager {
         for (QuickFixTestPackage p : packages) {
             // make a separate list to avoid cross contamination of modification
             p.expectedLabels = Arrays.asList(expectedLabels);
+        }
+    }
+
+    /**
+     * Sets the expected descriptions for the bug marker at the given index.
+     * If the package does not exist, it will be created.
+     * 
+     * If the description is not specified, it will default to the label (which is what
+     * the implementation does)
+     * 
+     * Since each bug marker can have more than one resolution, these might need
+     * to be specified by index for resolutions that offer custom descriptions.
+     * 
+     * The order should match the specified labels.
+     * 
+     * @param indexOfPackageToChange
+     * @param expectedDescriptions
+     */
+    public void setExpectedDescriptions(int indexOfPackageToChange, String... expectedDescriptions) {
+        addBlankPackagesToIndex(indexOfPackageToChange);
+
+        packages.get(indexOfPackageToChange).expectedDescriptions = Arrays.asList(expectedDescriptions);
+    }
+
+    /**
+     * A convenience form of setExpectedDescriptions, if all descriptions will be the same.
+     * 
+     * Sets all created packages to have the one or more specified
+     * expectedDescriptions.
+     * 
+     * @param expectedDescriptions
+     */
+    public void fillExpectedDescriptions(String... expectedDescriptions) {
+        for (QuickFixTestPackage p : packages) {
+            // make a separate list to avoid cross contamination of modification
+            p.expectedDescriptions = Arrays.asList(expectedDescriptions);
         }
     }
 
@@ -167,13 +213,9 @@ public class QuickFixTestPackager {
      * @param indexOfFixToImplement
      */
     public void setFixToPerform(int indexOfPackageToChange, int indexOfFixToImplement) {
-        // if package does not exist, create empty packages
-        while (packages.size() <= indexOfPackageToChange) {
-            packages.add(new QuickFixTestPackage());
-        }
+        addBlankPackagesToIndex(indexOfPackageToChange);
         // set the fixToImplement
         packages.get(indexOfPackageToChange).resolutionToExecute = indexOfFixToImplement;
 
     }
-
 }

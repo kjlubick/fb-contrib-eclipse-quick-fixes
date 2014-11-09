@@ -22,6 +22,15 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public class InsecureRandomResolution extends BugResolution {
 
+    public static final String GENERATE_SEED_DESC = "Initializing the seed like <br/><code>new Random(SecureRandom.getInstance().generateSeed())</code><br/>"
+            + "creates a more secure starting point for the random number generation than the default.<br/><br/>"
+            + "However, still using <code>java.lang.Random</code> makes this slightly less secure than using "
+            + "<code>java.secure.SecureRandom</code>, but at the benefit of being faster.  ";
+
+    public static final String SECURE_RENAME_DESC = "java.security.SecureRandom can be a drop-in replacement for Random, "
+            + "however, calls to the object's methods (e.g. nextInt(), nextBytes()) "
+            + "may be significantly slower.";
+
     private static final String QUALIFIED_SECURE_RANDOM = "java.security.SecureRandom";
 
     private static final String QUALIFIED_RANDOM = "java.util.Random";
@@ -41,14 +50,9 @@ public class InsecureRandomResolution extends BugResolution {
     @Override
     public String getDescription() {
         if (useSecureRandomObject) {
-            return "java.security.SecureRandom can be a drop-in replacement for Random, "
-                    + "however, calls to the object's methods (e.g. nextInt(), nextBytes()) "
-                    + "may be significantly slower.";
+            return SECURE_RENAME_DESC;
         }
-        return "Initializing the seed like <br/><code>new Random(SecureRandom.getInstance().generateSeed())</code><br/>"
-                + "creates a more secure starting point for the random number generation than the default.<br/><br/>"
-                + "However, still using <code>java.lang.Random</code> makes this slightly less secure than using "
-                + "<code>java.secure.SecureRandom</code>, but at the benefit of being faster.  ";
+        return GENERATE_SEED_DESC;
     }
 
     @Override
