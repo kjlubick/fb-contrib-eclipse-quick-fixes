@@ -430,17 +430,27 @@ public class TestContributedQuickFixes {
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
-        packager.setExpectedLines(7, 10, 17, 18, 19, 20, 21, 22, 23, 24, 31, 32, 33, 34, 35, 36, 37, 43, 45, 46);
+        packager.setExpectedLines(10, 31, 32, 33, 34, 35, 36, 37, 43, 45, 46);
 
-        packager.setExpectedBugPatterns("NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "DM_BOOLEAN_CTOR", "DM_NUMBER_CTOR",
-                "DM_NUMBER_CTOR", "DM_NUMBER_CTOR", "DM_NUMBER_CTOR", "DM_NUMBER_CTOR", "DM_FP_NUMBER_CTOR", "DM_FP_NUMBER_CTOR",
+        packager.setExpectedBugPatterns("NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", 
                 "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
                 "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
                 "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
                 "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
                 "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION");
         
-        packager.setExpectedLabels(0, expectedLabels);
+        packager.setExpectedLabels(0, "Replace with Boolean.TRUE");
+        packager.setExpectedLabels(9, "Replace with Boolean.parseBoolean(data)");
+        packager.setExpectedLabels(10, "Replace with Byte.parseByte(data)");
+        packager.setExpectedLabels(11, "Replace with Short.parseShort(data)");
+        packager.setExpectedLabels(12, "Replace with Integer.parseInt(data)");
+        packager.setExpectedLabels(13, "Replace with Long.parseLong(data)");
+        packager.setExpectedLabels(14, "Replace with Float.parseFloat(data)");
+        packager.setExpectedLabels(15, "Replace with Double.parseDouble(data)");
+        packager.setExpectedLabels(16, "Replace with false");
+        packager.setExpectedLabels(17, "Replace with true");
+        packager.setExpectedLabels(18, "Replace with Boolean.FALSE");
+        packager.setExpectedLabels(19, "Replace with Boolean.TRUE");
         
         checkBugsAndPerformResolution(packager.asList(), "InsecureRandomBugs.java");
     }

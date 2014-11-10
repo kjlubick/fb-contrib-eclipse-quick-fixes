@@ -88,6 +88,12 @@ public class NeedlessBoxingResolution extends BugResolution {
             String typeName = badMethodInvocation.resolveTypeBinding().getName();
             if ("Boolean".equals(typeName)) {
                 return "parseBoolean";
+            } else if ("Byte".equals(typeName)) {
+                return "parseInt";
+            } else if ("Short".equals(typeName)) {
+                return "parseShort";
+            } else if ("Long".equals(typeName)) {
+                return "parseLong";
             } else if ("Integer".equals(typeName)) {
                 return "parseInt";
             } else if ("Double".equals(typeName)) {
