@@ -5,9 +5,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.tobject.findbugs.FindbugsPlugin;
@@ -419,6 +417,31 @@ public class TestContributedQuickFixes {
         packager.setFixToPerform(0, 0);
         packager.setFixToPerform(1, 1);
 
+        checkBugsAndPerformResolution(packager.asList(), "InsecureRandomBugs.java");
+    }
+    
+    @Test
+    public void testNeedlessBoxingResolution() throws Exception {
+        // NeedlessBoxingResolution.java
+        setPriority("Low");
+        setRank(20);
+        setDetector("edu.umd.cs.findbugs.detect.UnreadFields", false);
+         
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(7, 10, 17, 18, 19, 20, 21, 22, 23, 24, 31, 32, 33, 34, 35, 36, 37, 43, 45, 46);
+
+        packager.setExpectedBugPatterns("NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "DM_BOOLEAN_CTOR", "DM_NUMBER_CTOR",
+                "DM_NUMBER_CTOR", "DM_NUMBER_CTOR", "DM_NUMBER_CTOR", "DM_NUMBER_CTOR", "DM_FP_NUMBER_CTOR", "DM_FP_NUMBER_CTOR",
+                "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
+                "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
+                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
+                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
+                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION");
+        
+        packager.setExpectedLabels(0, expectedLabels);
+        
         checkBugsAndPerformResolution(packager.asList(), "InsecureRandomBugs.java");
     }
     
