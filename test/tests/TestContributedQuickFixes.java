@@ -426,33 +426,36 @@ public class TestContributedQuickFixes {
         setPriority("Low");
         setRank(20);
         setDetector("edu.umd.cs.findbugs.detect.UnreadFields", false);
-         
+        setDetector("edu.umd.cs.findbugs.detect.DumbMethods", false);  //some overlap with the parse
+        setDetector("com.mebigfatguy.fbcontrib.detect.FinalParameters", false);
+        // disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because the rtstubs17.jar
+        // defines the constants (like Boolean.False) as null
+        setDetector("edu.umd.cs.findbugs.detect.FindNullDeref", false);
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
-        packager.setExpectedLines(10, 31, 32, 33, 34, 35, 36, 37, 43, 45, 46);
+        packager.setExpectedLines(10, 31, 32, 33, 34, 35, 36, 37, 43, 44, 45, 46);
 
         packager.setExpectedBugPatterns("NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", 
                 "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
                 "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
                 "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
-                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
-                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION");
+                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION");
         
         packager.setExpectedLabels(0, "Replace with Boolean.TRUE");
-        packager.setExpectedLabels(9, "Replace with Boolean.parseBoolean(data)");
-        packager.setExpectedLabels(10, "Replace with Byte.parseByte(data)");
-        packager.setExpectedLabels(11, "Replace with Short.parseShort(data)");
-        packager.setExpectedLabels(12, "Replace with Integer.parseInt(data)");
-        packager.setExpectedLabels(13, "Replace with Long.parseLong(data)");
-        packager.setExpectedLabels(14, "Replace with Float.parseFloat(data)");
-        packager.setExpectedLabels(15, "Replace with Double.parseDouble(data)");
-        packager.setExpectedLabels(16, "Replace with false");
-        packager.setExpectedLabels(17, "Replace with true");
-        packager.setExpectedLabels(18, "Replace with Boolean.FALSE");
-        packager.setExpectedLabels(19, "Replace with Boolean.TRUE");
+        packager.setExpectedLabels(1, "Replace with Boolean.parseBoolean(data)");
+        packager.setExpectedLabels(2, "Replace with Byte.parseByte(data)");
+        packager.setExpectedLabels(3, "Replace with Short.parseShort(data)");
+        packager.setExpectedLabels(4, "Replace with Integer.parseInt(data)");
+        packager.setExpectedLabels(5, "Replace with Long.parseLong(data)");
+        packager.setExpectedLabels(6, "Replace with Float.parseFloat(data)");
+        packager.setExpectedLabels(7, "Replace with Double.parseDouble(data)");
+        packager.setExpectedLabels(8, "Replace with false");
+        packager.setExpectedLabels(9, "Replace with true");
+        packager.setExpectedLabels(10, "Replace with Boolean.FALSE");
+        packager.setExpectedLabels(11, "Replace with Boolean.TRUE");
         
-        checkBugsAndPerformResolution(packager.asList(), "InsecureRandomBugs.java");
+        checkBugsAndPerformResolution(packager.asList(), "NeedlessBoxingBugs.java");
     }
     
 }

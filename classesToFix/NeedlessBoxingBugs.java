@@ -1,6 +1,6 @@
 import java.util.concurrent.Callable;
 
-@SuppressWarnings("unused")
+
 public class NeedlessBoxingBugs {
 
     public Boolean testBooleanBox() throws Exception {
@@ -11,19 +11,6 @@ public class NeedlessBoxingBugs {
             }
         };
         return getThing.call();
-    }
-    
-    public void testDupCtor() {
-        Boolean bo = new Boolean(false);
-        Byte b = new Byte((byte) 0);
-        Character c = new Character('a');
-        Short s = new Short((short) 0);
-        Integer i = new Integer(0);
-        Long l = new Long(0);
-        Float f = new Float(0.0f);
-        Double d = new Double(0.0);
-        
-        System.out.println("" + bo + b + c + s + i + l + f + d);
     }
 
     public void testNeedsParse(String data) {
@@ -39,13 +26,13 @@ public class NeedlessBoxingBugs {
         System.out.println("" + bo + b + s + i + l + f + d);
     }
 
-    public Boolean testBooleanConsts(String s) {
+    public void testBooleanConsts(String s) {
         boolean b = Boolean.FALSE;
-        b = Boolean.TRUE;
-        Boolean bb = false;
-        bb = true;
+        boolean b1 = Boolean.TRUE;
+        Boolean bb2 = false;
+        Boolean bb = true;
 
-        return Boolean.valueOf("true".equals(s) && bb.booleanValue());
+        System.out.println("" + b + b1 + bb2 + bb);
     }
     
 }

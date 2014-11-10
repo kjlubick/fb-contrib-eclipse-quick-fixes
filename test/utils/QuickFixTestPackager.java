@@ -59,7 +59,8 @@ public class QuickFixTestPackager {
 
     private void validatePackages() {
         assertNotEquals("Did you forget to add anything to the packager?", 0, packages.size());
-        for (QuickFixTestPackage p : packages) {
+        for (int i = 0; i < packages.size(); i++) {
+            QuickFixTestPackage p = packages.get(i);
             assertNotNull("Not all labels were initialized", p.expectedLabels);
             if (p.expectedDescriptions == null) {
                 p.expectedDescriptions = p.expectedLabels;
@@ -68,7 +69,7 @@ public class QuickFixTestPackager {
                         p.expectedLabels.size(), p.expectedDescriptions.size());
             }
             assertNotNull("Not all patterns were initialized", p.expectedPattern);
-            assertNotEquals("Not all line numbers were initialized", -1, p.lineNumber);
+            assertNotEquals("Not all line numbers were initialized ["+i+"] ", -1, p.lineNumber);
         }
     }
 
