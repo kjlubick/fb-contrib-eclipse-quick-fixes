@@ -15,13 +15,13 @@ public class NeedlessBoxingBugs {
 
     public void testNeedsParse(String data) {
         // The first one is a false positive for < 1.5
-        boolean bo = Boolean.valueOf(data).booleanValue();
-        byte b = Byte.valueOf(data).byteValue();
-        short s = Short.valueOf(data).shortValue();
-        int i = Integer.valueOf(data).intValue();
-        long l = Long.valueOf(data).longValue();
-        float f = Float.valueOf(data).floatValue();
-        double d = Double.valueOf(data).doubleValue();
+        boolean bo = Boolean.parseBoolean(data);
+        byte b = Byte.parseByte(data);
+        short s = Short.parseShort(data);
+        int i = Integer.parseInt(data);
+        long l = Long.parseLong(data);
+        float f = Float.parseFloat(data);
+        double d = Double.parseDouble(data);
         
         System.out.println("" + bo + b + s + i + l + f + d);
     }
@@ -33,6 +33,10 @@ public class NeedlessBoxingBugs {
         Boolean bb = Boolean.TRUE;
 
         System.out.println("" + b + b1 + bb2 + bb);
+    }
+    
+    public int needsParse2(String num) {
+        return Integer.parseInt(num);
     }
     
 }

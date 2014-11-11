@@ -35,4 +35,8 @@ public class NeedlessBoxingBugs {
         System.out.println("" + b + b1 + bb2 + bb);
     }
     
+    public int needsParse2(String num) {
+        return Integer.valueOf(num);
+    }
+    
 }

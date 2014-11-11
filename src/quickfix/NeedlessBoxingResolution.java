@@ -49,10 +49,14 @@ public class NeedlessBoxingResolution extends BugResolution {
 
         if (useBooleanConstants) {
             Expression fixedBooleanConstant = makeFixedBooleanConstant(rewrite.getAST(), visitor);
-            rewrite.replace(visitor.badBooleanLiteral, fixedBooleanConstant, null);
+            if (visitor.badBooleanLiteral!= null) {
+                rewrite.replace(visitor.badBooleanLiteral, fixedBooleanConstant, null);
+            } else {
+                rewrite.replace(visitor.badBooleanObjectLiteral, fixedBooleanConstant, null);    
+            }
         } else {
             MethodInvocation fixedMethodInvocation = makeFixedMethodInvocation(rewrite, visitor);
-            rewrite.replace(visitor.badMethodInvocation, fixedMethodInvocation, null);
+            rewrite.replace(visitor.methodInvocationToReplace, fixedMethodInvocation, null);
         }
     }
 
@@ -83,10 +87,14 @@ public class NeedlessBoxingResolution extends BugResolution {
     private class NeedlessBoxingVisitor extends ASTVisitor implements CustomLabelVisitor {
 
         public MethodInvocation badMethodInvocation;
+        
+        public MethodInvocation methodInvocationToReplace;      //may be the same as badMethodInvocation.  May be parent if there is a call to booleanValue() or similar
 
         public BooleanLiteral badBooleanLiteral;
 
         public QualifiedName badBooleanObjectLiteral;
+
+        
 
         public String makeParseMethod() {
             if (badMethodInvocation == null)
@@ -126,6 +134,12 @@ public class NeedlessBoxingResolution extends BugResolution {
             if ("valueOf".equals(node.getName().getIdentifier()) &&
                     node.getExpression().resolveTypeBinding().getQualifiedName().startsWith("java.lang")) {
                 badMethodInvocation = node;
+                methodInvocationToReplace = node;
+                ASTNode parent = badMethodInvocation.getParent();
+                if (parent instanceof MethodInvocation && ((MethodInvocation) parent).getName().getIdentifier().endsWith("Value")) {
+                    methodInvocationToReplace = (MethodInvocation) parent;
+                }
+                
                 return false;
             }
 

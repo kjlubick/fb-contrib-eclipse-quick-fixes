@@ -431,16 +431,18 @@ public class TestContributedQuickFixes {
         // disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because the rtstubs17.jar
         // defines the constants (like Boolean.False) as null
         setDetector("edu.umd.cs.findbugs.detect.FindNullDeref", false);
+        setDetector("edu.umd.cs.findbugs.detect.LoadOfKnownNullValue", false);
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
-        packager.setExpectedLines(10, 31, 32, 33, 34, 35, 36, 37, 43, 44, 45, 46);
+        packager.setExpectedLines(10, 18, 19, 20, 21, 22, 23, 24, 30, 31, 32, 33, 39);
 
         packager.setExpectedBugPatterns("NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", 
                 "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
                 "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
                 "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
-                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION");
+                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
+                "NAB_NEEDLESS_BOXING_PARSE");
         
         packager.setExpectedLabels(0, "Replace with Boolean.TRUE");
         packager.setExpectedLabels(1, "Replace with Boolean.parseBoolean(data)");
@@ -454,6 +456,7 @@ public class TestContributedQuickFixes {
         packager.setExpectedLabels(9, "Replace with true");
         packager.setExpectedLabels(10, "Replace with Boolean.FALSE");
         packager.setExpectedLabels(11, "Replace with Boolean.TRUE");
+        packager.setExpectedLabels(12, "Replace with Integer.parseInt(num)");
         
         checkBugsAndPerformResolution(packager.asList(), "NeedlessBoxingBugs.java");
     }
