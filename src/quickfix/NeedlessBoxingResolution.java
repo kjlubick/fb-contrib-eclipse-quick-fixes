@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public class NeedlessBoxingResolution extends BugResolution {
@@ -56,8 +57,11 @@ public class NeedlessBoxingResolution extends BugResolution {
     }
 
     private Expression makeFixedBooleanConstant(AST ast, NeedlessBoxingVisitor visitor) {
-        return ast.newQualifiedName(ast.newSimpleName("Boolean"),
-                ast.newSimpleName(visitor.makeTrueOrFalse()));
+        if (visitor.badBooleanLiteral != null) {
+            // turn a BooleanLiteral into a qualified name
+            return ast.newName("Boolean." + visitor.makeTrueOrFalse());
+        }
+        return ast.newBooleanLiteral(Boolean.parseBoolean(visitor.makeTrueOrFalse()));
     }
 
     @SuppressWarnings("unchecked")
@@ -82,6 +86,8 @@ public class NeedlessBoxingResolution extends BugResolution {
 
         public BooleanLiteral badBooleanLiteral;
 
+        public QualifiedName badBooleanObjectLiteral;
+
         public String makeParseMethod() {
             if (badMethodInvocation == null)
                 return "parseXXX";
@@ -89,7 +95,7 @@ public class NeedlessBoxingResolution extends BugResolution {
             if ("Boolean".equals(typeName)) {
                 return "parseBoolean";
             } else if ("Byte".equals(typeName)) {
-                return "parseInt";
+                return "parseByte";
             } else if ("Short".equals(typeName)) {
                 return "parseShort";
             } else if ("Long".equals(typeName)) {
@@ -105,7 +111,11 @@ public class NeedlessBoxingResolution extends BugResolution {
         }
 
         public String makeTrueOrFalse() {
-            return badBooleanLiteral.booleanValue() ? "TRUE" : "FALSE";
+            if (badBooleanLiteral != null) {
+                return badBooleanLiteral.booleanValue() ? "TRUE" : "FALSE";
+            }
+            //This will be Boolean.TRUE or Boolean.FALSE
+            return badBooleanObjectLiteral.getName().getIdentifier().toLowerCase();
         }
 
         @Override
@@ -134,11 +144,28 @@ public class NeedlessBoxingResolution extends BugResolution {
 
             return true;
         }
+        
+        @Override
+        public boolean visit(QualifiedName node) {
+            if (this.badBooleanObjectLiteral != null) {
+                return false;
+            }
+            if (node.resolveUnboxing()) { // did unboxing happen? If so, that's our cue
+                badBooleanObjectLiteral = node;
+                return false;
+            }
+
+            return true;
+        }
 
         @Override
         public String getLabelReplacement() {
             if (useBooleanConstants) {
+                
+                if (badBooleanLiteral != null) {
                 return "Boolean." + makeTrueOrFalse();
+                }
+                return makeTrueOrFalse();
             }
             if (badMethodInvocation == null) {
                 return "the parse equivalent";
