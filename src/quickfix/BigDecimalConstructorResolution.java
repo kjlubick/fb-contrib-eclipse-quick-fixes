@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
 import org.eclipse.jdt.core.dom.AST;
@@ -37,6 +38,11 @@ public class BigDecimalConstructorResolution extends BugResolution {
     @Override
     public void setOptions(@Nonnull Map<String, String> options) {
         useConstructor = Boolean.parseBoolean(options.get("useConstructor"));
+    }
+    
+    @Override
+    protected ASTVisitor getCustomLabelVisitor() {
+        return new BigDecimalVisitor();
     }
 
     @Override
@@ -80,7 +86,7 @@ public class BigDecimalConstructorResolution extends BugResolution {
         return fixedConstructor;
     }
 
-    private static class BigDecimalVisitor extends ASTVisitor {
+    private static class BigDecimalVisitor extends ASTVisitor implements CustomLabelVisitor {
 
         public ClassInstanceCreation badBigDecimalConstructor = null;
 
@@ -104,6 +110,11 @@ public class BigDecimalConstructorResolution extends BugResolution {
             }
 
             return true;
+        }
+
+        @Override
+        public String getLabelReplacement() {
+            return decimalVar.getToken();
         }
 
     }

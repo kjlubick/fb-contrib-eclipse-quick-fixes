@@ -38,14 +38,14 @@
       <quickFix
       		arguments="useConstructor=false"
             class="quickfix.BigDecimalConstructorResolution"
-            label="Replace with BigDecimal.valueOf(double)"
+            label="Replace with BigDecimal.valueOf(YYY)"
             pattern="DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE">
       </quickFix>
       
       <quickFix
       		arguments="useConstructor=true"
             class="quickfix.BigDecimalConstructorResolution"
-            label="Replace with new BigDecimal(String)"
+            label="Replace with new BigDecimal(&quot;YYY&quot;)"
             pattern="DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE">
       </quickFix>
       
