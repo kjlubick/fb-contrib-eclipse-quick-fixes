@@ -475,10 +475,10 @@ public class TestContributedQuickFixes {
         
         packager.fillExpectedBugPatterns("DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE");
         
-        packager.setExpectedLabels(0, "Replace with BigDecimal.valueOf(double)",
-                "Replace with new BigDecimal(String)");
-        packager.setExpectedLabels(1, "Replace with BigDecimal.valueOf(double)",
-                "Replace with new BigDecimal(String)");
+        packager.setExpectedLabels(0, "Replace with BigDecimal.valueOf(1.23456)",
+                "Replace with new BigDecimal(\"1.23456\")");
+        packager.setExpectedLabels(1, "Replace with BigDecimal.valueOf(1.234567)",
+                "Replace with new BigDecimal(\"1.234567\")");
         
         packager.setFixToPerform(0, 0);
         packager.setFixToPerform(1, 1);
