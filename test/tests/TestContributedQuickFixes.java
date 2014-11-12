@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.mebigfatguy.fbcontrib.detect.SillynessPotPourri;
+
 import de.tobject.findbugs.FindbugsPlugin;
 import de.tobject.findbugs.builder.FindBugsWorker;
 import de.tobject.findbugs.builder.WorkItem;
@@ -459,6 +461,29 @@ public class TestContributedQuickFixes {
         packager.setExpectedLabels(12, "Replace with Integer.parseInt(num)");
         
         checkBugsAndPerformResolution(packager.asList(), "NeedlessBoxingBugs.java");
+    }
+    
+    @Test
+    public void testBigDecimalConstructorResolution() throws Exception {
+        // BigDecimalConstructorResolution.java
+        setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", false);    //these have duplicate bugs
+        setRank(10);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(7, 11);
+        
+        packager.fillExpectedBugPatterns("DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE");
+        
+        packager.setExpectedLabels(0, "Replace with BigDecimal.valueOf(double)",
+                "Replace with new BigDecimal(String)");
+        packager.setExpectedLabels(1, "Replace with BigDecimal.valueOf(double)",
+                "Replace with new BigDecimal(String)");
+        
+        packager.setFixToPerform(0, 0);
+        packager.setFixToPerform(1, 1);
+        
+        checkBugsAndPerformResolution(packager.asList(), "BigDecimalStringBugs.java");
     }
     
 }
