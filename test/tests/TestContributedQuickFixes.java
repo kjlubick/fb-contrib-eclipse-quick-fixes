@@ -493,4 +493,30 @@ public class TestContributedQuickFixes {
         checkBugsAndPerformResolution(packager.asList(), "BigDecimalStringBugs.java");
     }
     
+    @Test
+    public void testReturnValueIgnoreResolution() throws Exception {
+        // ReturnValueIgnoreResolution
+        
+        setRank(19);
+        setPriority("Low");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(12, 17, 25, 30);
+        
+        packager.setExpectedBugPatterns("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
+                "RV_RETURN_VALUE_IGNORED", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE");
+        packager.setExpectedLabels(0, "Replace with if (file.createNewFile()) {}",
+                "Replace with if (!file.createNewFile()) {}", "Store result to a local");
+        packager.setExpectedLabels(1, "Replace with if (file.delete()) {}",
+                "Replace with if (!file.delete()) {}", "Store result to a local");
+        packager.setExpectedLabels(2, "Store result to a local", "Store result back to self");
+        packager.setExpectedLabels(3, "Store result to a local");
+        
+        packager.setFixToPerform(0, 1);
+        packager.setFixToPerform(1, 0);
+        packager.setFixToPerform(2, 1);
+        
+        checkBugsAndPerformResolution(packager.asList(), "ReturnValueIgnoredBugs.java");
+    }
+    
 }
