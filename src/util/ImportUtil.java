@@ -13,7 +13,7 @@ public class ImportUtil {
             }
             filteredImports.add(oldImport);
         }
-        return filteredImports.toArray(new String[0]);
+        return filteredImports.toArray(new String[filteredImports.size()]);
     }
 
 }
