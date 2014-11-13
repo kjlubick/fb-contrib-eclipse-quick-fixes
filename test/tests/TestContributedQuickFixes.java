@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.mebigfatguy.fbcontrib.detect.SillynessPotPourri;
-
 import de.tobject.findbugs.FindbugsPlugin;
 import de.tobject.findbugs.builder.FindBugsWorker;
 import de.tobject.findbugs.builder.WorkItem;
@@ -32,7 +30,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.testplugin.JavaProjectHelper;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IMarkerResolution;
+import org.eclipse.ui.PartInitException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -72,7 +72,7 @@ public class TestContributedQuickFixes {
         testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
 
         FindbugsPlugin.setProjectSettingsEnabled(testIProject, null, true);
-
+        
         TestingUtils.waitForUiEvents(100);
     }
 
@@ -108,6 +108,7 @@ public class TestContributedQuickFixes {
 
     private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) {
         try {
+            showEditorWindowForFile(testResource);
             scanForBugs(testResource);
             assertBugPatternsMatch(packages, testResource);
             executeResolutions(packages, testResource);
@@ -117,6 +118,10 @@ public class TestContributedQuickFixes {
             fail("Exception thrown while performing resolution on " + testResource);
         }
 
+    }
+
+    private void showEditorWindowForFile(String testResource) throws JavaModelException, PartInitException {
+        JavaUI.openInEditor(TestingUtils.elementFromProject(testProject, testResource), true, true);
     }
 
     /**
@@ -367,6 +372,8 @@ public class TestContributedQuickFixes {
         // DeadShadowStoreResolution.java
         setPriority("Medium");
         setRank(15);
+        
+        setDetector("edu.umd.cs.findbugs.detect.FindDeadLocalStores", true);
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
