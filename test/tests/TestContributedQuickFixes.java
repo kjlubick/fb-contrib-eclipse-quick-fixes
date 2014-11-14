@@ -41,6 +41,7 @@ import org.junit.runners.JUnit4;
 
 import quickfix.DeadShadowStoreResolution;
 import quickfix.InsecureRandomResolution;
+import quickfix.ReturnValueIgnoreResolution;
 import utils.BugResolutionSource;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
@@ -505,12 +506,29 @@ public class TestContributedQuickFixes {
         
         packager.setExpectedBugPatterns("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
                 "RV_RETURN_VALUE_IGNORED", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE");
+        
+        String ifString = ReturnValueIgnoreResolution.descriptionForWrapIf.replace("YYY","file.createNewFile()");
+        String ifNotString = ReturnValueIgnoreResolution.descriptionForNegatedWrapIf
+                .replace("YYY","file.createNewFile()");
+        
         packager.setExpectedLabels(0, "Replace with if (file.createNewFile()) {}",
                 "Replace with if (!file.createNewFile()) {}", "Store result to a local");
+        packager.setExpectedDescriptions(0, ifString, ifNotString, ReturnValueIgnoreResolution.descriptionForNewLocal);
+        
+        ifString = ReturnValueIgnoreResolution.descriptionForWrapIf.replace("YYY","file.delete()");
+        ifNotString = ReturnValueIgnoreResolution.descriptionForNegatedWrapIf
+                .replace("YYY","file.delete()");
+        
         packager.setExpectedLabels(1, "Replace with if (file.delete()) {}",
                 "Replace with if (!file.delete()) {}", "Store result to a local");
+        packager.setExpectedDescriptions(1, ifString, ifNotString, ReturnValueIgnoreResolution.descriptionForNewLocal);
+        
+        
         packager.setExpectedLabels(2, "Store result to a local", "Store result back to self");
+        packager.setExpectedDescriptions(2, ReturnValueIgnoreResolution.descriptionForNewLocal,
+                ReturnValueIgnoreResolution.descriptionForStoreToSelf);
         packager.setExpectedLabels(3, "Store result to a local");
+        packager.setExpectedDescriptions(3, ReturnValueIgnoreResolution.descriptionForNewLocal);
         
         packager.setFixToPerform(0, 1);
         packager.setFixToPerform(1, 0);

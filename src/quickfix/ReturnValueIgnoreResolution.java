@@ -40,13 +40,13 @@ public class ReturnValueIgnoreResolution extends BugResolution {
 
     private final static String exceptionalSysOut = "System.out.println(\"Exceptional return value\");";
 
-    private final static String descriptionForWrapIf = "Replace with <code><pre>if (YYY) {\n\t" + exceptionalSysOut
+    public final static String descriptionForWrapIf = "Replace with <code><pre>if (YYY) {\n\t" + exceptionalSysOut
             + "\n}</pre></code>";
 
-    private final static String descriptionForNegatedWrapIf = "Replace with <code><pre>if (!YYY) {\n\t" + exceptionalSysOut
+    public final static String descriptionForNegatedWrapIf = "Replace with <code><pre>if (!YYY) {\n\t" + exceptionalSysOut
             + "\n}</pre></code>";
 
-    private final static String descriptionForNewLocal = "Makes a new local variable and assigns the result of the method call to it.";
+    public final static String descriptionForNewLocal = "Makes a new local variable and assigns the result of the method call to it.";
 
     public final static String descriptionForStoreToSelf = "Stores the result of the method call back to the original method caller.";
 

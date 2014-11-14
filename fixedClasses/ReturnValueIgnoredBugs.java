@@ -1,5 +1,6 @@
 import java.io.File;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 
 public class ReturnValueIgnoredBugs {
@@ -9,12 +10,16 @@ public class ReturnValueIgnoredBugs {
         File file = new File(args[0]);
         
         if (!file.exists()) {
-            file.createNewFile();
+            if (!file.createNewFile()) {
+                System.out.println("Exceptional return value");
+            }
         }
         
         System.out.println(file.getAbsolutePath());
         
-        file.delete();
+        if (file.delete()) {
+            System.out.println("Exceptional return value");
+        }
     }
     
     
@@ -22,12 +27,12 @@ public class ReturnValueIgnoredBugs {
         if (s == null) {
             return "";
         }
-        s.replace("\n", "").replace("\t", "");
+        s = s.replace("\n", "").replace("\t", "");
         return s.trim();
     }
     
     public void task(ExecutorService es) {
-        es.submit(new Runnable() {
+        Future<?> local = es.submit(new Runnable() {
             
             @Override
             public void run() {
