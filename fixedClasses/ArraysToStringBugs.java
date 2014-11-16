@@ -8,6 +8,10 @@ public class ArraysToStringBugs {
         System.out.println(Arrays.toString(args));
     }
     
+    public String twoArrays(Object[] objs, int[] ints) {  
+        return Arrays.toString(objs) + " : " + Arrays.toString(ints);
+    }
+    
     StringBuffer sBuffer = new StringBuffer();
     
     public String toString(Integer i, ArraysToStringBugs[] arr, BigDecimal bd) {
@@ -15,9 +19,5 @@ public class ArraysToStringBugs {
         sBuffer.append(Arrays.toString(arr));
         sBuffer.append(bd);
         return sBuffer.toString();
-    }
-    
-    public String twoArrays(Object[] objs, int[] ints) {        //must be last one, due to double fix
-        return Arrays.toString(objs) + " : " + Arrays.toString(ints);
     }
 }

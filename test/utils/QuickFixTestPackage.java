@@ -8,6 +8,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class QuickFixTestPackage {
 
     public static final int IGNORE_FIX = -1;
+    
+    public static final int FIXED_BY_ANOTHER_FIX = -2;
 
     public String expectedPattern = null;
 

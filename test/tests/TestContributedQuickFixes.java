@@ -66,11 +66,11 @@ public class TestContributedQuickFixes {
     private BugResolutionSource resolutionSource;
     
     @Rule
-    public TestWatcher watchman= new TestWatcher() {
+    public TestWatcher watcher = new TestWatcher() {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            TestingUtils.waitForUiEvents(20_000);
+          //  TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
@@ -195,9 +195,11 @@ public class TestContributedQuickFixes {
         // we keep a count of the ignored resolutions (QuickFixTestPackage.IGNORE_FIX) and correct
         // our progress using that
         int ignoredResolutions = 0;
-        for (int i = 0; i < packages.size(); i++) {
+        int pendingBogoFixes = 0;
+        boolean skipNextScan = true;
+        for (int resolutionsCompleted = 0; resolutionsCompleted < packages.size(); resolutionsCompleted++) {
 
-            if (i != 0) { // Refresh, rebuild, and scan for bugs again
+            if (skipNextScan) { // Refresh, rebuild, and scan for bugs again
                 // We only need to do this after the first time, as we expect the file to have
                 // been scanned and checked for consistency (see checkBugsAndPerformResolution)
                 testIProject.refreshLocal(IResource.DEPTH_ONE, null);
@@ -205,17 +207,31 @@ public class TestContributedQuickFixes {
                 clearMarkersAndBugs();
                 scanForBugs(testResource);
             }
+            skipNextScan = false;
+            
+            System.out.println(resolutionsCompleted);
 
             IMarker[] markers = getSortedMarkersFromFile(testResource);
 
             assertEquals("Bug marker number was different than anticipated.  "
                     + "Check to see if another bug marker was introduced by fixing another.",
-                    packages.size() - i, markers.length - ignoredResolutions);
+                    packages.size() - (resolutionsCompleted),
+                    markers.length - ignoredResolutions - pendingBogoFixes);
 
-            IMarker nextNonIgnoredMarker = markers[ignoredResolutions]; // Bug markers we ignore float to the "top" of the stack
+            IMarker nextNonIgnoredMarker = markers[ignoredResolutions + pendingBogoFixes]; // Bug markers we ignore float to the "top" of the stack
                                                                         // ignoredResolutions can act as an index for that
-            if (!performResolution(packages.get(i), nextNonIgnoredMarker)) {
+            
+            QuickFixTestPackage p = packages.get(resolutionsCompleted);
+            performResolution(p, nextNonIgnoredMarker);
+            if (p.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
                 ignoredResolutions++;
+                skipNextScan = true;
+            } else if (p.resolutionToExecute == QuickFixTestPackage.FIXED_BY_ANOTHER_FIX) {
+                pendingBogoFixes++;
+                skipNextScan = true;
+            }
+            else {
+                pendingBogoFixes = 0;
             }
         }
     }
@@ -231,7 +247,7 @@ public class TestContributedQuickFixes {
     }
 
     private boolean performResolution(QuickFixTestPackage qfPackage, IMarker marker) {
-        if (qfPackage.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
+        if (qfPackage.resolutionToExecute < 0) {
             return false; // false means the marker should be ignored.
         }
         // This doesn't actually click on the bug marker, but it programmatically
@@ -422,8 +438,8 @@ public class TestContributedQuickFixes {
         packager.fillExpectedBugPatterns("LSC_LITERAL_STRING_COMPARISON");
         packager.fillExpectedLabels("Swap string variable and string literal");
         
-        packager.setFixToPerform(1, QuickFixTestPackage.IGNORE_FIX); //the last fix will fix all three problems
-        packager.setFixToPerform(2, QuickFixTestPackage.IGNORE_FIX); // I ignore 1 and 2 because that integrates with the framework
+        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); //the last fix will fix all three problems
+        packager.setFixToPerform(2, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); // I ignore 1 and 2 because that integrates with the framework
 
         checkBugsAndPerformResolution(packager.asList(), "LiteralStringComparisonBugs.java");
     }
@@ -561,12 +577,12 @@ public class TestContributedQuickFixes {
         setPriority("Medium");
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(7, 14, 20, 20);
+        packager.setExpectedLines(7, 11, 11, 18);
         
         packager.fillExpectedBugPatterns("DMI_INVOKING_TOSTRING_ON_ARRAY");
         packager.fillExpectedLabels("Wrap array with Arrays.toString()");
         
-        packager.setFixToPerform(2, QuickFixTestPackage.IGNORE_FIX); //we'll have a 2 for one fix on line 20
+        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); //we'll have a 2 for one fix on line 20
         
         checkBugsAndPerformResolution(packager.asList(), "ArraysToStringBugs.java");
     }
