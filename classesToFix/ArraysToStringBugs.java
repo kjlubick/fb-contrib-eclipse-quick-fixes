@@ -7,10 +7,6 @@ public class ArraysToStringBugs {
         System.out.println(args);
     }
     
-    public String twoArrays(Object[] objs, int[] ints) {
-        return objs + " : " + ints;
-    }
-    
     StringBuffer sBuffer = new StringBuffer();
     
     public String toString(Integer i, ArraysToStringBugs[] arr, BigDecimal bd) {
@@ -18,5 +14,9 @@ public class ArraysToStringBugs {
         sBuffer.append(arr);
         sBuffer.append(bd);
         return sBuffer.toString();
+    }
+    
+    public String twoArrays(Object[] objs, int[] ints) {        //must be last one, due to double fix
+        return objs + " : " + ints;
     }
 }

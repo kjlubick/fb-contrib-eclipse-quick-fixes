@@ -49,7 +49,13 @@ public class QuickFixTestPackager {
             @Override
             public int compare(QuickFixTestPackage o1, QuickFixTestPackage o2) {
                 if (o1.expectedPattern.equals(o2.expectedPattern)) {
-                    return o1.lineNumber - o2.lineNumber;
+                    if (o1.lineNumber != o2.lineNumber) {
+                        return o1.lineNumber - o2.lineNumber;
+                    }
+                    if (o1.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
+                        return -5;   // on the same line, do ignore fixes first
+                    }
+                    return o1.resolutionToExecute - o2.resolutionToExecute;
                 }
                 return o1.expectedPattern.compareTo(o2.expectedPattern);
             }

@@ -35,7 +35,10 @@ import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.PartInitException;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -61,6 +64,20 @@ public class TestContributedQuickFixes {
     private static IProject testIProject;
 
     private BugResolutionSource resolutionSource;
+    
+    @Rule
+    public TestWatcher watchman= new TestWatcher() {
+        @Override
+        protected void failed(Throwable e, Description description) {
+            System.out.println("Failed");
+            TestingUtils.waitForUiEvents(20_000);
+        }
+
+        @Override
+        protected void succeeded(Description description) {
+            System.out.println("Passed");
+           }
+       };
 
     @BeforeClass
     public static void loadFilesThatNeedFixing() throws CoreException, IOException {
@@ -536,5 +553,23 @@ public class TestContributedQuickFixes {
         
         checkBugsAndPerformResolution(packager.asList(), "ReturnValueIgnoredBugs.java");
     }
+    
+    @Test
+    public void testArraysToStringResolution() throws Exception {
+        // ArraysToStringResolution.java
+        setRank(10);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(7, 14, 20, 20);
+        
+        packager.fillExpectedBugPatterns("DMI_INVOKING_TOSTRING_ON_ARRAY");
+        packager.fillExpectedLabels("Wrap array with Arrays.toString()");
+        
+        packager.setFixToPerform(2, QuickFixTestPackage.IGNORE_FIX); //we'll have a 2 for one fix on line 20
+        
+        checkBugsAndPerformResolution(packager.asList(), "ArraysToStringBugs.java");
+    }
+    
     
 }
