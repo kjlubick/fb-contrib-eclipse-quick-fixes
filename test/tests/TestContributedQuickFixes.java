@@ -199,7 +199,7 @@ public class TestContributedQuickFixes {
         boolean skipNextScan = true;
         for (int resolutionsCompleted = 0; resolutionsCompleted < packages.size(); resolutionsCompleted++) {
 
-            if (skipNextScan) { // Refresh, rebuild, and scan for bugs again
+            if (!skipNextScan) { // Refresh, rebuild, and scan for bugs again
                 // We only need to do this after the first time, as we expect the file to have
                 // been scanned and checked for consistency (see checkBugsAndPerformResolution)
                 testIProject.refreshLocal(IResource.DEPTH_ONE, null);
@@ -222,13 +222,11 @@ public class TestContributedQuickFixes {
                                                                         // ignoredResolutions can act as an index for that
             
             QuickFixTestPackage p = packages.get(resolutionsCompleted);
-            performResolution(p, nextNonIgnoredMarker);
+            skipNextScan = !performResolution(p, nextNonIgnoredMarker);
             if (p.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
                 ignoredResolutions++;
-                skipNextScan = true;
             } else if (p.resolutionToExecute == QuickFixTestPackage.FIXED_BY_ANOTHER_FIX) {
                 pendingBogoFixes++;
-                skipNextScan = true;
             }
             else {
                 pendingBogoFixes = 0;
