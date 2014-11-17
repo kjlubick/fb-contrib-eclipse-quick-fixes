@@ -585,5 +585,23 @@ public class TestContributedQuickFixes {
         checkBugsAndPerformResolution(packager.asList(), "ArraysToStringBugs.java");
     }
     
+    @Test
+    public void testSQLOffByOneResolution() throws Exception {
+        // SQLOffByOneResolution.java
+        setRank(1);
+        setPriority("High");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(10, 14, 19, 28);
+        
+        packager.fillExpectedBugPatterns("SQL_BAD_RESULTSET_ACCESS");
+        packager.fillExpectedLabels("Change this index to 1 instead of 0", 
+                "Increment this and all similar indicies in this block by 1");
+        
+        packager.setFixToPerform(2, 1);
+        packager.setFixToPerform(3, 1);
+        
+        checkBugsAndPerformResolution(packager.asList(), "SQLOffByOneBugs.java");
+    }
     
 }
