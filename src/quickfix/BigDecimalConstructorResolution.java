@@ -39,7 +39,7 @@ public class BigDecimalConstructorResolution extends BugResolution {
     public void setOptions(@Nonnull Map<String, String> options) {
         useConstructor = Boolean.parseBoolean(options.get("useConstructor"));
     }
-    
+
     @Override
     protected ASTVisitor getCustomLabelVisitor() {
         return new BigDecimalVisitor();

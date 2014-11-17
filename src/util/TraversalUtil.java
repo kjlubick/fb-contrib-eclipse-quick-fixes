@@ -14,7 +14,7 @@ public class TraversalUtil {
     public static <T extends ASTNode> T findClosestAncestor(@Nonnull ASTNode node, @Nonnull Class<T> parentClass) {
         ASTNode parent = node.getParent();
         while (parent != null) {
-            if (parentClass.isAssignableFrom(parent.getClass())) {  //allows parentClass to be something generic like Statement.class
+            if (parentClass.isAssignableFrom(parent.getClass())) { // allows parentClass to be something generic like Statement.class
                 return (T) parent;
             }
             parent = parent.getParent();

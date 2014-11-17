@@ -5,9 +5,9 @@ import java.util.ArrayList;
 public class ImportUtil {
 
     public static String[] filterOutJavaLangImports(String[] addedImports) {
-        
+
         ArrayList<String> filteredImports = new ArrayList<>();
-        for(String oldImport:addedImports) {
+        for (String oldImport : addedImports) {
             if (oldImport.startsWith("java.lang")) {
                 continue;
             }

@@ -66,6 +66,7 @@ public class TestContributedQuickFixes {
     private BugResolutionSource resolutionSource;
     
     @Rule
+    @SuppressFBWarnings(value="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification="This is what the sample code does.")
     public TestWatcher watcher = new TestWatcher() {
         @Override
         protected void failed(Throwable e, Description description) {

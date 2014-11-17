@@ -14,7 +14,7 @@ public class QuickFixTestPackage {
     public String expectedPattern = null;
 
     public List<String> expectedLabels = null;
-    
+    @SuppressFBWarnings(value="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "This is a struct class.")
     public List<String> expectedDescriptions = null;
 
     public int lineNumber = -1;

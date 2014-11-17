@@ -228,11 +228,11 @@ public class ReturnValueIgnoreResolution extends BugResolution {
     private Statement makeSelfAssignment(ASTRewrite rewrite, ReturnValueResolutionVisitor rvrFinder) {
         AST rootNode = rewrite.getAST();
         Assignment newAssignment = rootNode.newAssignment();
-        
+
         Expression leftExpression = rvrFinder.badMethodInvocation.getExpression();
-        
+
         while (leftExpression instanceof MethodInvocation) {
-            leftExpression = ((MethodInvocation)leftExpression).getExpression();
+            leftExpression = ((MethodInvocation) leftExpression).getExpression();
         }
 
         newAssignment.setLeftHandSide((Expression) rewrite.createCopyTarget(leftExpression));

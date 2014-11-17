@@ -49,10 +49,10 @@ public class NeedlessBoxingResolution extends BugResolution {
 
         if (useBooleanConstants) {
             Expression fixedBooleanConstant = makeFixedBooleanConstant(rewrite.getAST(), visitor);
-            if (visitor.badBooleanLiteral!= null) {
+            if (visitor.badBooleanLiteral != null) {
                 rewrite.replace(visitor.badBooleanLiteral, fixedBooleanConstant, null);
             } else {
-                rewrite.replace(visitor.badBooleanObjectLiteral, fixedBooleanConstant, null);    
+                rewrite.replace(visitor.badBooleanObjectLiteral, fixedBooleanConstant, null);
             }
         } else {
             MethodInvocation fixedMethodInvocation = makeFixedMethodInvocation(rewrite, visitor);
@@ -87,14 +87,12 @@ public class NeedlessBoxingResolution extends BugResolution {
     private class NeedlessBoxingVisitor extends ASTVisitor implements CustomLabelVisitor {
 
         public MethodInvocation badMethodInvocation;
-        
-        public MethodInvocation methodInvocationToReplace;      //may be the same as badMethodInvocation.  May be parent if there is a call to booleanValue() or similar
+
+        public MethodInvocation methodInvocationToReplace; // may be the same as badMethodInvocation. May be parent if there is a call to booleanValue() or similar
 
         public BooleanLiteral badBooleanLiteral;
 
         public QualifiedName badBooleanObjectLiteral;
-
-        
 
         public String makeParseMethod() {
             if (badMethodInvocation == null)
@@ -122,7 +120,7 @@ public class NeedlessBoxingResolution extends BugResolution {
             if (badBooleanLiteral != null) {
                 return badBooleanLiteral.booleanValue() ? "TRUE" : "FALSE";
             }
-            //This will be Boolean.TRUE or Boolean.FALSE
+            // This will be Boolean.TRUE or Boolean.FALSE
             return badBooleanObjectLiteral.getName().getIdentifier().toLowerCase();
         }
 
@@ -139,7 +137,7 @@ public class NeedlessBoxingResolution extends BugResolution {
                 if (parent instanceof MethodInvocation && ((MethodInvocation) parent).getName().getIdentifier().endsWith("Value")) {
                     methodInvocationToReplace = (MethodInvocation) parent;
                 }
-                
+
                 return false;
             }
 
@@ -158,7 +156,7 @@ public class NeedlessBoxingResolution extends BugResolution {
 
             return true;
         }
-        
+
         @Override
         public boolean visit(QualifiedName node) {
             if (this.badBooleanObjectLiteral != null) {
@@ -175,9 +173,9 @@ public class NeedlessBoxingResolution extends BugResolution {
         @Override
         public String getLabelReplacement() {
             if (useBooleanConstants) {
-                
+
                 if (badBooleanLiteral != null) {
-                return "Boolean." + makeTrueOrFalse();
+                    return "Boolean." + makeTrueOrFalse();
                 }
                 return makeTrueOrFalse();
             }
