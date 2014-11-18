@@ -15,6 +15,7 @@ import de.tobject.findbugs.reporter.MarkerUtil;
 
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolutionGenerator;
 
 import org.eclipse.core.resources.IMarker;
@@ -26,15 +27,24 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.testplugin.JavaProjectHelper;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IMarkerResolution;
+import org.eclipse.ui.PartInitException;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import quickfix.DeadShadowStoreResolution;
+import quickfix.InsecureRandomResolution;
+import quickfix.ReturnValueIgnoreResolution;
 import utils.BugResolutionSource;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
@@ -54,6 +64,21 @@ public class TestContributedQuickFixes {
     private static IProject testIProject;
 
     private BugResolutionSource resolutionSource;
+    
+    @Rule
+    @SuppressFBWarnings(value="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification="This is what the sample code does.")
+    public TestWatcher watcher = new TestWatcher() {
+        @Override
+        protected void failed(Throwable e, Description description) {
+            System.out.println("Failed");
+            //TestingUtils.waitForUiEvents(20_000);
+        }
+
+        @Override
+        protected void succeeded(Description description) {
+            System.out.println("Passed");
+           }
+       };
 
     @BeforeClass
     public static void loadFilesThatNeedFixing() throws CoreException, IOException {
@@ -66,7 +91,7 @@ public class TestContributedQuickFixes {
         testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
 
         FindbugsPlugin.setProjectSettingsEnabled(testIProject, null, true);
-
+        
         TestingUtils.waitForUiEvents(100);
     }
 
@@ -79,6 +104,7 @@ public class TestContributedQuickFixes {
         testProject = JavaProjectHelper.createJavaProject(PROJECT_NAME, BIN_FOLDER_NAME);
         JavaProjectHelper.addRTJar17(testProject);
         JavaProjectHelper.addSourceContainer(testProject, SRC_FOLDER_NAME);
+        testProject.setOption("org.eclipse.jdt.core.formatter.tabulation.char", JavaCore.SPACE);
         testIProject = testProject.getProject();
     }
 
@@ -101,7 +127,8 @@ public class TestContributedQuickFixes {
 
     private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) {
         try {
-            scanForBugs(testResource);
+            showEditorWindowForFile(testResource);
+            scanUntilMarkers(testResource);
             assertBugPatternsMatch(packages, testResource);
             executeResolutions(packages, testResource);
             assertOutputAndInputFilesMatch(testResource);
@@ -110,6 +137,22 @@ public class TestContributedQuickFixes {
             fail("Exception thrown while performing resolution on " + testResource);
         }
 
+    }
+
+    private void scanUntilMarkers(String testResource) throws CoreException {
+        for (int i = 0 ;i < 3; i++) {
+            scanForBugs(testResource);
+            IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
+            if (markers.length > 0) {
+                return;
+            }
+        }
+        fail("Did not find any markers... tried 3 times");
+        
+    }
+
+    private void showEditorWindowForFile(String testResource) throws JavaModelException, PartInitException {
+        JavaUI.openInEditor(TestingUtils.elementFromProject(testProject, testResource), true, true);
     }
 
     /**
@@ -134,12 +177,11 @@ public class TestContributedQuickFixes {
             }
         });
 
-        // wait for the findBugsWorker to finish
         worker.work(Collections.singletonList(new WorkItem(element)));
-        // half a second reduces the chance that the IMarkers haven't loaded yet
-        // and the tests will fail unpredictably
+        // wait for the findBugsWorker to finish
+        // 500ms reduces the chance that the IMarkers haven't loaded yet and the tests will fail unpredictably
         // (see JavaProjectHelper discussion about performDummySearch for more info)
-        TestingUtils.waitForUiEvents(500);
+        TestingUtils.waitForUiEvents(800);
         while (isWorking.get()) {
             TestingUtils.waitForUiEvents(100);
         }
@@ -153,31 +195,55 @@ public class TestContributedQuickFixes {
         assertEquals(packages.size(), markers.length);
 
         TestingUtils.assertBugPatternsMatch(packages, markers);
-        TestingUtils.assertPresentLabels(packages, markers, resolutionSource);
+        TestingUtils.assertLabelsAndDescriptionsMatch(packages, markers, resolutionSource);
         TestingUtils.assertLineNumbersMatch(packages, markers);
         TestingUtils.assertAllMarkersHaveResolutions(markers, resolutionSource);
     }
 
     private void executeResolutions(List<QuickFixTestPackage> packages, String testResource) throws CoreException
     {
-        for (int i = 0; i < packages.size(); i++) {
+        // Some resolutions can be ignored. One example is a detector that has one or more sometimes
+        // applicable quickfixes, but occasionally none apply. These are useful to include in the
+        // test cases (e.g. DeadLocalStoreBugs.java), and need to be properly handled.
+        // we keep a count of the ignored resolutions (QuickFixTestPackage.IGNORE_FIX) and correct
+        // our progress using that
+        int ignoredResolutions = 0;
+        int pendingBogoFixes = 0;
+        boolean skipNextScan = true;
+        for (int resolutionsCompleted = 0; resolutionsCompleted < packages.size(); resolutionsCompleted++) {
 
-            if (i != 0) { // Refresh, rebuild, and scan for bugs again
+            if (!skipNextScan) { // Refresh, rebuild, and scan for bugs again
                 // We only need to do this after the first time, as we expect the file to have
                 // been scanned and checked for consistency (see checkBugsAndPerformResolution)
                 testIProject.refreshLocal(IResource.DEPTH_ONE, null);
                 testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
                 clearMarkersAndBugs();
-                scanForBugs(testResource);
+                scanUntilMarkers(testResource);
             }
+            skipNextScan = false;
+            
+            System.out.println(resolutionsCompleted);
 
             IMarker[] markers = getSortedMarkersFromFile(testResource);
 
-            assertEquals("Bug marker number was different than anticipated "
+            assertEquals("Bug marker number was different than anticipated.  "
                     + "Check to see if another bug marker was introduced by fixing another.",
-                    packages.size() - i, markers.length);
+                    packages.size() - (resolutionsCompleted),
+                    markers.length - ignoredResolutions - pendingBogoFixes);
 
-            performResolution(packages.get(i), markers[0]); // resolve the first bug marker
+            IMarker nextNonIgnoredMarker = markers[ignoredResolutions + pendingBogoFixes]; // Bug markers we ignore float to the "top" of the stack
+                                                                        // ignoredResolutions can act as an index for that
+            
+            QuickFixTestPackage p = packages.get(resolutionsCompleted);
+            skipNextScan = !performResolution(p, nextNonIgnoredMarker);
+            if (p.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
+                ignoredResolutions++;
+            } else if (p.resolutionToExecute == QuickFixTestPackage.FIXED_BY_ANOTHER_FIX) {
+                pendingBogoFixes++;
+            }
+            else {
+                pendingBogoFixes = 0;
+            }
         }
     }
 
@@ -191,21 +257,26 @@ public class TestContributedQuickFixes {
         return markers;
     }
 
-    private void performResolution(QuickFixTestPackage qfPackage, IMarker marker) {
+    private boolean performResolution(QuickFixTestPackage qfPackage, IMarker marker) {
+        if (qfPackage.resolutionToExecute < 0) {
+            return false; // false means the marker should be ignored.
+        }
         // This doesn't actually click on the bug marker, but it programmatically
-        // does the same thing
+        // gets the same resolutions.
         IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
-
-        assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute +
+        assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute + " of " + qfPackage +
                 " but there were only " + resolutions.length + " to choose from."
                 , resolutions.length > qfPackage.resolutionToExecute);
-        // the order isn't guarenteed, so we have to check the labels.
+
+        // the order isn't guaranteed, so we have to check the labels.
+        @SuppressFBWarnings("NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
         String resolutionToDo = qfPackage.expectedLabels.get(qfPackage.resolutionToExecute);
         for (IMarkerResolution resolution : resolutions) {
             if (resolution.getLabel().equals(resolutionToDo)) {
                 resolution.run(marker);
             }
         }
+        return true; // a resolution was performed and we expect the bug marker to disappear.
     }
 
     private void assertOutputAndInputFilesMatch(String testResource) throws JavaModelException, IOException {
@@ -219,7 +290,7 @@ public class TestContributedQuickFixes {
      * not just one bug pattern.
      * 
      * @param dotSeperatedDetectorClass
-     *            A string with the dot-seperated-class of the detector to enable/disable
+     *            A string with the dot-separated-class of the detector to enable/disable
      * @param enabled
      */
     private void setDetector(String dotSeperatedDetectorClass, boolean enabled) {
@@ -289,13 +360,12 @@ public class TestContributedQuickFixes {
     }
 
     @Test
-    public void testUseCharacterParameterizedMethod() throws Exception {
+    public void testUseCharacterParameterizedMethodResolution() throws Exception {
         // StringToCharResolution.java
         setPriority("Medium");
         setRank(20);
         // this pops up when fixing the bug on line 31 (not the fixes fault, but the tests)
         setDetector("com.mebigfatguy.fbcontrib.detect.InefficientStringBuffering", false);
-        // setDetector(dotSeperatedDetectorClass, enabled);
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
         packager.setExpectedLines(8, 13, 19, 23, 27, 31, 35, 39);
@@ -319,4 +389,256 @@ public class TestContributedQuickFixes {
         checkBugsAndPerformResolution(packager.asList(), "SingleLengthStringBugs.java");
     }
 
+    @Test
+    public void testEntrySetResolution() throws Exception {
+        // EntrySetResolution.java
+        setPriority("Medium");
+        setRank(18);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(10, 16, 23, 30);
+        packager.fillExpectedBugPatterns("WMI_WRONG_MAP_ITERATOR");
+
+        packager.fillExpectedLabels("Replace with a foreach loop using entrySet()");
+        
+        packager.setExpectedDescriptions(0, "for(Map.Entry&lt;String,Integer&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Integer tempVar = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(1, "for(Map.Entry&lt;String,Integer&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Integer i = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(2, "for(Map.Entry&lt;String,List<Integer>&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>List<Integer> someVal = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(3, "for(Map.Entry&lt;String,Set<String>&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Set<String> tempVar = entry.getValue();<br/>...<br/>}");
+        
+
+        checkBugsAndPerformResolution(packager.asList(), "WrongMapIteratorBugs.java");
+        
+    }
+
+    @Test
+    public void testDeadShadowStoreResolution() throws Exception {
+        // DeadShadowStoreResolution.java
+        setPriority("Medium");
+        setRank(15);
+        
+        setDetector("edu.umd.cs.findbugs.detect.FindDeadLocalStores", true);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(12, 34, 39, 42);
+        packager.setExpectedBugPatterns("DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD", "DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD",
+                "DLS_DEAD_LOCAL_STORE", "DLS_DEAD_LOCAL_STORE");
+        packager.setExpectedLabels(0, "Prefix assignment to store to field");
+        packager.setExpectedLabels(1, "Prefix assignment to store to field");
+        packager.setExpectedLabels(2, "Prefix assignment like DeadLocalStoreBugs.this.className");
+        packager.setExpectedLabels(3); // no resolutions, it doesn't apply
+        packager.fillExpectedDescriptions(DeadShadowStoreResolution.DSS_DESC);
+        packager.setExpectedDescriptions(3); //no descriptions either
+        
+        packager.setFixToPerform(3, QuickFixTestPackage.IGNORE_FIX);
+        checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
+    }
+    
+    
+    @Test
+    public void testLiteralStringComparisonResolution() throws Exception {
+        // LiteralStringComparisonResolution.java
+        setPriority("Medium");
+        setRank(10);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(6, 12, 13, 15);
+        packager.fillExpectedBugPatterns("LSC_LITERAL_STRING_COMPARISON");
+        packager.fillExpectedLabels("Swap string variable and string literal");
+        
+        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); //the last fix will fix all three problems
+        packager.setFixToPerform(2, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); // I ignore 1 and 2 because that integrates with the framework
+
+        checkBugsAndPerformResolution(packager.asList(), "LiteralStringComparisonBugs.java");
+    }
+
+    @Test
+    public void testInsecureRandomResolution() throws Exception {
+        // InsecureRandomResolution.java
+        setPriority("Low");
+        setRank(20);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(6, 8);
+        packager.fillExpectedBugPatterns("MDM_RANDOM_SEED");
+        packager.fillExpectedLabels("Initialize with seed from SecureRandom", "Replace using a SecureRandom object");
+        packager.fillExpectedDescriptions(InsecureRandomResolution.GENERATE_SEED_DESC,
+                InsecureRandomResolution.SECURE_RENAME_DESC);
+        packager.setFixToPerform(0, 0);
+        packager.setFixToPerform(1, 1);
+
+        checkBugsAndPerformResolution(packager.asList(), "InsecureRandomBugs.java");
+    }
+    
+    @Test
+    public void testNeedlessBoxingResolution() throws Exception {
+        // NeedlessBoxingResolution.java
+        setPriority("Low");
+        setRank(20);
+        setDetector("edu.umd.cs.findbugs.detect.UnreadFields", false);
+        setDetector("edu.umd.cs.findbugs.detect.DumbMethods", false);  //some overlap with the parse
+        setDetector("com.mebigfatguy.fbcontrib.detect.FinalParameters", false);
+        // disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because the rtstubs17.jar
+        // defines the constants (like Boolean.False) as null
+        setDetector("edu.umd.cs.findbugs.detect.FindNullDeref", false);
+        setDetector("edu.umd.cs.findbugs.detect.LoadOfKnownNullValue", false);
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+
+        packager.setExpectedLines(10, 18, 19, 20, 21, 22, 23, 24, 30, 31, 32, 33, 39);
+
+        packager.setExpectedBugPatterns("NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", 
+                "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
+                "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
+                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
+                "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
+                "NAB_NEEDLESS_BOXING_PARSE");
+        
+        packager.setExpectedLabels(0, "Replace with Boolean.TRUE");
+        packager.setExpectedLabels(1, "Replace with Boolean.parseBoolean(data)");
+        packager.setExpectedLabels(2, "Replace with Byte.parseByte(data)");
+        packager.setExpectedLabels(3, "Replace with Short.parseShort(data)");
+        packager.setExpectedLabels(4, "Replace with Integer.parseInt(data)");
+        packager.setExpectedLabels(5, "Replace with Long.parseLong(data)");
+        packager.setExpectedLabels(6, "Replace with Float.parseFloat(data)");
+        packager.setExpectedLabels(7, "Replace with Double.parseDouble(data)");
+        packager.setExpectedLabels(8, "Replace with false");
+        packager.setExpectedLabels(9, "Replace with true");
+        packager.setExpectedLabels(10, "Replace with Boolean.FALSE");
+        packager.setExpectedLabels(11, "Replace with Boolean.TRUE");
+        packager.setExpectedLabels(12, "Replace with Integer.parseInt(num)");
+        
+        checkBugsAndPerformResolution(packager.asList(), "NeedlessBoxingBugs.java");
+    }
+    
+    @Test
+    public void testBigDecimalConstructorResolution() throws Exception {
+        // BigDecimalConstructorResolution.java
+        setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", false);    //these have duplicate bugs
+        setRank(10);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(7, 11);
+        
+        packager.fillExpectedBugPatterns("DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE");
+        
+        packager.setExpectedLabels(0, "Replace with BigDecimal.valueOf(1.23456)",
+                "Replace with new BigDecimal(\"1.23456\")");
+        packager.setExpectedLabels(1, "Replace with BigDecimal.valueOf(1.234567)",
+                "Replace with new BigDecimal(\"1.234567\")");
+        
+        packager.setFixToPerform(0, 0);
+        packager.setFixToPerform(1, 1);
+        
+        checkBugsAndPerformResolution(packager.asList(), "BigDecimalStringBugs.java");
+    }
+    
+    @Test
+    public void testReturnValueIgnoreResolution() throws Exception {
+        // ReturnValueIgnoreResolution
+        
+        setRank(19);
+        setPriority("Low");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(12, 17, 25, 30);
+        
+        packager.setExpectedBugPatterns("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
+                "RV_RETURN_VALUE_IGNORED", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE");
+        
+        String ifString = ReturnValueIgnoreResolution.descriptionForWrapIf.replace("YYY","file.createNewFile()");
+        String ifNotString = ReturnValueIgnoreResolution.descriptionForNegatedWrapIf
+                .replace("YYY","file.createNewFile()");
+        
+        packager.setExpectedLabels(0, "Replace with if (file.createNewFile()) {}",
+                "Replace with if (!file.createNewFile()) {}", "Store result to a local");
+        packager.setExpectedDescriptions(0, ifString, ifNotString, ReturnValueIgnoreResolution.descriptionForNewLocal);
+        
+        ifString = ReturnValueIgnoreResolution.descriptionForWrapIf.replace("YYY","file.delete()");
+        ifNotString = ReturnValueIgnoreResolution.descriptionForNegatedWrapIf
+                .replace("YYY","file.delete()");
+        
+        packager.setExpectedLabels(1, "Replace with if (file.delete()) {}",
+                "Replace with if (!file.delete()) {}", "Store result to a local");
+        packager.setExpectedDescriptions(1, ifString, ifNotString, ReturnValueIgnoreResolution.descriptionForNewLocal);
+        
+        
+        packager.setExpectedLabels(2, "Store result to a local", "Store result back to self");
+        packager.setExpectedDescriptions(2, ReturnValueIgnoreResolution.descriptionForNewLocal,
+                ReturnValueIgnoreResolution.descriptionForStoreToSelf);
+        packager.setExpectedLabels(3, "Store result to a local");
+        packager.setExpectedDescriptions(3, ReturnValueIgnoreResolution.descriptionForNewLocal);
+        
+        packager.setFixToPerform(0, 1);
+        packager.setFixToPerform(1, 0);
+        packager.setFixToPerform(2, 1);
+        
+        checkBugsAndPerformResolution(packager.asList(), "ReturnValueIgnoredBugs.java");
+    }
+    
+    @Test
+    public void testArraysToStringResolution() throws Exception {
+        // ArraysToStringResolution.java
+        setRank(10);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(7, 11, 11, 18);
+        
+        packager.fillExpectedBugPatterns("DMI_INVOKING_TOSTRING_ON_ARRAY");
+        packager.fillExpectedLabels("Wrap array with Arrays.toString()");
+        
+        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); //we'll have a 2 for one fix on line 20
+        
+        checkBugsAndPerformResolution(packager.asList(), "ArraysToStringBugs.java");
+    }
+    
+    @Test
+    public void testSQLOffByOneResolution() throws Exception {
+        // SQLOffByOneResolution.java
+        setRank(1);
+        setPriority("High");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(10, 14, 19, 28);
+        
+        packager.fillExpectedBugPatterns("SQL_BAD_RESULTSET_ACCESS");
+        packager.fillExpectedLabels("Change this index to 1 instead of 0", 
+                "Increment this and all similar indicies in this block by 1");
+        
+        packager.setFixToPerform(2, 1);
+        packager.setFixToPerform(3, 1);
+        
+        checkBugsAndPerformResolution(packager.asList(), "SQLOffByOneBugs.java");
+    }
+    
+    @Test
+    public void testIsNANResolution() throws Exception {
+        setRank(10);
+        setPriority("Medium");
+        
+        //disables FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER, which is a dup
+        setDetector("edu.umd.cs.findbugs.detect.FindFloatEquality", false);
+        setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", true);
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(5, 11, 17, 23, 29);
+        
+        packager.fillExpectedBugPatterns("SPP_USE_ISNAN");
+        packager.setExpectedLabels(0, "Replace with a call to !Float.isNaN(f)");
+        packager.setExpectedLabels(1, "Replace with a call to Float.isNaN(f)");
+        packager.setExpectedLabels(2, "Replace with d.isNaN()");
+        packager.setExpectedLabels(3, "Replace with a call to !Double.isNaN(d)");
+        packager.setExpectedLabels(4, "Replace with !doub.isNaN()");
+
+        
+        checkBugsAndPerformResolution(packager.asList(), "IsNANBugs.java");
+    }
+    
+    
 }

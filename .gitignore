@@ -43,3 +43,4 @@ dist/
 zips/
 local.properties
 *.log
+testresources/*.jar

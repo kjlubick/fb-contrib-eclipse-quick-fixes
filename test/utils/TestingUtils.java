@@ -10,7 +10,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.tobject.findbugs.reporter.MarkerUtil;
 
@@ -133,21 +135,27 @@ public class TestingUtils {
         }
     }
 
-    public static void assertPresentLabels(List<QuickFixTestPackage> packages, IMarker[] markers,
+    public static void assertLabelsAndDescriptionsMatch(List<QuickFixTestPackage> packages, IMarker[] markers,
             BugResolutionSource resolutionSource) {
+        Map<String, String> expectedLabelsAndDescriptions = new HashMap<>();
         for (int i = 0; i < packages.size(); i++) {
             IMarker marker = markers[i];
-            List<String> expectedLabels = new ArrayList<>(packages.get(i).expectedLabels);
+            QuickFixTestPackage p = packages.get(i);
+            expectedLabelsAndDescriptions.clear();
+            for (int j = 0; j < p.expectedLabels.size(); j++)
+                expectedLabelsAndDescriptions.put(p.expectedLabels.get(j), p.expectedDescriptions.get(j));
             IMarkerResolution[] resolutions = resolutionSource.getResolutions(marker);
 
-            assertEquals("The expected number of resolutions available was wrong " + packages.get(i), expectedLabels.size(),
+            assertEquals("The expected number of resolutions available was wrong " + p, expectedLabelsAndDescriptions.size(),
                     resolutions.length);
 
             for (int j = 0; j < resolutions.length; j++) {
                 BugResolution resolution = (BugResolution) resolutions[j];
                 String label = resolution.getLabel();
-                assertTrue("Should not have seen label: " + label, expectedLabels.contains(label));
-                expectedLabels.remove(label);
+                assertTrue("Should not have seen label: " + label, expectedLabelsAndDescriptions.containsKey(label));
+                assertEquals("Description should have matched",
+                        expectedLabelsAndDescriptions.get(label), resolution.getDescription());
+                expectedLabelsAndDescriptions.remove(label);
             }
         }
     }

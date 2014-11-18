@@ -38,14 +38,14 @@
       <quickFix
       		arguments="useConstructor=false"
             class="quickfix.BigDecimalConstructorResolution"
-            label="Replace with BigDecimal.valueOf(double)"
+            label="Replace with BigDecimal.valueOf(YYY)"
             pattern="DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE">
       </quickFix>
       
       <quickFix
       		arguments="useConstructor=true"
             class="quickfix.BigDecimalConstructorResolution"
-            label="Replace with new BigDecimal(String)"
+            label="Replace with new BigDecimal(&quot;YYY&quot;)"
             pattern="DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE">
       </quickFix>
       
@@ -99,14 +99,14 @@
       
       <quickFix
       		arguments="useStringBuilder=false"
-            class="quickfix.StringToCharResolution"
+            class="quickfix.UseCharacterParameterizedMethodResolution"
             label="Replace with the char equivalent method call"
             pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
       </quickFix>
       
       <quickFix
       		arguments="useStringBuilder=true"
-            class="quickfix.StringToCharResolution"
+            class="quickfix.UseCharacterParameterizedMethodResolution"
             label="Use StringBuilder for String concatenation"
             pattern="UCPM_USE_CHARACTER_PARAMETERIZED_METHOD">
       </quickFix>
@@ -206,7 +206,15 @@
             label="Prefix assignment to store to field"
             pattern="DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD">
     </quickFix>
-
+    
+    
+    <quickFix
+    		arguments="searchParentClass=true"
+            class="quickfix.DeadShadowStoreResolution"
+            label="Prefix assignment like YYY"
+            pattern="DLS_DEAD_LOCAL_STORE">
+    </quickFix>
+   
    </extension>
 
 </plugin>

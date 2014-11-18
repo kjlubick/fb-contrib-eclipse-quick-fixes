@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public class NeedlessBoxingResolution extends BugResolution {
@@ -48,16 +49,23 @@ public class NeedlessBoxingResolution extends BugResolution {
 
         if (useBooleanConstants) {
             Expression fixedBooleanConstant = makeFixedBooleanConstant(rewrite.getAST(), visitor);
-            rewrite.replace(visitor.badBooleanLiteral, fixedBooleanConstant, null);
+            if (visitor.badBooleanLiteral != null) {
+                rewrite.replace(visitor.badBooleanLiteral, fixedBooleanConstant, null);
+            } else {
+                rewrite.replace(visitor.badBooleanObjectLiteral, fixedBooleanConstant, null);
+            }
         } else {
             MethodInvocation fixedMethodInvocation = makeFixedMethodInvocation(rewrite, visitor);
-            rewrite.replace(visitor.badMethodInvocation, fixedMethodInvocation, null);
+            rewrite.replace(visitor.methodInvocationToReplace, fixedMethodInvocation, null);
         }
     }
 
     private Expression makeFixedBooleanConstant(AST ast, NeedlessBoxingVisitor visitor) {
-        return ast.newQualifiedName(ast.newSimpleName("Boolean"),
-                ast.newSimpleName(visitor.makeTrueOrFalse()));
+        if (visitor.badBooleanLiteral != null) {
+            // turn a BooleanLiteral into a qualified name
+            return ast.newName("Boolean." + visitor.makeTrueOrFalse());
+        }
+        return ast.newBooleanLiteral(Boolean.parseBoolean(visitor.makeTrueOrFalse()));
     }
 
     @SuppressWarnings("unchecked")
@@ -80,7 +88,11 @@ public class NeedlessBoxingResolution extends BugResolution {
 
         public MethodInvocation badMethodInvocation;
 
+        public MethodInvocation methodInvocationToReplace; // may be the same as badMethodInvocation. May be parent if there is a call to booleanValue() or similar
+
         public BooleanLiteral badBooleanLiteral;
+
+        public QualifiedName badBooleanObjectLiteral;
 
         public String makeParseMethod() {
             if (badMethodInvocation == null)
@@ -88,6 +100,12 @@ public class NeedlessBoxingResolution extends BugResolution {
             String typeName = badMethodInvocation.resolveTypeBinding().getName();
             if ("Boolean".equals(typeName)) {
                 return "parseBoolean";
+            } else if ("Byte".equals(typeName)) {
+                return "parseByte";
+            } else if ("Short".equals(typeName)) {
+                return "parseShort";
+            } else if ("Long".equals(typeName)) {
+                return "parseLong";
             } else if ("Integer".equals(typeName)) {
                 return "parseInt";
             } else if ("Double".equals(typeName)) {
@@ -99,7 +117,11 @@ public class NeedlessBoxingResolution extends BugResolution {
         }
 
         public String makeTrueOrFalse() {
-            return badBooleanLiteral.booleanValue() ? "TRUE" : "FALSE";
+            if (badBooleanLiteral != null) {
+                return badBooleanLiteral.booleanValue() ? "TRUE" : "FALSE";
+            }
+            // This will be Boolean.TRUE or Boolean.FALSE
+            return badBooleanObjectLiteral.getName().getIdentifier().toLowerCase();
         }
 
         @Override
@@ -110,6 +132,12 @@ public class NeedlessBoxingResolution extends BugResolution {
             if ("valueOf".equals(node.getName().getIdentifier()) &&
                     node.getExpression().resolveTypeBinding().getQualifiedName().startsWith("java.lang")) {
                 badMethodInvocation = node;
+                methodInvocationToReplace = node;
+                ASTNode parent = badMethodInvocation.getParent();
+                if (parent instanceof MethodInvocation && ((MethodInvocation) parent).getName().getIdentifier().endsWith("Value")) {
+                    methodInvocationToReplace = (MethodInvocation) parent;
+                }
+
                 return false;
             }
 
@@ -130,9 +158,26 @@ public class NeedlessBoxingResolution extends BugResolution {
         }
 
         @Override
+        public boolean visit(QualifiedName node) {
+            if (this.badBooleanObjectLiteral != null) {
+                return false;
+            }
+            if (node.resolveUnboxing()) { // did unboxing happen? If so, that's our cue
+                badBooleanObjectLiteral = node;
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
         public String getLabelReplacement() {
             if (useBooleanConstants) {
-                return "Boolean." + makeTrueOrFalse();
+
+                if (badBooleanLiteral != null) {
+                    return "Boolean." + makeTrueOrFalse();
+                }
+                return makeTrueOrFalse();
             }
             if (badMethodInvocation == null) {
                 return "the parse equivalent";

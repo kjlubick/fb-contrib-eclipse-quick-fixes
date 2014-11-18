@@ -63,8 +63,8 @@ SOFTWARE.
    <!--TODO update -->
    <plugin
          id="@PLUGIN_ID@"
-         download-size="5676"
-         install-size="5800"
+         install-size="580"
+         download-size="620"
          version="@PLUGIN_VERSION@"/>
 
 </feature>

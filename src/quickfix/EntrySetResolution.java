@@ -5,6 +5,8 @@ import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNod
 
 import java.util.List;
 
+import javax.annotation.CheckForNull;
+
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
@@ -21,6 +23,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.Type;
@@ -29,6 +32,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite;
 
+import util.ImportUtil;
 import util.TraversalUtil;
 
 public class EntrySetResolution extends BugResolution {
@@ -45,7 +49,9 @@ public class EntrySetResolution extends BugResolution {
 
     private SimpleName entryName;
 
-    private EntrySetResolutionVisitor descriptionVisitor;
+    private EntrySetResolutionVisitor descriptionVisitor = new EntrySetResolutionVisitor();
+
+    private SimpleName newValueVariableName;
 
     @Override
     protected boolean resolveBindings() {
@@ -54,7 +60,6 @@ public class EntrySetResolution extends BugResolution {
 
     @Override
     protected ASTVisitor getCustomLabelVisitor() {
-        this.descriptionVisitor = new EntrySetResolutionVisitor();
         return descriptionVisitor;
     }
 
@@ -67,8 +72,10 @@ public class EntrySetResolution extends BugResolution {
             SingleVariableDeclaration key = descriptionVisitor.ancestorForLoop.getParameter();
             String keyType = key.getType().toString();
             String keyVar = key.getName().toString();
-            String valueType = descriptionVisitor.badMapGetStatement.getType().toString();
-            String valueVar = descriptionVisitor.badMapGetVariableFragment.getName().toString();
+            String valueType = descriptionVisitor.valueTypeName;
+            String valueVar = "tempVar";
+            if (descriptionVisitor.badMapGetVariableFragment != null)
+                valueVar = descriptionVisitor.badMapGetVariableFragment.getName().toString();
             String mapName = ((MethodInvocation) descriptionVisitor.ancestorForLoop.getExpression()).getExpression().toString();
 
             return String.format("for(Map.Entry&lt;%s,%s&gt; entry : %s.entrySet()) {<br/>" +
@@ -99,8 +106,8 @@ public class EntrySetResolution extends BugResolution {
 
         rewrite.replace(visitor.ancestorForLoop, replacement, null);
 
-        addImports(rewrite, workingUnit, typeSource.getAddedImports());
-        addImports(rewrite, workingUnit, "java.util.Map.Entry");
+        addImports(rewrite, workingUnit, ImportUtil.filterOutJavaLangImports(typeSource.getAddedImports()));
+        addImports(rewrite, workingUnit, "java.util.Map"); // shouldn't be necessary. Allows us to use Map.entry
     }
 
     @SuppressWarnings("unchecked")
@@ -129,6 +136,12 @@ public class EntrySetResolution extends BugResolution {
         List<Statement> oldBlockStatements = ((Block) visitor.ancestorForLoop.getBody()).statements();
         for (Statement statement : oldBlockStatements) {
             if (statement.equals(visitor.badMapGetStatement)) {
+                if (visitor.badMapGetMethodInvocation == null) { // this was the old variable statement and we can
+                    continue; // just ignore it because we have already fixed it
+                }
+                // else, fix the anonymous get usage (replace it with the name)
+                replacementBlockStatements.add((Statement) rewrite.createMoveTarget(statement));
+                rewrite.replace(visitor.badMapGetMethodInvocation, newValueVariableName, null);
                 continue;
             }
             replacementBlockStatements.add((Statement) rewrite.createMoveTarget(statement));
@@ -155,7 +168,21 @@ public class EntrySetResolution extends BugResolution {
     }
 
     private VariableDeclarationStatement makeNewValueStatement(EntrySetResolutionVisitor visitor) {
-        return makeNewVariableStatement(visitor.badMapGetVariableFragment.getName(), "getValue", valueType);
+        SimpleName nameOfNewVar;
+        if (visitor.badMapGetVariableFragment != null) {
+            nameOfNewVar = visitor.badMapGetVariableFragment.getName();
+        }
+        else if (valueType instanceof SimpleType) {
+            StringBuilder tempName = new StringBuilder(((SimpleName) ((SimpleType) valueType).getName()).getIdentifier());
+            tempName.setCharAt(0, Character.toLowerCase(tempName.charAt(0)));
+            nameOfNewVar = ast.newSimpleName(tempName.toString());
+        } else {
+            nameOfNewVar = ast.newSimpleName("mapValue");
+        }
+
+        newValueVariableName = nameOfNewVar;
+
+        return makeNewVariableStatement(nameOfNewVar, "getValue", valueType);
     }
 
     private SingleVariableDeclaration makeEntrySetParameter(MethodInvocation oldLoopExpression) {
@@ -213,17 +240,35 @@ public class EntrySetResolution extends BugResolution {
 
     private static class EntrySetResolutionVisitor extends ASTVisitor implements CustomLabelVisitor {
 
+        public String valueTypeName;
+
         public EnhancedForStatement ancestorForLoop;
 
-        public VariableDeclarationFragment badMapGetVariableFragment;
+        public Statement badMapGetStatement;
 
-        public VariableDeclarationStatement badMapGetStatement;
+        @CheckForNull
+        public VariableDeclarationFragment badMapGetVariableFragment; // this or badMapGetMethodInvocation will be null
+
+        @CheckForNull
+        public MethodInvocation badMapGetMethodInvocation; // this or badMapGetVariableFragment will be null
 
         @Override
-        public boolean visit(VariableDeclarationStatement node) {
+        public boolean visit(MethodInvocation node) {
+            if (ancestorForLoop != null) {
+                return false;
+            }
+            if (!"get".equals(node.getName().getIdentifier())) {
+                return true; // there may be a nested method invocation
+            }
+            valueTypeName = node.resolveTypeBinding().getName(); // for description message
             this.ancestorForLoop = TraversalUtil.findClosestAncestor(node, EnhancedForStatement.class);
-            this.badMapGetVariableFragment = (VariableDeclarationFragment) node.fragments().get(0);
-            this.badMapGetStatement = node;
+            this.badMapGetStatement = TraversalUtil.findClosestAncestor(node, Statement.class);
+            // if this is null, it was an anonymous use
+            this.badMapGetVariableFragment = TraversalUtil.findClosestAncestor(node, VariableDeclarationFragment.class);
+
+            if (badMapGetVariableFragment == null) {
+                this.badMapGetMethodInvocation = node; // this is an anonymous usage, and will need to be replaced
+            }
             return false;
         }
 

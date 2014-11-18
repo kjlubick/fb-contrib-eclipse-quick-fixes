@@ -1,0 +1,1 @@
+Find rt.jar from your JAVA_HOME/lib and copy it here.  For Java 1.7, name it rt17.jar, for Java 1.8, rt18.jar, and so on.

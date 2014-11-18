@@ -21,7 +21,7 @@ public class SingleLengthStringBugs {
     
     public String testInts(int i, int j) {
         return new StringBuilder().append(i).append('+').append(j)
-				.toString();
+                .toString();
     }
     
     public String testSum(int i, int j) {
@@ -30,7 +30,7 @@ public class SingleLengthStringBugs {
     
     public String testFirstIsToString(List<SingleLengthStringBugs> list, Object other) {
         return new StringBuilder().append(list.toString()).append(':').append(other)
-				.toString();
+                .toString();
     }
     
     public String testReplace(String str) {
