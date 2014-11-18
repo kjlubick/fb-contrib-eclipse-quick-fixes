@@ -71,7 +71,7 @@ public class TestContributedQuickFixes {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            TestingUtils.waitForUiEvents(20_000);
+            //TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
@@ -607,12 +607,11 @@ public class TestContributedQuickFixes {
     
     @Test
     public void testIsNANResolution() throws Exception {
-        setRank(20);
-        setPriority("Low");
+        setRank(10);
+        setPriority("Medium");
         
         //disables FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER, which is a dup
-        setDetector("edu.umd.cs.findbugs.detect.FindFloatEquality", true);
-        setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", true);
+        setDetector("edu.umd.cs.findbugs.detect.FindFloatEquality", false);
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(5, 11, 17, 23, 29);
