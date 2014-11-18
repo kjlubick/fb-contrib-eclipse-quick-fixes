@@ -71,7 +71,7 @@ public class TestContributedQuickFixes {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-          //  TestingUtils.waitForUiEvents(20_000);
+            TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
@@ -604,5 +604,29 @@ public class TestContributedQuickFixes {
         
         checkBugsAndPerformResolution(packager.asList(), "SQLOffByOneBugs.java");
     }
+    
+    @Test
+    public void testIsNANResolution() throws Exception {
+        setRank(20);
+        setPriority("Low");
+        
+        //disables FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER, which is a dup
+        setDetector("edu.umd.cs.findbugs.detect.FindFloatEquality", true);
+        setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", true);
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(5, 11, 17, 23, 29);
+        
+        packager.fillExpectedBugPatterns("SPP_USE_ISNAN");
+        packager.setExpectedLabels(0, "Replace with a call to !Float.isNaN(f)");
+        packager.setExpectedLabels(1, "Replace with a call to Float.isNaN(f)");
+        packager.setExpectedLabels(2, "Replace with d.isNaN()");
+        packager.setExpectedLabels(3, "Replace with a call to !Double.isNaN(d)");
+        packager.setExpectedLabels(4, "Replace with !doub.isNaN()");
+
+        
+        checkBugsAndPerformResolution(packager.asList(), "IsNANBugs.java");
+    }
+    
     
 }
