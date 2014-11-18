@@ -169,7 +169,7 @@ public class TestContributedQuickFixes {
         // wait for the findBugsWorker to finish
         // 500ms reduces the chance that the IMarkers haven't loaded yet and the tests will fail unpredictably
         // (see JavaProjectHelper discussion about performDummySearch for more info)
-        TestingUtils.waitForUiEvents(500);
+        TestingUtils.waitForUiEvents(800);
         while (isWorking.get()) {
             TestingUtils.waitForUiEvents(100);
         }
