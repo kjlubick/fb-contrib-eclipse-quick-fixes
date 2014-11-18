@@ -128,7 +128,7 @@ public class TestContributedQuickFixes {
     private void checkBugsAndPerformResolution(List<QuickFixTestPackage> packages, String testResource) {
         try {
             showEditorWindowForFile(testResource);
-            scanForBugs(testResource);
+            scanUntilMarkers(testResource);
             assertBugPatternsMatch(packages, testResource);
             executeResolutions(packages, testResource);
             assertOutputAndInputFilesMatch(testResource);
@@ -137,6 +137,18 @@ public class TestContributedQuickFixes {
             fail("Exception thrown while performing resolution on " + testResource);
         }
 
+    }
+
+    private void scanUntilMarkers(String testResource) throws CoreException {
+        for (int i = 0 ;i < 3; i++) {
+            scanForBugs(testResource);
+            IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
+            if (markers.length > 0) {
+                return;
+            }
+        }
+        fail("Did not find any markers... tried 3 times");
+        
     }
 
     private void showEditorWindowForFile(String testResource) throws JavaModelException, PartInitException {
@@ -206,7 +218,7 @@ public class TestContributedQuickFixes {
                 testIProject.refreshLocal(IResource.DEPTH_ONE, null);
                 testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
                 clearMarkersAndBugs();
-                scanForBugs(testResource);
+                scanUntilMarkers(testResource);
             }
             skipNextScan = false;
             
@@ -612,6 +624,7 @@ public class TestContributedQuickFixes {
         
         //disables FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER, which is a dup
         setDetector("edu.umd.cs.findbugs.detect.FindFloatEquality", false);
+        setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", true);
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(5, 11, 17, 23, 29);
