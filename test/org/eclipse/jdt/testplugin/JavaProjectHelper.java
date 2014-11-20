@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.Synchronizer;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 import org.eclipse.ui.wizards.datatransfer.ZipFileStructureProvider;
+import org.junit.Assert;
 import org.osgi.framework.Bundle;
 
 /**
@@ -70,13 +71,13 @@ public class JavaProjectHelper {
      */
     public static final IPath JUNIT_SRC = new Path("testresources/junit37-noUI-src.zip");
 
-    public static final IPath RT_STUBS_15 = new Path("testresources/rtstubs15.jar");
+    public static final IPath RT_STUBS_15 = new Path("testresources/rt15.jar");
 
-    public static final IPath RT_STUBS_16 = new Path("testresources/rtstubs16.jar");
+    public static final IPath RT_STUBS_16 = new Path("testresources/rt16.jar");
 
-    public static final IPath RT_STUBS_17 = new Path("testresources/rtstubs17.jar");
+    public static final IPath RT_STUBS_17 = new Path("testresources/rt17.jar");
 
-    public static final IPath RT_STUBS_18 = new Path("testresources/rtstubs18.jar");
+    public static final IPath RT_STUBS_18 = new Path("testresources/rt18.jar");
 
     public static final IPath JUNIT_SRC_381 = new Path("testresources/junit381-noUI-src.zip");
 
@@ -888,6 +889,9 @@ public class JavaProjectHelper {
      */
     public static IPath findRtJar(IPath rtStubsPath) throws CoreException {
         File rtStubs = rtStubsPath.toFile();
+        if (!rtStubs.exists()) {
+            Assert.fail("Could not find "+rtStubs.getAbsolutePath() +".  Did you copy it from your Java installations?");
+        }
         return Path.fromOSString(rtStubs.getAbsolutePath());
     }
 
