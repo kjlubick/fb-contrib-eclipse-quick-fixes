@@ -13,6 +13,7 @@ import de.tobject.findbugs.builder.FindBugsWorker;
 import de.tobject.findbugs.builder.WorkItem;
 import de.tobject.findbugs.reporter.MarkerUtil;
 
+import edu.umd.cs.findbugs.BugCode;
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -92,7 +93,15 @@ public class TestContributedQuickFixes {
 
         FindbugsPlugin.setProjectSettingsEnabled(testIProject, null, true);
         
+        checkFBContribInstalled();
+        
         TestingUtils.waitForUiEvents(100);
+    }
+
+    private static void checkFBContribInstalled() {
+        //this was the first fb-contrib bug code
+        BugCode knownFBContribBugCode = new BugCode("ISB", "Inefficient String Buffering");
+        assertTrue(FindbugsPlugin.getKnownPatternTypes().contains(knownFBContribBugCode));
     }
 
     private static void clearMarkersAndBugs() throws CoreException {
@@ -640,5 +649,17 @@ public class TestContributedQuickFixes {
         checkBugsAndPerformResolution(packager.asList(), "IsNANBugs.java");
     }
     
-    
+    @Test
+    public void testCopyOverridenMethodResolution() throws Exception {
+        setRank(10);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(7, 16);
+        
+        packager.fillExpectedBugPatterns("COM_COPIED_OVERRIDDEN_METHOD");
+        packager.fillExpectedLabels("Delete this method");
+        
+        checkBugsAndPerformResolution(packager.asList(), "CopyOverriddenMethodBugs.java");
+    }
 }
