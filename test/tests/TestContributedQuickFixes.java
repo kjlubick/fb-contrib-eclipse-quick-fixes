@@ -684,4 +684,19 @@ public class TestContributedQuickFixes {
         checkBugsAndPerformResolution(packager.asList(), "SerializingBugs.java");
     }
     
+    @Test
+    public void testInefficiantToArrayResolution() throws Exception {
+        setRank(20);
+        setPriority("Low");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(12, 19);
+        
+        packager.fillExpectedBugPatterns("ITA_INEFFICIENT_TO_ARRAY");
+        packager.setExpectedLabels(0, "Replace with toArray(new String[names.size()])");
+        packager.setExpectedLabels(1, "Replace with toArray(new Integer[names.size()])");
+        
+        checkBugsAndPerformResolution(packager.asList(), "InefficiantArrayBugs.java");
+    }
+    
 }
