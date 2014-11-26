@@ -207,12 +207,17 @@
             pattern="DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD">
     </quickFix>
     
-    
     <quickFix
     		arguments="searchParentClass=true"
             class="quickfix.DeadShadowStoreResolution"
             label="Prefix assignment like YYY"
             pattern="DLS_DEAD_LOCAL_STORE">
+    </quickFix>
+    
+    <quickFix
+            class="quickfix.CopyOverridenMethodResolution"
+            label="Delete this method"
+            pattern="COM_COPIED_OVERRIDDEN_METHOD">
     </quickFix>
    
    </extension>
