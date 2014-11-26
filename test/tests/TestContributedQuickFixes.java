@@ -655,7 +655,7 @@ public class TestContributedQuickFixes {
         setPriority("Medium");
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(7, 16);
+        packager.setExpectedLines(7, 16, 22);
         
         packager.fillExpectedBugPatterns("COM_COPIED_OVERRIDDEN_METHOD");
         packager.fillExpectedLabels("Delete this method");

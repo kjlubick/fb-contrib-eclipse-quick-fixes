@@ -1,6 +1,6 @@
 
 
-public class CopyOverriddenMethodBugs  extends Visitor {
+public class CopyOverriddenMethodBugs extends Visitor {
     
     @Override
     public boolean methodB(String s) {
@@ -20,5 +20,9 @@ abstract class Visitor {
     
     public boolean methodC(String s) {
         return true;
+    }
+    
+    public void methodD() {
+        
     }
 }
