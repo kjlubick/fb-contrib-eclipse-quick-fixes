@@ -67,19 +67,21 @@ public class TestContributedQuickFixes {
     private BugResolutionSource resolutionSource;
     
     @Rule
-    @SuppressFBWarnings(value="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification="This is what the sample code does.")
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "This is what the sample code does.")
     public TestWatcher watcher = new TestWatcher() {
+        // This test watcher allows me to debug failing tests a bit easier
+        // by allowing the Eclipse instance to be navigable after failure
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            //TestingUtils.waitForUiEvents(20_000);
+            // TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
         protected void succeeded(Description description) {
             System.out.println("Passed");
-           }
-       };
+        }
+    };
 
     @BeforeClass
     public static void loadFilesThatNeedFixing() throws CoreException, IOException {
@@ -148,8 +150,12 @@ public class TestContributedQuickFixes {
 
     }
 
+    /*
+     * Sometimes the initial scan for markers fails, so this will try scanning three times
+     * before giving up.  Potential causes are incorrect bugranks or filters
+     */
     private void scanUntilMarkers(String testResource) throws CoreException {
-        for (int i = 0 ;i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
             scanForBugs(testResource);
             IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
             if (markers.length > 0) {
@@ -157,7 +163,7 @@ public class TestContributedQuickFixes {
             }
         }
         fail("Did not find any markers... tried 3 times");
-        
+
     }
 
     private void showEditorWindowForFile(String testResource) throws JavaModelException, PartInitException {
@@ -662,4 +668,20 @@ public class TestContributedQuickFixes {
         
         checkBugsAndPerformResolution(packager.asList(), "CopyOverriddenMethodBugs.java");
     }
+    
+    @Test
+    public void testShouldBeTransientResolution() throws Exception {
+        setRank(14);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(10, 14);
+        
+        packager.fillExpectedBugPatterns("SE_BAD_FIELD");
+        packager.fillExpectedLabels("Add the transient keyword");
+        packager.fillExpectedDescriptions("The transient keyword prevents the field from being serialized.  You will have to properly initialize it in some other way.");
+        
+        checkBugsAndPerformResolution(packager.asList(), "SerializingBugs.java");
+    }
+    
 }
