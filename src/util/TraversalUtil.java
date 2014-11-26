@@ -2,8 +2,13 @@ package util;
 
 import javax.annotation.Nonnull;
 
+import edu.umd.cs.findbugs.SourceLineAnnotation;
+
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 public class TraversalUtil {
 
@@ -28,6 +33,38 @@ public class TraversalUtil {
             node = node.getParent();
         }
         return node;
+    }
+    
+    public static MethodDeclaration findEnclosingMethod(CompilationUnit workingUnit, SourceLineAnnotation primarySourceLineAnnotation) {
+
+        MethodFinder mf = new MethodFinder(workingUnit, primarySourceLineAnnotation.getStartLine());
+        workingUnit.accept(mf);
+        
+        return mf.enclosingMethod;
+    }
+
+    
+    private static class MethodFinder extends ASTVisitor {
+        
+        MethodDeclaration enclosingMethod;
+        private int lineToLookFor;
+        private CompilationUnit compilationUnit;
+
+        public MethodFinder(CompilationUnit workingUnit, int startLine) {
+            this.lineToLookFor = startLine;
+            this.compilationUnit = workingUnit;
+        }
+        
+        @Override
+        public boolean visit(MethodDeclaration node) {
+            int startingLineNumber = compilationUnit.getLineNumber(node.getStartPosition());
+            int endingLineNumber = compilationUnit.getLineNumber(node.getLength() + node.getStartPosition());
+            if (lineToLookFor >= startingLineNumber && lineToLookFor <= endingLineNumber) {
+                this.enclosingMethod = node;
+            }
+            return false;
+        }
+        
     }
 
 }
