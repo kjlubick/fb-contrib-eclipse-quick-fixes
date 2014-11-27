@@ -699,4 +699,18 @@ public class TestContributedQuickFixes {
         checkBugsAndPerformResolution(packager.asList(), "InefficiantArrayBugs.java");
     }
     
+    @Test
+    public void testUnnecessaryStoreBeforeReturnResolution() throws Exception {
+        setRank(17);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(20, 25, 35);
+        
+        packager.fillExpectedBugPatterns("USBR_UNNECESSARY_STORE_BEFORE_RETURN");
+        packager.fillExpectedLabels("Remove redundant store and local variable");
+        
+        checkBugsAndPerformResolution(packager.asList(), "UnnecessaryStoreBeforeReturnBugs.java");
+    }
+    
 }
