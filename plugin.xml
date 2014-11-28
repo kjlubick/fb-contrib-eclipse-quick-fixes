@@ -226,6 +226,12 @@
             pattern="SE_BAD_FIELD">
     </quickFix>
     
+    <quickFix
+            class="quickfix.InefficientToArrayResolution"
+            label="Replace with toArray(YYY)"
+            pattern="ITA_INEFFICIENT_TO_ARRAY">
+    </quickFix>
+   
    
    </extension>
 

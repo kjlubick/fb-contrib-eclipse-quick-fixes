@@ -689,13 +689,14 @@ public class TestContributedQuickFixes {
     public void testInefficiantToArrayResolution() throws Exception {
         setRank(20);
         setPriority("Low");
+        setDetector("com.mebigfatguy.fbcontrib.detect.FinalParameters", false);
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(12, 19);
+        packager.setExpectedLines(14, 21);
         
         packager.fillExpectedBugPatterns("ITA_INEFFICIENT_TO_ARRAY");
         packager.setExpectedLabels(0, "Replace with toArray(new String[names.size()])");
-        packager.setExpectedLabels(1, "Replace with toArray(new Integer[names.size()])");
+        packager.setExpectedLabels(1, "Replace with toArray(new Integer[this.someInts.size()])");
         
         checkBugsAndPerformResolution(packager.asList(), "InefficiantArrayBugs.java");
     }
@@ -704,6 +705,7 @@ public class TestContributedQuickFixes {
     public void testUnnecessaryStoreBeforeReturnResolution() throws Exception {
         setRank(17);
         setPriority("Medium");
+        
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(20, 25, 35);

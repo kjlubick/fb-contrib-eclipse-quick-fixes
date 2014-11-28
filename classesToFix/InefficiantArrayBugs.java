@@ -1,9 +1,11 @@
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 
 public class InefficiantArrayBugs {
 
+    private List<Integer> someInts = new ArrayList<Integer>();
     
     public String getOne(Set<String> names) {
         if (names == null || names.isEmpty()) {
@@ -12,10 +14,10 @@ public class InefficiantArrayBugs {
         return names.toArray(new String[0])[0];
     }
     
-    public String[] convertToArray(List<String> names) {
-        if (names == null) {
-            return new String[0];
+    public Integer[] convertToArray() {
+        if (someInts == null) {
+            return new Integer[0];
         }
-        return names.toArray(new String[0]);
+        return this.someInts.toArray(new Integer[0]);
     }
 }
