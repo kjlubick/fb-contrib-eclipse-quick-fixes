@@ -46,6 +46,7 @@ import org.junit.runners.JUnit4;
 import quickfix.DeadShadowStoreResolution;
 import quickfix.InsecureRandomResolution;
 import quickfix.ReturnValueIgnoreResolution;
+import quickfix.SerializingErrorResolution;
 import utils.BugResolutionSource;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
@@ -675,11 +676,11 @@ public class TestContributedQuickFixes {
         setPriority("Medium");
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(10, 14);
+        packager.setExpectedLines(11, 15);
         
         packager.fillExpectedBugPatterns("SE_BAD_FIELD");
         packager.fillExpectedLabels("Add the transient keyword");
-        packager.fillExpectedDescriptions("The transient keyword prevents the field from being serialized.  You will have to properly initialize it in some other way.");
+        packager.fillExpectedDescriptions(SerializingErrorResolution.SE_DESCRIPTION);
         
         checkBugsAndPerformResolution(packager.asList(), "SerializingBugs.java");
     }
