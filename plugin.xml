@@ -219,6 +219,13 @@
             label="Delete this method"
             pattern="COM_COPIED_OVERRIDDEN_METHOD">
     </quickFix>
+    
+    <quickFix
+            class="quickfix.SerializingErrorResolution"
+            label="Add the transient keyword"
+            pattern="SE_BAD_FIELD">
+    </quickFix>
+    
    
    </extension>
 
