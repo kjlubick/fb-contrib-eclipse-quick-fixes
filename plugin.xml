@@ -232,6 +232,11 @@
             pattern="ITA_INEFFICIENT_TO_ARRAY">
     </quickFix>
    
+   <quickFix
+            class="quickfix.UnnecessaryStoreResolution"
+            label="Remove redundant store and local variable"
+            pattern="USBR_UNNECESSARY_STORE_BEFORE_RETURN">
+    </quickFix>
    
    </extension>
 

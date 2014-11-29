@@ -21,8 +21,11 @@ public class UnnecessaryStoreBeforeReturnBugs {
     }
 
     public int doMath(int i, int j) {
-        int ave = (i + j + 1) / 2;
-        return ave;
+        if (wasConstructor) {
+            int ave = (i + j + 1) / 2;
+            return ave;
+        }
+        return 0;
     }
     
     @Override

@@ -422,7 +422,7 @@ public class TestContributedQuickFixes extends TestHarness {
         
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(20, 25, 35);
+        packager.setExpectedLines(20, 26, 38);
         
         packager.fillExpectedBugPatterns("USBR_UNNECESSARY_STORE_BEFORE_RETURN");
         packager.fillExpectedLabels("Remove redundant store and local variable");
