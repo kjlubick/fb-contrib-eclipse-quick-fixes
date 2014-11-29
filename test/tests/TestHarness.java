@@ -275,6 +275,10 @@ public abstract class TestHarness {
      */
     protected void setDetector(String dotSeperatedDetectorClass, boolean enabled) {
         DetectorFactory factory = DetectorFactoryCollection.instance().getFactoryByClassName(dotSeperatedDetectorClass);
+        if (factory == null) {
+            fail("Could not find a detector with class "+dotSeperatedDetectorClass);
+        }
+        
         FindbugsPlugin.getUserPreferences(testIProject).enableDetector(factory, enabled);
     }
 
@@ -287,7 +291,14 @@ public abstract class TestHarness {
      *            the priority threshold: one of "High", "Medium", or "Low"
      */
     protected void setPriority(String minPriority) {
-        FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinPriority(minPriority);
+        // short hand for seeing if minPriority is one of High, Medium or Low
+        // Each of the three valid strings are padded to be 6 chars long with spaces
+        // if minPriority is one of the valid strings, the index will be 0, 6 or 12
+        if ("High  MediumLow   ".indexOf(minPriority.trim()) % 6 == 0) {
+            FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinPriority(minPriority);
+            return;
+        }
+        fail("minPriority ["+minPriority+"] must be one of \"High\", \"Medium\", or \"Low\"");
     }
 
     /**
@@ -299,7 +310,11 @@ public abstract class TestHarness {
      *            the priority threshold: one of "High", "Medium", or "Low"
      */
     protected void setRank(int minRank) {
-        FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinRank(minRank);
+        if (minRank >= 1 && minRank <= 20) {
+            FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinRank(minRank);
+            return;
+        }
+        fail("minRank ["+minRank+"] must be between 1 and 20 inclusively");
     }
 
 }
