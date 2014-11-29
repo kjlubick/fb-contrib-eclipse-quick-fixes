@@ -20,7 +20,10 @@ public class UnnecessaryStoreBeforeReturnBugs {
     }
 
     public int doMath(int i, int j) {
-        return (i + j + 1) / 2;
+        if (wasConstructor) {
+            return (i + j + 1) / 2;
+        }
+        return 0;
     }
     
     @Override
