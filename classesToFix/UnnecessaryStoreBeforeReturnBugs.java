@@ -37,6 +37,22 @@ public class UnnecessaryStoreBeforeReturnBugs {
         result = prime * result + (wasConstructor ? 1231 : 1237);
         return result;
     }
+    
+    public String localSameAsReturn(int i) {
+        String retVal = "";
+        switch (i) {
+        case 0:
+            retVal = "foo";
+            break;
+        case 1:
+            retVal = "foo";
+            break;
+        default:
+            retVal = "fizzbuzz";
+        }      
+        retVal += i;     
+        return retVal;
+    }
 
     @Override
     public boolean equals(Object obj) {

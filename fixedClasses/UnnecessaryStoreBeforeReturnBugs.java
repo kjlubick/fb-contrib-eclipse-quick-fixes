@@ -34,6 +34,21 @@ public class UnnecessaryStoreBeforeReturnBugs {
         result = prime * result + ((qualifiedType == null) ? 0 : qualifiedType.hashCode());
         return prime * result + (wasConstructor ? 1231 : 1237);
     }
+    
+    public String localSameAsReturn(int i) {
+        String retVal = "";
+        switch (i) {
+        case 0:
+            retVal = "foo";
+            break;
+        case 1:
+            retVal = "foo";
+            break;
+        default:
+            retVal = "fizzbuzz";
+        }      
+        return retVal + i; 
+    }
 
     @Override
     public boolean equals(Object obj) {
