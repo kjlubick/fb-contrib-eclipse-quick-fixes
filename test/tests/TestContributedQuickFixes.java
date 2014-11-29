@@ -448,4 +448,17 @@ public class TestContributedQuickFixes extends TestHarness {
         checkBugsAndPerformResolution(packager.asList(), "EqualsOnEnumBugs.java");
     }
     
+    @Test
+    public void testNeedsDefaultCaseResolution() throws Exception {
+        setRank(19);
+        setPriority("Medium");
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(7);
+
+        packager.fillExpectedBugPatterns("SF_SWITCH_NO_DEFAULT");
+        packager.fillExpectedLabels("Add a blank default case");
+
+        checkBugsAndPerformResolution(packager.asList(), "NeedsDefaultCaseBugs.java");
+    }
 }
