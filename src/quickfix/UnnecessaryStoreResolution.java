@@ -88,20 +88,24 @@ public class UnnecessaryStoreResolution extends BugResolution {
                             splitStatementAndInitializer((VariableDeclarationStatement) storeStatement);
                             return;
                         } else if (storeStatement instanceof ExpressionStatement){
-                            splitStatementAndInitializer((ExpressionStatement) storeStatement);
-                            return;
+                            if (splitStatementAndInitializer((ExpressionStatement) storeStatement)) {
+                                // we found our extra storage statement
+                                return;
+                            }
                         }
                     }
                 }
             }
         }
 
-        private void splitStatementAndInitializer(ExpressionStatement storeStatement) {
-            this.unnecessaryStoreStatement = storeStatement;
+        private boolean splitStatementAndInitializer(ExpressionStatement storeStatement) {
             Expression storeExpression = storeStatement.getExpression();
             if (storeExpression instanceof Assignment) {
+                this.unnecessaryStoreStatement = storeStatement;
                 this.unnecessaryStoreExpression = ((Assignment) storeExpression).getRightHandSide();
+                return true;
             }
+            return false;
         }
 
         private void splitStatementAndInitializer(VariableDeclarationStatement statement) {
