@@ -8,7 +8,10 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SimpleName;
 
 public class TraversalUtil {
 
@@ -67,6 +70,15 @@ public class TraversalUtil {
             return false;
         }
 
+    }
+
+    public static boolean nameRefersToField(SimpleName name) {
+        IBinding binding = name.resolveBinding();
+        if (binding instanceof IVariableBinding) {
+            IVariableBinding variableBinding = (IVariableBinding) binding;
+            return variableBinding.getDeclaringClass() != null;
+        }
+        return false;
     }
 
 }

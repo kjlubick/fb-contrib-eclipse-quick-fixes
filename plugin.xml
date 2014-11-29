@@ -237,6 +237,20 @@
             label="Remove redundant store and local variable"
             pattern="USBR_UNNECESSARY_STORE_BEFORE_RETURN">
     </quickFix>
+    
+    <quickFix
+            arguments="useBreak=false"
+            class="quickfix.SwitchFallThroughResolution"
+            label="Return field YYY before fallthrough"
+            pattern="SF_DEAD_STORE_DUE_TO_SWITCH_FALLTHROUGH">
+    </quickFix>    
+   
+   <quickFix
+   			arguments="useBreak=true"
+            class="quickfix.SwitchFallThroughResolution"
+            label="Add a break after store"
+            pattern="SF_DEAD_STORE_DUE_TO_SWITCH_FALLTHROUGH">
+    </quickFix>    
    
    </extension>
 
