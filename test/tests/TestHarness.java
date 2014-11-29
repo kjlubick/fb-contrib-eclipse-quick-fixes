@@ -44,30 +44,35 @@ import utils.TestingUtils;
 public abstract class TestHarness {
 
     public static final String PROJECT_NAME = "fb-contrib-test-quick-fixes";
+
     public static final String BIN_FOLDER_NAME = "bin";
+
     public static final String SRC_FOLDER_NAME = "src";
+
     private static IJavaProject testProject;
+
     private static IProject testIProject;
+
     private BugResolutionSource resolutionSource;
 
     public static void loadFilesThatNeedFixing() throws CoreException, IOException {
         makeJavaProject();
-    
+
         TestingUtils.copyBrokenFiles(new File("classesToFix/"), testIProject.getFolder(SRC_FOLDER_NAME));
-    
+
         // Compiles the code
         testIProject.refreshLocal(IResource.DEPTH_INFINITE, null);
         testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
-    
+
         FindbugsPlugin.setProjectSettingsEnabled(testIProject, null, true);
-        
+
         checkFBContribInstalled();
-        
+
         TestingUtils.waitForUiEvents(100);
     }
 
     private static void checkFBContribInstalled() {
-        //this was the first fb-contrib bug code
+        // this was the first fb-contrib bug code
         BugCode knownFBContribBugCode = new BugCode("ISB", "Inefficient String Buffering");
         assertTrue(FindbugsPlugin.getKnownPatternTypes().contains(knownFBContribBugCode));
     }
@@ -93,7 +98,7 @@ public abstract class TestHarness {
             public IMarkerResolution[] getResolutions(IMarker marker) {
                 return resolutionGenerator.getResolutions(marker);
             }
-    
+
             @Override
             public boolean hasResolutions(IMarker marker) {
                 return resolutionGenerator.hasResolutions(marker);
@@ -112,7 +117,7 @@ public abstract class TestHarness {
             e.printStackTrace();
             fail("Exception thrown while performing resolution on " + testResource);
         }
-    
+
     }
 
     private void scanUntilMarkers(String testResource) throws CoreException {
@@ -124,7 +129,7 @@ public abstract class TestHarness {
             }
         }
         fail("Did not find any markers... tried 3 times");
-    
+
     }
 
     private void showEditorWindowForFile(String testResource) throws JavaModelException, PartInitException {
@@ -152,7 +157,7 @@ public abstract class TestHarness {
                 isWorking.set(false);
             }
         });
-    
+
         worker.work(Collections.singletonList(new WorkItem(element)));
         // wait for the findBugsWorker to finish
         // 500ms reduces the chance that the IMarkers haven't loaded yet and the tests will fail unpredictably
@@ -166,10 +171,10 @@ public abstract class TestHarness {
     private void assertBugPatternsMatch(List<QuickFixTestPackage> packages, String testResource) throws JavaModelException {
         IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
         TestingUtils.sortMarkersByPatterns(markers);
-    
+
         // packages and markers should now be lined up to match up one to one.
         assertEquals(packages.size(), markers.length);
-    
+
         TestingUtils.assertBugPatternsMatch(packages, markers);
         TestingUtils.assertLabelsAndDescriptionsMatch(packages, markers, resolutionSource);
         TestingUtils.assertLineNumbersMatch(packages, markers);
@@ -186,7 +191,7 @@ public abstract class TestHarness {
         int pendingBogoFixes = 0;
         boolean skipNextScan = true;
         for (int resolutionsCompleted = 0; resolutionsCompleted < packages.size(); resolutionsCompleted++) {
-    
+
             if (!skipNextScan) { // Refresh, rebuild, and scan for bugs again
                 // We only need to do this after the first time, as we expect the file to have
                 // been scanned and checked for consistency (see checkBugsAndPerformResolution)
@@ -196,19 +201,19 @@ public abstract class TestHarness {
                 scanUntilMarkers(testResource);
             }
             skipNextScan = false;
-            
+
             System.out.println(resolutionsCompleted);
-    
+
             IMarker[] markers = getSortedMarkersFromFile(testResource);
-    
+
             assertEquals("Bug marker number was different than anticipated.  "
                     + "Check to see if another bug marker was introduced by fixing another.",
                     packages.size() - (resolutionsCompleted),
                     markers.length - ignoredResolutions - pendingBogoFixes);
-    
+
             IMarker nextNonIgnoredMarker = markers[ignoredResolutions + pendingBogoFixes]; // Bug markers we ignore float to the "top" of the stack
-                                                                        // ignoredResolutions can act as an index for that
-            
+            // ignoredResolutions can act as an index for that
+
             QuickFixTestPackage p = packages.get(resolutionsCompleted);
             skipNextScan = !performResolution(p, nextNonIgnoredMarker);
             if (p.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
@@ -242,7 +247,7 @@ public abstract class TestHarness {
         assertTrue("I wanted to execute resolution #" + qfPackage.resolutionToExecute + " of " + qfPackage +
                 " but there were only " + resolutions.length + " to choose from."
                 , resolutions.length > qfPackage.resolutionToExecute);
-    
+
         // the order isn't guaranteed, so we have to check the labels.
         @SuppressFBWarnings("NP_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD")
         String resolutionToDo = qfPackage.expectedLabels.get(qfPackage.resolutionToExecute);

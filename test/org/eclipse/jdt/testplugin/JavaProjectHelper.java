@@ -890,7 +890,7 @@ public class JavaProjectHelper {
     public static IPath findRtJar(IPath rtStubsPath) throws CoreException {
         File rtStubs = rtStubsPath.toFile();
         if (!rtStubs.exists()) {
-            Assert.fail("Could not find "+rtStubs.getAbsolutePath() +".  Did you copy it from your Java installations?");
+            Assert.fail("Could not find " + rtStubs.getAbsolutePath() + ".  Did you copy it from your Java installations?");
         }
         return Path.fromOSString(rtStubs.getAbsolutePath());
     }

@@ -53,7 +53,7 @@ public class QuickFixTestPackager {
                         return o1.lineNumber - o2.lineNumber;
                     }
                     if (o1.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
-                        return -5;   // on the same line, do ignore fixes first
+                        return -5; // on the same line, do ignore fixes first
                     }
                     return o1.resolutionToExecute - o2.resolutionToExecute;
                 }
@@ -75,7 +75,7 @@ public class QuickFixTestPackager {
                         p.expectedLabels.size(), p.expectedDescriptions.size());
             }
             assertNotNull("Not all patterns were initialized", p.expectedPattern);
-            assertNotEquals("Not all line numbers were initialized ["+i+"] ", -1, p.lineNumber);
+            assertNotEquals("Not all line numbers were initialized [" + i + "] ", -1, p.lineNumber);
         }
     }
 

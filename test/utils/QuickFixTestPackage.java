@@ -8,13 +8,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class QuickFixTestPackage {
 
     public static final int IGNORE_FIX = -1;
-    
+
     public static final int FIXED_BY_ANOTHER_FIX = -2;
 
     public String expectedPattern = null;
 
     public List<String> expectedLabels = null;
-    @SuppressFBWarnings(value="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "This is a struct class.")
+
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "This is a struct class.")
     public List<String> expectedDescriptions = null;
 
     public int lineNumber = -1;

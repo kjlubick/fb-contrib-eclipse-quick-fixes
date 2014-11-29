@@ -28,7 +28,7 @@ public class UnnecessaryStoreResolution extends BugResolution {
 
     @Override
     protected boolean resolveBindings() {
-        return false;       //don't need type bindings
+        return false; // don't need type bindings
     }
 
     @Override
@@ -36,7 +36,7 @@ public class UnnecessaryStoreResolution extends BugResolution {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         USBRVisitor visitor = new USBRVisitor();
         node.accept(visitor);
-        
+
         if (visitor.unnecessaryStoreStatement != null &&
                 visitor.unnecessaryStoreExpression != null &&
                 visitor.originalReturn != null) {
@@ -46,9 +46,9 @@ public class UnnecessaryStoreResolution extends BugResolution {
             rewrite.remove(visitor.unnecessaryStoreStatement, null);
             rewrite.replace(visitor.originalReturn, newReturnStatement, null);
         }
-        
+
     }
-    
+
     private ReturnStatement makeNewReturnStatement(ASTRewrite rewrite, USBRVisitor visitor) {
         ReturnStatement retVal = rewrite.getAST().newReturnStatement();
         retVal.setExpression((Expression) rewrite.createCopyTarget(visitor.unnecessaryStoreExpression));
@@ -56,9 +56,11 @@ public class UnnecessaryStoreResolution extends BugResolution {
     }
 
     private static class USBRVisitor extends ASTVisitor {
-        
+
         public Statement unnecessaryStoreStatement;
+
         public Expression unnecessaryStoreExpression;
+
         public ReturnStatement originalReturn;
 
         @Override
@@ -66,12 +68,12 @@ public class UnnecessaryStoreResolution extends BugResolution {
             if (originalReturn != null) {
                 return false;
             }
-            
+
             if (node.getExpression() instanceof SimpleName) {
                 this.originalReturn = node;
                 findUnnecessaryStore(node);
             }
-            
+
             return true;
         }
 
@@ -79,15 +81,15 @@ public class UnnecessaryStoreResolution extends BugResolution {
             Block block = TraversalUtil.findClosestAncestor(node, Block.class);
             @SuppressWarnings("unchecked")
             List<Statement> blockStatements = block.statements();
-            for(int i = 1;i<blockStatements.size();i++) {
+            for (int i = 1; i < blockStatements.size(); i++) {
                 Statement statement = blockStatements.get(i);
                 if (statement == this.originalReturn) {
-                    for(int j = i-1; j >=0; j--) {
+                    for (int j = i - 1; j >= 0; j--) {
                         Statement storeStatement = blockStatements.get(j);
                         if (storeStatement instanceof VariableDeclarationStatement) {
                             splitStatementAndInitializer((VariableDeclarationStatement) storeStatement);
                             return;
-                        } else if (storeStatement instanceof ExpressionStatement){
+                        } else if (storeStatement instanceof ExpressionStatement) {
                             if (splitStatementAndInitializer((ExpressionStatement) storeStatement)) {
                                 // we found our extra storage statement
                                 return;
@@ -113,7 +115,7 @@ public class UnnecessaryStoreResolution extends BugResolution {
             VariableDeclarationFragment fragment = (VariableDeclarationFragment) statement.fragments().get(0);
             this.unnecessaryStoreExpression = fragment.getInitializer();
         }
-        
+
     }
 
 }

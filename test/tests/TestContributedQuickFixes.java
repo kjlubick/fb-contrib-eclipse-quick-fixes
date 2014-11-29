@@ -40,12 +40,12 @@ public class TestContributedQuickFixes extends TestHarness {
             System.out.println("Passed");
         }
     };
-    
+
     @BeforeClass
     public static void setupBeforeAllTests() throws CoreException, IOException {
         loadFilesThatNeedFixing();
     }
-    
+
     @Override
     @Before
     public void setup() {
@@ -131,15 +131,22 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.fillExpectedBugPatterns("WMI_WRONG_MAP_ITERATOR");
 
         packager.fillExpectedLabels("Replace with a foreach loop using entrySet()");
-        
-        packager.setExpectedDescriptions(0, "for(Map.Entry&lt;String,Integer&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Integer tempVar = entry.getValue();<br/>...<br/>}");
-        packager.setExpectedDescriptions(1, "for(Map.Entry&lt;String,Integer&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Integer i = entry.getValue();<br/>...<br/>}");
-        packager.setExpectedDescriptions(2, "for(Map.Entry&lt;String,List<Integer>&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>List<Integer> someVal = entry.getValue();<br/>...<br/>}");
-        packager.setExpectedDescriptions(3, "for(Map.Entry&lt;String,Set<String>&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Set<String> tempVar = entry.getValue();<br/>...<br/>}");
-        
+
+        packager.setExpectedDescriptions(
+                0,
+                "for(Map.Entry&lt;String,Integer&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Integer tempVar = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(
+                1,
+                "for(Map.Entry&lt;String,Integer&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Integer i = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(
+                2,
+                "for(Map.Entry&lt;String,List<Integer>&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>List<Integer> someVal = entry.getValue();<br/>...<br/>}");
+        packager.setExpectedDescriptions(
+                3,
+                "for(Map.Entry&lt;String,Set<String>&gt; entry : map.entrySet()) {<br/>String key = entry.getKey();<br/>Set<String> tempVar = entry.getValue();<br/>...<br/>}");
 
         checkBugsAndPerformResolution(packager.asList(), "WrongMapIteratorBugs.java");
-        
+
     }
 
     @Test
@@ -147,7 +154,7 @@ public class TestContributedQuickFixes extends TestHarness {
         // DeadShadowStoreResolution.java
         setPriority("Medium");
         setRank(15);
-        
+
         setDetector("edu.umd.cs.findbugs.detect.FindDeadLocalStores", true);
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
@@ -160,13 +167,12 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(2, "Prefix assignment like DeadLocalStoreBugs.this.className");
         packager.setExpectedLabels(3); // no resolutions, it doesn't apply
         packager.fillExpectedDescriptions(DeadShadowStoreResolution.DSS_DESC);
-        packager.setExpectedDescriptions(3); //no descriptions either
-        
+        packager.setExpectedDescriptions(3); // no descriptions either
+
         packager.setFixToPerform(3, QuickFixTestPackage.IGNORE_FIX);
         checkBugsAndPerformResolution(packager.asList(), "DeadLocalStoreBugs.java");
     }
-    
-    
+
     @Test
     public void testLiteralStringComparisonResolution() throws Exception {
         // LiteralStringComparisonResolution.java
@@ -178,8 +184,8 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLines(6, 12, 13, 15);
         packager.fillExpectedBugPatterns("LSC_LITERAL_STRING_COMPARISON");
         packager.fillExpectedLabels("Swap string variable and string literal");
-        
-        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); //the last fix will fix all three problems
+
+        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); // the last fix will fix all three problems
         packager.setFixToPerform(2, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); // I ignore 1 and 2 because that integrates with the framework
 
         checkBugsAndPerformResolution(packager.asList(), "LiteralStringComparisonBugs.java");
@@ -203,14 +209,14 @@ public class TestContributedQuickFixes extends TestHarness {
 
         checkBugsAndPerformResolution(packager.asList(), "InsecureRandomBugs.java");
     }
-    
+
     @Test
     public void testNeedlessBoxingResolution() throws Exception {
         // NeedlessBoxingResolution.java
         setPriority("Low");
         setRank(20);
         setDetector("edu.umd.cs.findbugs.detect.UnreadFields", false);
-        setDetector("edu.umd.cs.findbugs.detect.DumbMethods", false);  //some overlap with the parse
+        setDetector("edu.umd.cs.findbugs.detect.DumbMethods", false); // some overlap with the parse
         setDetector("com.mebigfatguy.fbcontrib.detect.FinalParameters", false);
         // disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because the rtstubs17.jar
         // defines the constants (like Boolean.False) as null
@@ -221,13 +227,14 @@ public class TestContributedQuickFixes extends TestHarness {
 
         packager.setExpectedLines(10, 18, 19, 20, 21, 22, 23, 24, 30, 31, 32, 33, 39);
 
-        packager.setExpectedBugPatterns("NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", 
-                "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
+        packager.setExpectedBugPatterns("NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
+                "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
+                "NAB_NEEDLESS_BOXING_PARSE",
                 "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE", "NAB_NEEDLESS_BOXING_PARSE",
                 "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
                 "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION", "NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION",
                 "NAB_NEEDLESS_BOXING_PARSE");
-        
+
         packager.setExpectedLabels(0, "Replace with Boolean.TRUE");
         packager.setExpectedLabels(1, "Replace with Boolean.parseBoolean(data)");
         packager.setExpectedLabels(2, "Replace with Byte.parseByte(data)");
@@ -241,124 +248,123 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(10, "Replace with Boolean.FALSE");
         packager.setExpectedLabels(11, "Replace with Boolean.TRUE");
         packager.setExpectedLabels(12, "Replace with Integer.parseInt(num)");
-        
+
         checkBugsAndPerformResolution(packager.asList(), "NeedlessBoxingBugs.java");
     }
-    
+
     @Test
     public void testBigDecimalConstructorResolution() throws Exception {
         // BigDecimalConstructorResolution.java
-        setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", false);    //these have duplicate bugs
+        setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", false); // these have duplicate bugs
         setRank(10);
         setPriority("Medium");
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(7, 11);
-        
+
         packager.fillExpectedBugPatterns("DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE");
-        
+
         packager.setExpectedLabels(0, "Replace with BigDecimal.valueOf(1.23456)",
                 "Replace with new BigDecimal(\"1.23456\")");
         packager.setExpectedLabels(1, "Replace with BigDecimal.valueOf(1.234567)",
                 "Replace with new BigDecimal(\"1.234567\")");
-        
+
         packager.setFixToPerform(0, 0);
         packager.setFixToPerform(1, 1);
-        
+
         checkBugsAndPerformResolution(packager.asList(), "BigDecimalStringBugs.java");
     }
-    
+
     @Test
     public void testReturnValueIgnoreResolution() throws Exception {
         // ReturnValueIgnoreResolution
-        
+
         setRank(19);
         setPriority("Low");
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(12, 17, 25, 30);
-        
+
         packager.setExpectedBugPatterns("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE",
                 "RV_RETURN_VALUE_IGNORED", "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE");
-        
-        String ifString = ReturnValueIgnoreResolution.descriptionForWrapIf.replace("YYY","file.createNewFile()");
+
+        String ifString = ReturnValueIgnoreResolution.descriptionForWrapIf.replace("YYY", "file.createNewFile()");
         String ifNotString = ReturnValueIgnoreResolution.descriptionForNegatedWrapIf
-                .replace("YYY","file.createNewFile()");
-        
+                .replace("YYY", "file.createNewFile()");
+
         packager.setExpectedLabels(0, "Replace with if (file.createNewFile()) {}",
                 "Replace with if (!file.createNewFile()) {}", "Store result to a local");
         packager.setExpectedDescriptions(0, ifString, ifNotString, ReturnValueIgnoreResolution.descriptionForNewLocal);
-        
-        ifString = ReturnValueIgnoreResolution.descriptionForWrapIf.replace("YYY","file.delete()");
+
+        ifString = ReturnValueIgnoreResolution.descriptionForWrapIf.replace("YYY", "file.delete()");
         ifNotString = ReturnValueIgnoreResolution.descriptionForNegatedWrapIf
-                .replace("YYY","file.delete()");
-        
+                .replace("YYY", "file.delete()");
+
         packager.setExpectedLabels(1, "Replace with if (file.delete()) {}",
                 "Replace with if (!file.delete()) {}", "Store result to a local");
         packager.setExpectedDescriptions(1, ifString, ifNotString, ReturnValueIgnoreResolution.descriptionForNewLocal);
-        
-        
+
         packager.setExpectedLabels(2, "Store result to a local", "Store result back to self");
         packager.setExpectedDescriptions(2, ReturnValueIgnoreResolution.descriptionForNewLocal,
                 ReturnValueIgnoreResolution.descriptionForStoreToSelf);
         packager.setExpectedLabels(3, "Store result to a local");
         packager.setExpectedDescriptions(3, ReturnValueIgnoreResolution.descriptionForNewLocal);
-        
+
         packager.setFixToPerform(0, 1);
         packager.setFixToPerform(1, 0);
         packager.setFixToPerform(2, 1);
-        
+
         checkBugsAndPerformResolution(packager.asList(), "ReturnValueIgnoredBugs.java");
     }
-    
+
     @Test
     public void testArraysToStringResolution() throws Exception {
         // ArraysToStringResolution.java
         setRank(10);
         setPriority("Medium");
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(7, 11, 11, 18);
-        
+
         packager.fillExpectedBugPatterns("DMI_INVOKING_TOSTRING_ON_ARRAY");
         packager.fillExpectedLabels("Wrap array with Arrays.toString()");
-        
-        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); //we'll have a 2 for one fix on line 20
-        
+
+        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); // we'll have a 2 for one fix on line 20
+
         checkBugsAndPerformResolution(packager.asList(), "ArraysToStringBugs.java");
     }
-    
+
     @Test
     public void testSQLOffByOneResolution() throws Exception {
         // SQLOffByOneResolution.java
         setRank(1);
         setPriority("High");
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(10, 14, 19, 28);
-        
+
         packager.fillExpectedBugPatterns("SQL_BAD_RESULTSET_ACCESS");
-        packager.fillExpectedLabels("Change this index to 1 instead of 0", 
+        packager.fillExpectedLabels("Change this index to 1 instead of 0",
                 "Increment this and all similar indicies in this block by 1");
-        
+
         packager.setFixToPerform(2, 1);
         packager.setFixToPerform(3, 1);
-        
+
         checkBugsAndPerformResolution(packager.asList(), "SQLOffByOneBugs.java");
     }
-    
+
     @Test
     public void testIsNANResolution() throws Exception {
         setRank(10);
         setPriority("Medium");
-        
-        //disables FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER, which is a dup
+
+        // disables FE_TEST_IF_EQUAL_TO_NOT_A_NUMBER, which is a dup
         setDetector("edu.umd.cs.findbugs.detect.FindFloatEquality", false);
         setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", true);
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(5, 11, 17, 23, 29);
-        
+
         packager.fillExpectedBugPatterns("SPP_USE_ISNAN");
         packager.setExpectedLabels(0, "Replace with a call to !Float.isNaN(f)");
         packager.setExpectedLabels(1, "Replace with a call to Float.isNaN(f)");
@@ -366,68 +372,66 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(3, "Replace with a call to !Double.isNaN(d)");
         packager.setExpectedLabels(4, "Replace with !doub.isNaN()");
 
-        
         checkBugsAndPerformResolution(packager.asList(), "IsNANBugs.java");
     }
-    
+
     @Test
     public void testCopyOverridenMethodResolution() throws Exception {
         setRank(10);
         setPriority("Medium");
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(7, 16, 22);
-        
+
         packager.fillExpectedBugPatterns("COM_COPIED_OVERRIDDEN_METHOD");
         packager.fillExpectedLabels("Delete this method");
-        
+
         checkBugsAndPerformResolution(packager.asList(), "CopyOverriddenMethodBugs.java");
     }
-    
+
     @Test
     public void testShouldBeTransientResolution() throws Exception {
         setRank(14);
         setPriority("Medium");
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(11, 15);
-        
+
         packager.fillExpectedBugPatterns("SE_BAD_FIELD");
         packager.fillExpectedLabels("Add the transient keyword");
         packager.fillExpectedDescriptions(SerializingErrorResolution.SE_DESCRIPTION);
-        
+
         checkBugsAndPerformResolution(packager.asList(), "SerializingBugs.java");
     }
-    
+
     @Test
     public void testInefficiantToArrayResolution() throws Exception {
         setRank(20);
         setPriority("Low");
         setDetector("com.mebigfatguy.fbcontrib.detect.FinalParameters", false);
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(14, 21);
-        
+
         packager.fillExpectedBugPatterns("ITA_INEFFICIENT_TO_ARRAY");
         packager.setExpectedLabels(0, "Replace with toArray(new String[names.size()])");
         packager.setExpectedLabels(1, "Replace with toArray(new Integer[this.someInts.size()])");
-        
+
         checkBugsAndPerformResolution(packager.asList(), "InefficiantArrayBugs.java");
     }
-    
+
     @Test
     public void testUnnecessaryStoreBeforeReturnResolution() throws Exception {
         setRank(17);
         setPriority("Medium");
-        
-        
+
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(20, 26, 38);
-        
+
         packager.fillExpectedBugPatterns("USBR_UNNECESSARY_STORE_BEFORE_RETURN");
         packager.fillExpectedLabels("Remove redundant store and local variable");
-        
+
         checkBugsAndPerformResolution(packager.asList(), "UnnecessaryStoreBeforeReturnBugs.java");
     }
-    
+
 }

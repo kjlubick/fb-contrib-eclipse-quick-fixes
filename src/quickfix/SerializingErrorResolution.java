@@ -19,12 +19,12 @@ import util.TraversalUtil;
 public class SerializingErrorResolution extends BugResolution {
 
     public static final String SE_DESCRIPTION = "The transient keyword prevents the field from being serialized.  You will have to properly initialize it in some other way.";
-    
+
     @Override
     protected boolean resolveBindings() {
-        return false;       // no need for bindings, just looking for the field
+        return false; // no need for bindings, just looking for the field
     }
-    
+
     @Override
     public String getDescription() {
         return SE_DESCRIPTION;
@@ -40,10 +40,9 @@ public class SerializingErrorResolution extends BugResolution {
         if (node != null) {
             ListRewrite modifiersRewrite = getModifiersRewrite(rewrite, node);
             Modifier newTransient = rewrite.getAST().newModifier(ModifierKeyword.TRANSIENT_KEYWORD);
-            
+
             modifiersRewrite.insertLast(newTransient, null);
-            
-            
+
         }
     }
 

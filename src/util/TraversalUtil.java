@@ -34,27 +34,29 @@ public class TraversalUtil {
         }
         return node;
     }
-    
-    public static MethodDeclaration findEnclosingMethod(CompilationUnit workingUnit, SourceLineAnnotation primarySourceLineAnnotation) {
+
+    public static MethodDeclaration findEnclosingMethod(CompilationUnit workingUnit,
+            SourceLineAnnotation primarySourceLineAnnotation) {
 
         MethodFinder mf = new MethodFinder(workingUnit, primarySourceLineAnnotation.getStartLine());
         workingUnit.accept(mf);
-        
+
         return mf.enclosingMethod;
     }
 
-    
     private static class MethodFinder extends ASTVisitor {
-        
+
         MethodDeclaration enclosingMethod;
+
         private int lineToLookFor;
+
         private CompilationUnit compilationUnit;
 
         public MethodFinder(CompilationUnit workingUnit, int startLine) {
             this.lineToLookFor = startLine;
             this.compilationUnit = workingUnit;
         }
-        
+
         @Override
         public boolean visit(MethodDeclaration node) {
             int startingLineNumber = compilationUnit.getLineNumber(node.getStartPosition());
@@ -64,7 +66,7 @@ public class TraversalUtil {
             }
             return false;
         }
-        
+
     }
 
 }
