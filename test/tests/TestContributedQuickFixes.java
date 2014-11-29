@@ -18,6 +18,7 @@ import quickfix.DeadShadowStoreResolution;
 import quickfix.InsecureRandomResolution;
 import quickfix.ReturnValueIgnoreResolution;
 import quickfix.SerializingErrorResolution;
+import quickfix.SwitchFallThroughResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
 
@@ -478,7 +479,7 @@ public class TestContributedQuickFixes extends TestHarness {
         
         packager.fillExpectedDescriptions("Adds <code>break;</code> to close off the case statement");
         packager.setExpectedDescriptions(1, "Adds <code>break;</code> to close off the case statement",
-                                "Adds <code>return thing;</code> to close off the case statement");
+                                SwitchFallThroughResolution.RETURN_FIELD.replace("YYY", "thing"));
 
         
         packager.setFixToPerform(1, 1);
