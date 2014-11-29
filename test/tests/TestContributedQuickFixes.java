@@ -434,4 +434,18 @@ public class TestContributedQuickFixes extends TestHarness {
         checkBugsAndPerformResolution(packager.asList(), "UnnecessaryStoreBeforeReturnBugs.java");
     }
 
+    @Test
+    public void testEqualsOnEnumResolution() throws Exception {
+        setRank(7);
+        setPriority("Medium");
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(11, 15);
+
+        packager.fillExpectedBugPatterns("SPP_EQUALS_ON_ENUM");
+        packager.fillExpectedLabels("Replace method call with ==");
+
+        checkBugsAndPerformResolution(packager.asList(), "EqualsOnEnumBugs.java");
+    }
+    
 }
