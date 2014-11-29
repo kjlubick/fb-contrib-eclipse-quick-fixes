@@ -461,4 +461,28 @@ public class TestContributedQuickFixes extends TestHarness {
 
         checkBugsAndPerformResolution(packager.asList(), "NeedsDefaultCaseBugs.java");
     }
+    
+    @Test
+    public void testSwitchFallThroughResolution() throws Exception {
+        setRank(5);
+        setPriority("Medium");
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(16, 26, 43, 56);
+
+        packager.fillExpectedBugPatterns("SF_DEAD_STORE_DUE_TO_SWITCH_FALLTHROUGH");
+        packager.setExpectedLabels(0, "Add a break after store");
+        packager.setExpectedLabels(1, "Add a break after store", "Return field thing before fallthrough");
+        packager.setExpectedLabels(2, "Add a break after store");
+        packager.setExpectedLabels(3, "Add a break after store");
+        
+        packager.fillExpectedDescriptions("Adds <code>break;</code> to close off the case statement");
+        packager.setExpectedDescriptions(1, "Adds <code>break;</code> to close off the case statement",
+                                "Adds <code>return thing;</code> to close off the case statement");
+
+        
+        packager.setFixToPerform(1, 1);
+        
+        checkBugsAndPerformResolution(packager.asList(), "SwitchDeadStoreBugs.java");
+    }
 }
