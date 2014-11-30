@@ -477,8 +477,8 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(2, "Add a break after store");
         packager.setExpectedLabels(3, "Add a break after store");
         
-        packager.fillExpectedDescriptions("Adds <code>break;</code> to close off the case statement");
-        packager.setExpectedDescriptions(1, "Adds <code>break;</code> to close off the case statement",
+        packager.fillExpectedDescriptions(SwitchFallThroughResolution.BREAK_DESCRIPTION);
+        packager.setExpectedDescriptions(1, SwitchFallThroughResolution.BREAK_DESCRIPTION,
                                 SwitchFallThroughResolution.RETURN_FIELD.replace("YYY", "thing"));
 
         

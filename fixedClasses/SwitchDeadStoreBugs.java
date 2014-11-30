@@ -1,7 +1,7 @@
 
 public class SwitchDeadStoreBugs {
     
-    //break;  return local variable; return field?
+
     private String thing;
     
     public String localSameAsReturn(int i) {

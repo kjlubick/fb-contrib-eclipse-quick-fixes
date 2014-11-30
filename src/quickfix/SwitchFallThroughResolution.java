@@ -12,6 +12,7 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.apache.bcel.classfile.EnclosingMethod;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -19,6 +20,7 @@ import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
@@ -31,7 +33,9 @@ import util.TraversalUtil;
 
 public class SwitchFallThroughResolution extends BugResolution {
 
-    public static final String RETURN_FIELD = "Adds <pre>return YYY;</pre> to close off the case statement";
+    public static final String RETURN_FIELD = "Adds <code>return YYY;</code> to close off the case statement";
+    public static final String BREAK_DESCRIPTION = "Adds <code>break;</code> to close off the case statement";
+    
     private boolean shouldUseBreak;
     private String description;
 
@@ -50,6 +54,9 @@ public class SwitchFallThroughResolution extends BugResolution {
     @SuppressFBWarnings(value = "BAS_BLOATED_ASSIGNMENT_SCOPE",
             justification = "the call to getLabel() is needed to fill out information for custom descriptions")
     public String getDescription() {
+        
+        if (shouldUseBreak)
+            return BREAK_DESCRIPTION;
         if (description == null) {
             String label = getLabel(); // force traversing, which fills in description
             if (description == null) {
@@ -125,8 +132,22 @@ public class SwitchFallThroughResolution extends BugResolution {
         private void findFieldName(Expression leftHandSide) {
             if ((leftHandSide instanceof FieldAccess) ||
                     (leftHandSide instanceof SimpleName && TraversalUtil.nameRefersToField((SimpleName)leftHandSide))){
-                this.fallThroughField = leftHandSide;
+                
+                boolean equals = doesThisTypeMatchMethodReturnType(leftHandSide);
+                if (equals) {
+                    this.fallThroughField = leftHandSide;
+                }
             }
+        }
+
+
+        private boolean doesThisTypeMatchMethodReturnType(Expression expression) {
+            MethodDeclaration enclosingMethod = TraversalUtil.findClosestAncestor(expression, MethodDeclaration.class);        
+            String returnMethodType = enclosingMethod.getReturnType2().resolveBinding().getQualifiedName();
+            String storedObjectType = expression.resolveTypeBinding().getQualifiedName();
+            
+            // if the type of the object we are storing 
+            return storedObjectType.equals(returnMethodType);
         }
 
 
