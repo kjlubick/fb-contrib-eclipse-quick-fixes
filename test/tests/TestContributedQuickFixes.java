@@ -486,4 +486,21 @@ public class TestContributedQuickFixes extends TestHarness {
         
         checkBugsAndPerformResolution(packager.asList(), "SwitchDeadStoreBugs.java");
     }
+    
+    @Test
+    public void testUseEnumCollectionsResolution() throws Exception {
+        setRank(18);
+        setPriority("Medium");
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(22, 26, 31, 38);
+
+        packager.fillExpectedBugPatterns("UEC_USE_ENUM_COLLECTIONS");
+        packager.setExpectedLabels(0, "Declare badMap to be an EnumMap");
+        packager.setExpectedLabels(1, "Declare badSet to be an EnumSet");
+        packager.setExpectedLabels(2, "Declare badLocalSet to be an EnumSet");
+        packager.setExpectedLabels(3, "Declare badLocalMap to be an EnumMap");
+        
+        checkBugsAndPerformResolution(packager.asList(), "NeedsDefaultCaseBugs.java");
+    }
 }
