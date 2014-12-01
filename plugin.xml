@@ -254,7 +254,7 @@
     
     <quickFix
             class="quickfix.UseEnumCollectionsResolution"
-            label="Replace YYY"
+            label="Declare YYY"
             pattern="UEC_USE_ENUM_COLLECTIONS">
     </quickFix>     
     
