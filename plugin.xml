@@ -250,7 +250,15 @@
             class="quickfix.SwitchFallThroughResolution"
             label="Add a break after store"
             pattern="SF_DEAD_STORE_DUE_TO_SWITCH_FALLTHROUGH">
-    </quickFix>    
+    </quickFix>
+    
+    <quickFix
+            class="quickfix.UseEnumCollectionsResolution"
+            label="Replace YYY"
+            pattern="UEC_USE_ENUM_COLLECTIONS">
+    </quickFix>     
+    
+    
    
    </extension>
 
