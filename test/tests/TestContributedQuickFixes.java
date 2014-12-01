@@ -493,7 +493,7 @@ public class TestContributedQuickFixes extends TestHarness {
         setPriority("Medium");
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(22, 26, 31, 38);
+        packager.setExpectedLines(25, 29, 34, 41);
 
         packager.fillExpectedBugPatterns("UEC_USE_ENUM_COLLECTIONS");
         packager.setExpectedLabels(0, "Declare badMap to be an EnumMap");
@@ -501,6 +501,6 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(2, "Declare badLocalSet to be an EnumSet");
         packager.setExpectedLabels(3, "Declare badLocalMap to be an EnumMap");
         
-        checkBugsAndPerformResolution(packager.asList(), "NeedsDefaultCaseBugs.java");
+        checkBugsAndPerformResolution(packager.asList(), "UseEnumCollectionBugs.java");
     }
 }

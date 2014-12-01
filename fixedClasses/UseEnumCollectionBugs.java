@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,7 +15,7 @@ public class UseEnumCollectionBugs {
         Spades, Hearts, Clubs, Diamonds
     };
 
-    private Map<Suit, List<String>> badMap = new HashMap<>();
+    private Map<Suit, List<String>> badMap = new EnumMap<>(Suit.class);
     
     private Set<Suit> badSet;
     
@@ -38,7 +39,7 @@ public class UseEnumCollectionBugs {
     }
     
     public Map<Suit, String> getHandMap() {
-        Map<Suit, String> badLocalMap = new TreeMap<>();
+        Map<Suit, String> badLocalMap = new EnumMap<>(Suit.class);
         badLocalMap.put(Suit.Spades, "Foo");
         badLocalMap.put(Suit.Clubs, "Bar");
         return badLocalMap;
