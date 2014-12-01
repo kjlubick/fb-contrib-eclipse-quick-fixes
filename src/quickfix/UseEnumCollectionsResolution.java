@@ -13,10 +13,12 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IBinding;
@@ -113,7 +115,7 @@ public class UseEnumCollectionsResolution extends BugResolution {
             if (isEnumBasedMap(methodReciever) || isEnumBasedSet(methodReciever)) {
                 badCollectionName = findName(methodReciever);
                 isMap = isEnumBasedMap(methodReciever);
-                enumNameToUse = getEnumFromBindingOrNestedBinding(node.resolveTypeBinding());
+                enumNameToUse = getEnumFromBindingOrNestedBinding(node.getExpression().resolveTypeBinding());
                 badConstructorUsage = findConstructor(badCollectionName, node);
             }
             
@@ -126,26 +128,49 @@ public class UseEnumCollectionsResolution extends BugResolution {
                 if (((IVariableBinding) collectionBinding).isField()) {
                     return findFieldInitialization(collectionName, TraversalUtil.findClosestAncestor(node, TypeDeclaration.class));
                 } 
-                return findMethodInitialization(collectionName, TraversalUtil.findClosestAncestor(node, MethodDeclaration.class));
+                return findMethodInitialization(collectionName, TraversalUtil.findClosestAncestor(node, MethodDeclaration.class), false);
+            }
+            return null;
+        }
+
+        
+        @SuppressWarnings("unchecked")
+        private ClassInstanceCreation findMethodInitialization(SimpleName collectionName, MethodDeclaration methodDeclaration, boolean isField) {
+            List<Statement> statements = methodDeclaration.getBody().statements();
+            for(Statement statement: statements) {
+                if (!isField && statement instanceof VariableDeclarationStatement) {
+                    return findClassInstanceCreationInDeclaration(collectionName, (VariableDeclarationStatement)statement);
+                } else if (isField && statement instanceof ExpressionStatement){
+                    return findClassInstanceCreationInAssignment(collectionName, (ExpressionStatement) statement);
+                }
+            }
+            return null;
+        }
+
+        private ClassInstanceCreation findClassInstanceCreationInAssignment(SimpleName collectionName,
+                ExpressionStatement statement) {
+            Expression expression = statement.getExpression();
+            if (expression instanceof Assignment) {
+                Assignment assignment = (Assignment) expression;
+                if (collectionName.getIdentifier().equals(findName(assignment.getLeftHandSide()).getIdentifier())) {
+                    if (assignment.getRightHandSide() instanceof ClassInstanceCreation) {
+                        return (ClassInstanceCreation) assignment.getRightHandSide();
+                    }
+                }
             }
             return null;
         }
 
         @SuppressWarnings("unchecked")
-        private ClassInstanceCreation findMethodInitialization(SimpleName collectionName, MethodDeclaration methodDeclaration) {
-            List<Statement> statements = methodDeclaration.getBody().statements();
-            for(Statement statement: statements) {
-                if (statement instanceof VariableDeclarationStatement) {
-                    List<VariableDeclarationFragment> fragments = ((VariableDeclarationStatement) statement).fragments();
-                    for(VariableDeclarationFragment fragment: fragments) {
-                        if (collectionName.getIdentifier().equals(fragment.getName().getIdentifier())) {
-                            Expression initializer = fragment.getInitializer();
-                            if (initializer instanceof ClassInstanceCreation) {// I can't think of a common way for this to
-                                return (ClassInstanceCreation) initializer;     //to be non-null yet not be a CIC
-                            } else {
-                                return null;
-                            }
-                        }
+        private ClassInstanceCreation findClassInstanceCreationInDeclaration(SimpleName collectionName, VariableDeclarationStatement statement) {
+            List<VariableDeclarationFragment> fragments = statement.fragments();
+            for(VariableDeclarationFragment fragment: fragments) {
+                if (collectionName.getIdentifier().equals(fragment.getName().getIdentifier())) {
+                    Expression initializer = fragment.getInitializer();
+                    if (initializer instanceof ClassInstanceCreation) {// I can't think of a common way for this to
+                        return (ClassInstanceCreation) initializer;     //to be non-null yet not be a CIC
+                    } else {
+                        return null;
                     }
                 }
             }
@@ -176,8 +201,8 @@ public class UseEnumCollectionsResolution extends BugResolution {
             for(BodyDeclaration declaration:bodyDeclarations) {
                 if (declaration instanceof MethodDeclaration) {
                     MethodDeclaration methodDeclaration = ((MethodDeclaration) declaration);
-                    if (methodDeclaration.isConstructor() && methodDeclaration.parameters().size() == 0) {
-                        return findMethodInitialization(collectionName, methodDeclaration);
+                    if (methodDeclaration.isConstructor() && methodDeclaration.parameters().isEmpty()) {
+                        return findMethodInitialization(collectionName, methodDeclaration, true);
                     }
                 }
             }
@@ -204,12 +229,12 @@ public class UseEnumCollectionsResolution extends BugResolution {
 
         private boolean isEnumBasedSet(Expression expression) {
             ITypeBinding binding = expression.resolveTypeBinding();
-            return binding.getQualifiedName().matches("java\\.util.*Set") && null != getEnumFromBindingOrNestedBinding(binding);
+            return binding.getQualifiedName().matches("java\\.util.*Set.*") && null != getEnumFromBindingOrNestedBinding(binding);
         }
 
         private boolean isEnumBasedMap(Expression expression) {
             ITypeBinding binding = expression.resolveTypeBinding();
-            return binding.getQualifiedName().matches("java\\.util.*Map") && null != getEnumFromBindingOrNestedBinding(binding);
+            return binding.getQualifiedName().matches("java\\.util.*Map.*") && null != getEnumFromBindingOrNestedBinding(binding);
         }
 
         private SimpleName findName(Expression methodReciever) {
