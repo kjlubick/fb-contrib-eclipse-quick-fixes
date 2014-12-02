@@ -6,7 +6,7 @@ This repository extends the quick-fixes offered by the [FindBugs](http://findbug
 
 Currently, the FindBugs Eclipse Plugin only has support for extension in the nightly builds, but the public feature will be released soon.  Thus, I'm getting a head start on preparing custom quick-fixes.
 
-Because the aforementioned extension point is [only in dev](https://code.google.com/p/findbugs/source/detail?r=491d7f9cae6cef8919f0d76104dd567d8489db06), I've included an unofficial release of the plugin (through revision a69353ade781) under [releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  I've dubbed this release 3.0.1, and it is the current minimum version required for fb-contrib quickfixes.  This prereq will be updated when the official release happens.
+Because the aforementioned extension point is [only in dev](https://code.google.com/p/findbugs/source/detail?r=491d7f9cae6cef8919f0d76104dd567d8489db06), I've included an unofficial release of the plugin under [releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  I've dubbed this release 3.0.1, and it is the current minimum version required for fb-contrib quickfixes.  This prereq will be updated when the official release happens.
 
 ##Supported quickfixes##
 See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb-contrib](http://fb-contrib.sourceforge.net/bugdescriptions.html) bug description pages for more info
@@ -82,6 +82,8 @@ This project comes with a preconfigured Eclipse formatter setting.  These are th
 
 The build script will use the FindBugs Eclipse Plugin and the fb-contrib that you **have installed**, so if (like me), you have a dev version of either, those won't be built on.  
 Additionally, the launch configuration will use the workspace version of fb-contrib, but the installed version of the FindBugs Eclipse Plugin. You can easily make a launch configuration that uses the version from your workspace if you want.  
+
+Unit tests are encouraged.  Write some buggy code (preferably sticking to one family of bugs), place it in [classesToFix](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/tree/master/classesToFix) and a fixed version in [fixedClasses](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/tree/master/fixedClasses).  Then, add a test case to [TestContributedQuickFix.java](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/blob/7cbb5cb7a5a77436b626e76212b742c0a763b302/test/tests/TestContributedQuickFixes.java) - look at the other test cases for examples of how to use the high-level assertion TestHarness.
 
 Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/blog/post/3?building-your-first-eclipse-quick-fix) and [its follow up tutorial](http://kjlubick.github.io/blog/post/4?a-slightly-more-advanced-quickfix)?
 
