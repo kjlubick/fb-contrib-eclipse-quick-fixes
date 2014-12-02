@@ -22,6 +22,7 @@ See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb
 - SPP_USE_BIGDECIMAL_STRING_CTOR
 - SPP_USE_ISNAN
 - UCPM_USE_CHARACTER_PARAMETERIZED_METHOD
+- UEC_USE_ENUM_COLLECTIONS
 - USBR_UNNECESSARY_STORE_BEFORE_RETURN
 
 **FindBugs**
@@ -82,7 +83,7 @@ This project comes with a preconfigured Eclipse formatter setting.  These are th
 The build script will use the FindBugs Eclipse Plugin and the fb-contrib that you **have installed**, so if (like me), you have a dev version of either, those won't be built on.  
 Additionally, the launch configuration will use the workspace version of fb-contrib, but the installed version of the FindBugs Eclipse Plugin. You can easily make a launch configuration that uses the version from your workspace if you want.  
 
-Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/blog/post/3?building-your-first-eclipse-quick-fix)?
+Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/blog/post/3?building-your-first-eclipse-quick-fix) and [its follow up tutorial](http://kjlubick.github.io/blog/post/4?a-slightly-more-advanced-quickfix)?
 
 ##License##
 [FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html) and [fb-contrib](https://github.com/mebigfatguy/fb-contrib) are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
