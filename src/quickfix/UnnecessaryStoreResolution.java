@@ -8,13 +8,16 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.Assignment.Operator;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
+import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.ReturnStatement;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
@@ -50,18 +53,64 @@ public class UnnecessaryStoreResolution extends BugResolution {
     }
 
     private ReturnStatement makeNewReturnStatement(ASTRewrite rewrite, USBRVisitor visitor) {
-        ReturnStatement retVal = rewrite.getAST().newReturnStatement();
-        retVal.setExpression((Expression) rewrite.createCopyTarget(visitor.unnecessaryStoreExpression));
+        AST ast = rewrite.getAST();
+        ReturnStatement retVal = ast.newReturnStatement();
+        Expression baseExpression = (Expression) rewrite.createCopyTarget(visitor.unnecessaryStoreExpression);
+        
+        Operator assignOperator = visitor.unnecessaryStoreOperator;
+        
+        if (assignOperator != null && assignOperator != Operator.ASSIGN) {
+            InfixExpression infixExpression = ast.newInfixExpression();
+            infixExpression.setLeftOperand((Expression) rewrite.createCopyTarget(visitor.storedVariable));
+            infixExpression.setRightOperand(baseExpression);
+            infixExpression.setOperator(convertAssignOperatorToInfixOperator(assignOperator));
+            baseExpression = infixExpression;
+        }
+        
+        retVal.setExpression(baseExpression);
         return retVal;
+    }
+
+    private InfixExpression.Operator convertAssignOperatorToInfixOperator(Operator assignOperator) {
+        if (assignOperator == Operator.PLUS_ASSIGN) {
+            return InfixExpression.Operator.PLUS;
+        } else if (assignOperator == Operator.TIMES_ASSIGN) {
+            return InfixExpression.Operator.TIMES;
+        } else if (assignOperator == Operator.MINUS_ASSIGN) {
+            return InfixExpression.Operator.MINUS;
+        } else if (assignOperator == Operator.DIVIDE_ASSIGN) {
+            return InfixExpression.Operator.DIVIDE;
+        } else if (assignOperator == Operator.REMAINDER_ASSIGN) {
+            return InfixExpression.Operator.REMAINDER;
+        } else if (assignOperator == Operator.LEFT_SHIFT_ASSIGN) {
+            return InfixExpression.Operator.LEFT_SHIFT;
+        } else if (assignOperator == Operator.RIGHT_SHIFT_SIGNED_ASSIGN) {
+            return InfixExpression.Operator.RIGHT_SHIFT_SIGNED;
+        } else if (assignOperator == Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN) {
+            return InfixExpression.Operator.RIGHT_SHIFT_UNSIGNED;
+        } else if (assignOperator == Operator.RIGHT_SHIFT_UNSIGNED_ASSIGN) {
+            return InfixExpression.Operator.RIGHT_SHIFT_UNSIGNED;
+        } else if (assignOperator == Operator.BIT_AND_ASSIGN) {
+            return InfixExpression.Operator.AND;
+        } else if (assignOperator == Operator.BIT_OR_ASSIGN) {
+            return InfixExpression.Operator.OR;
+        } else if (assignOperator == Operator.BIT_XOR_ASSIGN) {
+            return InfixExpression.Operator.XOR;
+        }
+        return null;
     }
 
     private static class USBRVisitor extends ASTVisitor {
 
         public Statement unnecessaryStoreStatement;
 
-        public Expression unnecessaryStoreExpression;
+        public Expression unnecessaryStoreExpression; 
 
         public ReturnStatement originalReturn;
+
+        public Operator unnecessaryStoreOperator;
+
+        private Expression storedVariable;
 
         @Override
         public boolean visit(ReturnStatement node) {
@@ -103,8 +152,13 @@ public class UnnecessaryStoreResolution extends BugResolution {
         private boolean splitStatementAndInitializer(ExpressionStatement storeStatement) {
             Expression storeExpression = storeStatement.getExpression();
             if (storeExpression instanceof Assignment) {
+                Assignment assignment = (Assignment) storeExpression;
                 this.unnecessaryStoreStatement = storeStatement;
-                this.unnecessaryStoreExpression = ((Assignment) storeExpression).getRightHandSide();
+                
+                this.storedVariable = assignment.getLeftHandSide();
+                this.unnecessaryStoreOperator = assignment.getOperator();
+                this.unnecessaryStoreExpression = assignment.getRightHandSide();
+                
                 return true;
             }
             return false;

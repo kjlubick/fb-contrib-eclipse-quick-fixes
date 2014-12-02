@@ -47,7 +47,7 @@ public class UnnecessaryStoreBeforeReturnBugs {
         default:
             retVal = "fizzbuzz";
         }      
-        return retVal + i; 
+        return retVal + i;
     }
 
     @Override

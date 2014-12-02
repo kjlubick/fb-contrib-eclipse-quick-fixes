@@ -422,7 +422,7 @@ public class TestContributedQuickFixes extends TestHarness {
     }
 
     @Test
-    public void testUnnecessaryStoreBeforeReturnResolution() throws Exception {
+    public void testUnnecessaryStoreResolution() throws Exception {
         setRank(17);
         setPriority("Medium");
 
@@ -437,7 +437,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testEqualsOnEnumResolution() throws Exception {
-        setRank(7);
+        setRank(10);
         setPriority("Medium");
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
