@@ -121,10 +121,10 @@ public class UseEnumCollectionsResolution extends BugResolution {
             Expression methodReciever = node.getExpression();
             if (isEnumBasedMap(methodReciever) || isEnumBasedSet(methodReciever)) {
                 try {
-                    badCollectionName = findName(methodReciever);
+                    badCollectionName = findNameOfCollection(methodReciever);
                     isMap = isEnumBasedMap(methodReciever);
                     enumNameToUse = getEnumFromBindingOrNestedBinding(node.getExpression().resolveTypeBinding());
-                    badConstructorUsage = findConstructor(badCollectionName, node);
+                    badConstructorUsage = findInitializerOfCollection(badCollectionName, node);
                 } catch (EnumParsingException e) {
                     // reset, parsing out the enum usages went poorly
                     badCollectionName = null;
@@ -136,13 +136,15 @@ public class UseEnumCollectionsResolution extends BugResolution {
             return true;
         }
 
-        private ClassInstanceCreation findConstructor(SimpleName collectionName, MethodInvocation node) throws EnumParsingException {
+        private ClassInstanceCreation findInitializerOfCollection(SimpleName collectionName, MethodInvocation startOfSearch) throws EnumParsingException {
             IBinding collectionBinding = collectionName.resolveBinding();
+            // if collectionName does not refer to a variable, we won't be able to find
+            // where it is being initialized
             if (collectionBinding instanceof IVariableBinding) {
                 if (((IVariableBinding) collectionBinding).isField()) {
-                    return findFieldInitialization(collectionName, TraversalUtil.findClosestAncestor(node, TypeDeclaration.class));
+                    return findFieldInitialization(collectionName, TraversalUtil.findClosestAncestor(startOfSearch, TypeDeclaration.class));
                 } 
-                return findMethodInitialization(collectionName, TraversalUtil.findClosestAncestor(node, MethodDeclaration.class), false);
+                return findMethodInitialization(collectionName, TraversalUtil.findClosestAncestor(startOfSearch, MethodDeclaration.class), false);
             }
             throw new EnumParsingException();
         }
@@ -150,6 +152,9 @@ public class UseEnumCollectionsResolution extends BugResolution {
         
         @SuppressWarnings("unchecked")
         private ClassInstanceCreation findMethodInitialization(SimpleName collectionName, MethodDeclaration methodDeclaration, boolean isField) throws EnumParsingException {
+            // Look in this method for an initialization of the variable collectionName
+            // This handles initialization of a field (i.e. something w/o a declaration)
+            // and a local variable (i.e. something with a declaration)
             List<Statement> statements = methodDeclaration.getBody().statements();
             for(Statement statement: statements) {
                 if (!isField && statement instanceof VariableDeclarationStatement) {
@@ -163,10 +168,11 @@ public class UseEnumCollectionsResolution extends BugResolution {
 
         private ClassInstanceCreation findClassInstanceCreationInAssignment(SimpleName collectionName,
                 ExpressionStatement statement) throws EnumParsingException {
+            // this ExpressionStatement is expected to be a wrapped assignment
             Expression expression = statement.getExpression();
             if (expression instanceof Assignment) {
                 Assignment assignment = (Assignment) expression;
-                if (collectionName.getIdentifier().equals(findName(assignment.getLeftHandSide()).getIdentifier())) {
+                if (areNamesEqual(collectionName, findNameOfCollection(assignment.getLeftHandSide()))) {
                     if (assignment.getRightHandSide() instanceof ClassInstanceCreation) {
                         return (ClassInstanceCreation) assignment.getRightHandSide();
                     }
@@ -176,31 +182,41 @@ public class UseEnumCollectionsResolution extends BugResolution {
         }
 
         @SuppressWarnings("unchecked")
-        private ClassInstanceCreation findClassInstanceCreationInDeclaration(SimpleName collectionName, VariableDeclarationStatement statement) {
+        private ClassInstanceCreation findClassInstanceCreationInDeclaration(SimpleName collectionName, VariableDeclarationStatement statement) throws EnumParsingException {
             List<VariableDeclarationFragment> fragments = statement.fragments();
             for(VariableDeclarationFragment fragment: fragments) {
-                if (collectionName.getIdentifier().equals(fragment.getName().getIdentifier())) {
+                if (areNamesEqual(collectionName, fragment.getName())) {
                     Expression initializer = fragment.getInitializer();
-                    if (initializer instanceof ClassInstanceCreation) {// I can't think of a common way for this to
-                        return (ClassInstanceCreation) initializer;     //to be non-null yet not be a CIC
+                    if (initializer instanceof ClassInstanceCreation) {
+                        return (ClassInstanceCreation) initializer;
                     } else {
-                        return null;
+                        throw new EnumParsingException();
                     }
                 }
             }
-            return null;
+            throw new EnumParsingException();
         }
-
+        
+        private static boolean areNamesEqual(SimpleName firstName, SimpleName secondName) {
+            // can't do collectionName.equals(fragment.getName()) because the SimpleName
+            // equals method is just a pointer equality, so we have to compare the identifiers
+            return firstName.getIdentifier().equals(secondName.getIdentifier());
+        }
+        
+        @SuppressWarnings("unchecked")
         private ClassInstanceCreation findFieldInitialization(SimpleName collectionName, TypeDeclaration typeDeclaration) throws EnumParsingException {
-            
+            // this will look through all the fields for the declaration.  If it wasn't
+            // initialized at declaration, we'll try looking in the default constructor.
             for(FieldDeclaration field:typeDeclaration.getFields()) {
-                @SuppressWarnings("unchecked")
                 List<VariableDeclarationFragment> fragments = field.fragments();
                 for(VariableDeclarationFragment fragment: fragments) {
-                    if (collectionName.getIdentifier().equals(fragment.getName().getIdentifier())) {
+                                        
+                    if (areNamesEqual(collectionName, fragment.getName())) {
                         Expression initializer = fragment.getInitializer();
-                        if (initializer instanceof ClassInstanceCreation) {// I can't think of a common way for this to
-                            return (ClassInstanceCreation) initializer;     //to be non-null yet not be a CIC
+                        // if there are cases other than "is ClassInstanceCreation"
+                        // or "null", I can't think of them.
+                        if (initializer instanceof ClassInstanceCreation) {
+                            return (ClassInstanceCreation) initializer;     
                         } else {
                             return lookInDefaultConstructor(collectionName, typeDeclaration);
                         }
@@ -211,6 +227,8 @@ public class UseEnumCollectionsResolution extends BugResolution {
         }
         @SuppressWarnings("unchecked")
         private ClassInstanceCreation lookInDefaultConstructor(SimpleName collectionName, TypeDeclaration typeDeclaration) throws EnumParsingException {
+            // Search all bodyDeclarations for a methodDeclaration with no arguments
+            // i.e. default constructor
             List<BodyDeclaration> bodyDeclarations = typeDeclaration.bodyDeclarations();
             for(BodyDeclaration declaration:bodyDeclarations) {
                 if (declaration instanceof MethodDeclaration) {
@@ -244,16 +262,18 @@ public class UseEnumCollectionsResolution extends BugResolution {
         }
 
         private boolean isEnumBasedSet(Expression expression) {
+         // A bit hackish, but this looks at the name of the type and if there is also an enum in one of the TypeParameters
             ITypeBinding binding = expression.resolveTypeBinding();
             return binding.getQualifiedName().matches("java\\.util.*Set.*") && null != getEnumFromBindingOrNestedBinding(binding);
         }
 
         private boolean isEnumBasedMap(Expression expression) {
+            // A bit hackish, but this looks at the name of the type and if there is also an enum in one of the TypeParameters
             ITypeBinding binding = expression.resolveTypeBinding();
             return binding.getQualifiedName().matches("java\\.util.*Map.*") && null != getEnumFromBindingOrNestedBinding(binding);
         }
 
-        private SimpleName findName(Expression methodReciever) throws EnumParsingException {
+        private SimpleName findNameOfCollection(Expression methodReciever) throws EnumParsingException {
             if (methodReciever instanceof SimpleName) {
                 return (SimpleName) methodReciever;
             }
