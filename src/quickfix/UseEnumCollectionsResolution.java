@@ -5,6 +5,8 @@ import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNod
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
@@ -26,7 +28,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
@@ -70,31 +71,37 @@ public class UseEnumCollectionsResolution extends BugResolution {
         
     }
     
-    @SuppressWarnings("unchecked")
+    
     private Expression makeEnumConstructor(EnumCollectionsVisitor visitor, ASTRewrite rewrite) {
         AST ast = rewrite.getAST();
-        TypeLiteral enumType = ast.newTypeLiteral();
-        Name enumName = ast.newName(visitor.enumNameToUse);
-        enumType.setType(ast.newSimpleType(enumName));
+        TypeLiteral enumDotClass = ast.newTypeLiteral();        //this is the EnumHere.class
+        enumDotClass.setType(ast.newSimpleType(ast.newName(visitor.enumNameToUse)));
         
         if (visitor.isMap) {
-            ClassInstanceCreation newEnumMap = ast.newClassInstanceCreation();
-            
-            Type enumMap = ast.newSimpleType(ast.newName("EnumMap"));
-            
-            //makes the <> braces by default
-            newEnumMap.setType(ast.newParameterizedType(enumMap));
-            newEnumMap.arguments().add(enumType);
-            
-            return newEnumMap;
+            return makeEnumMap(enumDotClass, ast);
         } 
-        
+        return makeEnumSet(enumDotClass, ast);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Expression makeEnumSet(TypeLiteral enumType, AST ast) {
         MethodInvocation newEnumSet = ast.newMethodInvocation();
         newEnumSet.setExpression(ast.newSimpleName("EnumSet"));
         newEnumSet.setName(ast.newSimpleName("noneOf"));
         newEnumSet.arguments().add(enumType);
   
         return newEnumSet;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Expression makeEnumMap(TypeLiteral enumType, AST ast) {
+        ClassInstanceCreation newEnumMap = ast.newClassInstanceCreation();
+        Type enumMap = ast.newSimpleType(ast.newName("EnumMap"));
+        //makes the <> braces by default
+        newEnumMap.setType(ast.newParameterizedType(enumMap));
+        newEnumMap.arguments().add(enumType);
+        
+        return newEnumMap;
     }
 
 
@@ -113,16 +120,23 @@ public class UseEnumCollectionsResolution extends BugResolution {
 
             Expression methodReciever = node.getExpression();
             if (isEnumBasedMap(methodReciever) || isEnumBasedSet(methodReciever)) {
-                badCollectionName = findName(methodReciever);
-                isMap = isEnumBasedMap(methodReciever);
-                enumNameToUse = getEnumFromBindingOrNestedBinding(node.getExpression().resolveTypeBinding());
-                badConstructorUsage = findConstructor(badCollectionName, node);
+                try {
+                    badCollectionName = findName(methodReciever);
+                    isMap = isEnumBasedMap(methodReciever);
+                    enumNameToUse = getEnumFromBindingOrNestedBinding(node.getExpression().resolveTypeBinding());
+                    badConstructorUsage = findConstructor(badCollectionName, node);
+                } catch (EnumParsingException e) {
+                    // reset, parsing out the enum usages went poorly
+                    badCollectionName = null;
+                    enumNameToUse = null;
+                    badConstructorUsage = null;
+                }
             }
             
             return true;
         }
 
-        private ClassInstanceCreation findConstructor(SimpleName collectionName, MethodInvocation node) {
+        private ClassInstanceCreation findConstructor(SimpleName collectionName, MethodInvocation node) throws EnumParsingException {
             IBinding collectionBinding = collectionName.resolveBinding();
             if (collectionBinding instanceof IVariableBinding) {
                 if (((IVariableBinding) collectionBinding).isField()) {
@@ -130,12 +144,12 @@ public class UseEnumCollectionsResolution extends BugResolution {
                 } 
                 return findMethodInitialization(collectionName, TraversalUtil.findClosestAncestor(node, MethodDeclaration.class), false);
             }
-            return null;
+            throw new EnumParsingException();
         }
 
         
         @SuppressWarnings("unchecked")
-        private ClassInstanceCreation findMethodInitialization(SimpleName collectionName, MethodDeclaration methodDeclaration, boolean isField) {
+        private ClassInstanceCreation findMethodInitialization(SimpleName collectionName, MethodDeclaration methodDeclaration, boolean isField) throws EnumParsingException {
             List<Statement> statements = methodDeclaration.getBody().statements();
             for(Statement statement: statements) {
                 if (!isField && statement instanceof VariableDeclarationStatement) {
@@ -144,11 +158,11 @@ public class UseEnumCollectionsResolution extends BugResolution {
                     return findClassInstanceCreationInAssignment(collectionName, (ExpressionStatement) statement);
                 }
             }
-            return null;
+            throw new EnumParsingException();
         }
 
         private ClassInstanceCreation findClassInstanceCreationInAssignment(SimpleName collectionName,
-                ExpressionStatement statement) {
+                ExpressionStatement statement) throws EnumParsingException {
             Expression expression = statement.getExpression();
             if (expression instanceof Assignment) {
                 Assignment assignment = (Assignment) expression;
@@ -158,7 +172,7 @@ public class UseEnumCollectionsResolution extends BugResolution {
                     }
                 }
             }
-            return null;
+            throw new EnumParsingException();
         }
 
         @SuppressWarnings("unchecked")
@@ -177,7 +191,7 @@ public class UseEnumCollectionsResolution extends BugResolution {
             return null;
         }
 
-        private ClassInstanceCreation findFieldInitialization(SimpleName collectionName, TypeDeclaration typeDeclaration) {
+        private ClassInstanceCreation findFieldInitialization(SimpleName collectionName, TypeDeclaration typeDeclaration) throws EnumParsingException {
             
             for(FieldDeclaration field:typeDeclaration.getFields()) {
                 @SuppressWarnings("unchecked")
@@ -193,10 +207,10 @@ public class UseEnumCollectionsResolution extends BugResolution {
                     }
                 }
             }
-            return null;
+            throw new EnumParsingException();
         }
         @SuppressWarnings("unchecked")
-        private ClassInstanceCreation lookInDefaultConstructor(SimpleName collectionName, TypeDeclaration typeDeclaration) {
+        private ClassInstanceCreation lookInDefaultConstructor(SimpleName collectionName, TypeDeclaration typeDeclaration) throws EnumParsingException {
             List<BodyDeclaration> bodyDeclarations = typeDeclaration.bodyDeclarations();
             for(BodyDeclaration declaration:bodyDeclarations) {
                 if (declaration instanceof MethodDeclaration) {
@@ -206,10 +220,12 @@ public class UseEnumCollectionsResolution extends BugResolution {
                     }
                 }
             }
-            return null;
+            throw new EnumParsingException();
         }
 
         // Looks through either this binding or any nested arguments and returns the first enum found, if any
+        // Does not throw an exception, but rather returns null.  This is to facilitate checking multiple bindings.
+        @Nullable
         private String getEnumFromBindingOrNestedBinding(ITypeBinding binding) {
             if (binding.isEnum()) {
                 return binding.getName();
@@ -237,7 +253,7 @@ public class UseEnumCollectionsResolution extends BugResolution {
             return binding.getQualifiedName().matches("java\\.util.*Map.*") && null != getEnumFromBindingOrNestedBinding(binding);
         }
 
-        private SimpleName findName(Expression methodReciever) {
+        private SimpleName findName(Expression methodReciever) throws EnumParsingException {
             if (methodReciever instanceof SimpleName) {
                 return (SimpleName) methodReciever;
             }
@@ -247,14 +263,19 @@ public class UseEnumCollectionsResolution extends BugResolution {
             if (methodReciever instanceof FieldAccess) {
                 return ((FieldAccess) methodReciever).getName();
             }
-            // XXX Probably a problem
-            return null;
+            throw new EnumParsingException();
         }
 
         @Override
         public String getLabelReplacement() {
             return badCollectionName.getIdentifier() + " to be an " + (isMap ? "EnumMap" : "EnumSet");
         }
+        
+    }
+    
+    private static class EnumParsingException extends Exception {
+
+        private static final long serialVersionUID = -5995607690601671285L;
         
     }
 
