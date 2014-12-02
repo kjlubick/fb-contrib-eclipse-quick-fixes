@@ -121,12 +121,15 @@ public abstract class TestHarness {
     }
 
     private void scanUntilMarkers(String testResource) throws CoreException {
+        scanForBugs(testResource);
         for (int i = 0; i < 3; i++) {
-            scanForBugs(testResource);
             IMarker[] markers = TestingUtils.getAllMarkersInResource(testProject, testResource);
             if (markers.length > 0) {
                 return;
             }
+            System.out.println("Trying again for bugs...");
+            scanForBugs(testResource);
+            TestingUtils.waitForUiEvents(1000);
         }
         fail("Did not find any markers... tried 3 times");
 

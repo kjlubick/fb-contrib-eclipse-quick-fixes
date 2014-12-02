@@ -152,7 +152,7 @@ public class TestingUtils {
             for (int j = 0; j < resolutions.length; j++) {
                 BugResolution resolution = (BugResolution) resolutions[j];
                 String label = resolution.getLabel();
-                assertTrue("Should not have seen label: " + label, expectedLabelsAndDescriptions.containsKey(label));
+                assertTrue("Should not have seen label: " + label + " in " + expectedLabelsAndDescriptions, expectedLabelsAndDescriptions.containsKey(label));
                 assertEquals("Description should have matched",
                         expectedLabelsAndDescriptions.get(label), resolution.getDescription());
                 expectedLabelsAndDescriptions.remove(label);
