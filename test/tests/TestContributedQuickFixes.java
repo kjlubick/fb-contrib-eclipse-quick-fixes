@@ -511,4 +511,20 @@ public class TestContributedQuickFixes extends TestHarness {
 
         checkBugsAndPerformResolution(packager.asList(), "UseEnumCollectionBugs.java");
     }
+    
+    @Test
+    public void testIsEmptyResolution() throws Exception {
+        setRank(17);
+        setPriority("Medium");
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(11, 15, 20, 21);
+
+        packager.fillExpectedBugPatterns("SPP_USE_ISEMPTY");
+        packager.fillExpectedLabels("Replace with a call to isEmpty()");
+        
+        packager.setFixToPerform(2, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX);  //it's fixed with the marker on line 21
+
+        checkBugsAndPerformResolution(packager.asList(), "IsEmptyBugs.java");
+    }
 }
