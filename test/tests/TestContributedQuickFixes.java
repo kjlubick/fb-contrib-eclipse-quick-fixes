@@ -5,6 +5,7 @@ import java.io.IOException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import org.eclipse.core.runtime.CoreException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -34,7 +35,7 @@ public class TestContributedQuickFixes extends TestHarness {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            TestingUtils.waitForUiEvents(20_000);
+            // TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
@@ -52,6 +53,12 @@ public class TestContributedQuickFixes extends TestHarness {
     @Before
     public void setup() {
         super.setup();
+    }
+    
+    @Override
+    @After
+    public void tearDown() {
+        super.tearDown();
     }
 
     @Test

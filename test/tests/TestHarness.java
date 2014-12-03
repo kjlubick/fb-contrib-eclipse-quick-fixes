@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.tobject.findbugs.FindbugsPlugin;
@@ -34,8 +36,6 @@ import org.eclipse.jdt.testplugin.JavaProjectHelper;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.PartInitException;
-import org.junit.Before;
-import org.junit.BeforeClass;
 
 import utils.BugResolutionSource;
 import utils.QuickFixTestPackage;
@@ -54,6 +54,8 @@ public abstract class TestHarness {
     private static IProject testIProject;
 
     private BugResolutionSource resolutionSource;
+
+    private Set<String> detectorsToReenable = new HashSet<String>();
 
     public static void loadFilesThatNeedFixing() throws CoreException, IOException {
         makeJavaProject();
@@ -91,6 +93,7 @@ public abstract class TestHarness {
     }
 
     public void setup() {
+        detectorsToReenable.clear();
         final BugResolutionGenerator resolutionGenerator = new BugResolutionGenerator();
         // we wrap this in case the underlying generator interface changes.
         resolutionSource = new BugResolutionSource() {
@@ -282,8 +285,16 @@ public abstract class TestHarness {
         if (factory == null) {
             fail("Could not find a detector with class "+dotSeperatedDetectorClass);
         }
-        
+        if (!enabled) {
+            detectorsToReenable.add(dotSeperatedDetectorClass);
+        }
         FindbugsPlugin.getUserPreferences(testIProject).enableDetector(factory, enabled);
+    }
+
+    private void restoreDisabledDetectors() {
+        for(String detector : detectorsToReenable) {
+            setDetector(detector, true);
+        }
     }
 
     /**
@@ -319,6 +330,11 @@ public abstract class TestHarness {
             return;
         }
         fail("minRank ["+minRank+"] must be between 1 and 20 inclusively");
+    }
+
+    public void tearDown() {
+        restoreDisabledDetectors();
+        
     }
 
 }
