@@ -12,7 +12,6 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
-import org.apache.bcel.classfile.EnclosingMethod;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -34,9 +33,11 @@ import util.TraversalUtil;
 public class SwitchFallThroughResolution extends BugResolution {
 
     public static final String RETURN_FIELD = "Adds <code>return YYY;</code> to close off the case statement";
+
     public static final String BREAK_DESCRIPTION = "Adds <code>break;</code> to close off the case statement";
-    
+
     private boolean shouldUseBreak;
+
     private String description;
 
     @Override
@@ -48,13 +49,12 @@ public class SwitchFallThroughResolution extends BugResolution {
     public void setOptions(Map<String, String> options) {
         this.shouldUseBreak = Boolean.parseBoolean(options.get("useBreak"));
     }
-    
 
     @Override
     @SuppressFBWarnings(value = "BAS_BLOATED_ASSIGNMENT_SCOPE",
             justification = "the call to getLabel() is needed to fill out information for custom descriptions")
     public String getDescription() {
-        
+
         if (shouldUseBreak)
             return BREAK_DESCRIPTION;
         if (description == null) {
@@ -66,23 +66,23 @@ public class SwitchFallThroughResolution extends BugResolution {
         }
         return description;
     }
-    
+
     @Override
     protected ASTVisitor getApplicabilityVisitor() {
         return new FallThroughVisitor();
     }
-    
+
     @Override
     protected ASTVisitor getCustomLabelVisitor() {
         return new FallThroughVisitor();
     }
-    
+
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         FallThroughVisitor visitor = new FallThroughVisitor();
         node.accept(visitor);
-        
+
         if (visitor.badSwitchStatement != null && visitor.caseFellThrough != null) {
             SwitchStatement ss = visitor.badSwitchStatement;
             // easiest way to insert a new statement into the old statements is
@@ -92,8 +92,7 @@ public class SwitchFallThroughResolution extends BugResolution {
             switchRewrite.insertBefore(newStatement, visitor.caseFellThrough, null);
         }
     }
-    
-    
+
     private Statement makeFixedStatement(ASTRewrite rewrite, FallThroughVisitor visitor) {
         AST ast = rewrite.getAST();
         if (shouldUseBreak) {
@@ -106,14 +105,14 @@ public class SwitchFallThroughResolution extends BugResolution {
         return retVal;
     }
 
-
     private class FallThroughVisitor extends ASTVisitor implements CustomLabelVisitor, ApplicabilityVisitor {
 
         public SwitchCase caseFellThrough;
+
         public SwitchStatement badSwitchStatement;
+
         public Expression fallThroughField;
-        
-        
+
         @Override
         public boolean visit(Assignment node) {
             if (badSwitchStatement != null) {
@@ -127,12 +126,11 @@ public class SwitchFallThroughResolution extends BugResolution {
 
             return false;
         }
-        
-        
+
         private void findFieldName(Expression leftHandSide) {
             if ((leftHandSide instanceof FieldAccess) ||
-                    (leftHandSide instanceof SimpleName && TraversalUtil.nameRefersToField((SimpleName)leftHandSide))){
-                
+                    (leftHandSide instanceof SimpleName && TraversalUtil.nameRefersToField((SimpleName) leftHandSide))) {
+
                 boolean equals = doesThisTypeMatchMethodReturnType(leftHandSide);
                 if (equals) {
                     this.fallThroughField = leftHandSide;
@@ -140,16 +138,14 @@ public class SwitchFallThroughResolution extends BugResolution {
             }
         }
 
-
         private boolean doesThisTypeMatchMethodReturnType(Expression expression) {
-            MethodDeclaration enclosingMethod = TraversalUtil.findClosestAncestor(expression, MethodDeclaration.class);        
+            MethodDeclaration enclosingMethod = TraversalUtil.findClosestAncestor(expression, MethodDeclaration.class);
             String returnMethodType = enclosingMethod.getReturnType2().resolveBinding().getQualifiedName();
             String storedObjectType = expression.resolveTypeBinding().getQualifiedName();
-            
-            // if the type of the object we are storing 
+
+            // if the type of the object we are storing
             return storedObjectType.equals(returnMethodType);
         }
-
 
         @SuppressWarnings("unchecked")
         private SwitchCase findBadFallThroughCase(Statement lookingForStatement) {
@@ -166,7 +162,6 @@ public class SwitchFallThroughResolution extends BugResolution {
             return null;
         }
 
-
         @Override
         public boolean isApplicable() {
             return shouldUseBreak || fallThroughField != null;
@@ -181,7 +176,7 @@ public class SwitchFallThroughResolution extends BugResolution {
             description = RETURN_FIELD.replace("YYY", fieldString);
             return fieldString;
         }
-        
+
     }
 
 }

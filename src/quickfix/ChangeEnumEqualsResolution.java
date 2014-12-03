@@ -24,7 +24,7 @@ public class ChangeEnumEqualsResolution extends BugResolution {
 
     @Override
     protected boolean resolveBindings() {
-        return true;        //we need this to detect
+        return true; // we need this to detect
     }
 
     @Override
@@ -33,22 +33,22 @@ public class ChangeEnumEqualsResolution extends BugResolution {
         node = TraversalUtil.backtrackToBlock(node);
         EnumEqualsVisitor visitor = new EnumEqualsVisitor();
         node.accept(visitor);
-        
-        for(ResolutionBundle bundle : visitor.resolutionBundles) {
+
+        for (ResolutionBundle bundle : visitor.resolutionBundles) {
             InfixExpression newEquals = rewrite.getAST().newInfixExpression();
             if (bundle.wasNegated) {
                 newEquals.setOperator(InfixExpression.Operator.NOT_EQUALS);
             } else {
                 newEquals.setOperator(InfixExpression.Operator.EQUALS);
             }
-            
+
             newEquals.setLeftOperand((Expression) rewrite.createCopyTarget(bundle.thisEnum));
             newEquals.setRightOperand((Expression) rewrite.createCopyTarget(bundle.thatEnum));
 
             rewrite.replace(bundle.badEqualsInvocation, newEquals, null);
         }
     }
-    
+
     private static class ResolutionBundle {
         public boolean wasNegated;
 
@@ -64,17 +64,17 @@ public class ChangeEnumEqualsResolution extends BugResolution {
             this.thatEnum = thatEnum;
         }
     }
-    
+
     private static class EnumEqualsVisitor extends ASTVisitor {
-        
+
         public List<ResolutionBundle> resolutionBundles = new ArrayList<>();
-        
+
         @SuppressWarnings("unchecked")
         @Override
         public boolean visit(MethodInvocation node) {
             List<Expression> arguments = node.arguments();
             if ("equals".equals(node.getName().getIdentifier()) && arguments.size() == 1) {
-                
+
                 Expression messageReciever = node.getExpression();
                 if (messageReciever.resolveTypeBinding().isEnum()) {
                     ResolutionBundle resolutionBundle = new ResolutionBundle(node, messageReciever, arguments.get(0));
@@ -90,7 +90,7 @@ public class ChangeEnumEqualsResolution extends BugResolution {
             if (negatedExpression == null) {
                 return;
             }
-            if ( negatedExpression.getOperator().equals(PrefixExpression.Operator.NOT)) {
+            if (negatedExpression.getOperator().equals(PrefixExpression.Operator.NOT)) {
                 resolutionBundle.wasNegated = true;
                 resolutionBundle.badEqualsInvocation = negatedExpression;
             }

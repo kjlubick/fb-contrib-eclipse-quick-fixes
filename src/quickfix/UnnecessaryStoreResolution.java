@@ -56,9 +56,9 @@ public class UnnecessaryStoreResolution extends BugResolution {
         AST ast = rewrite.getAST();
         ReturnStatement retVal = ast.newReturnStatement();
         Expression baseExpression = (Expression) rewrite.createCopyTarget(visitor.unnecessaryStoreExpression);
-        
+
         Operator assignOperator = visitor.unnecessaryStoreOperator;
-        
+
         if (assignOperator != null && assignOperator != Operator.ASSIGN) {
             InfixExpression infixExpression = ast.newInfixExpression();
             infixExpression.setLeftOperand((Expression) rewrite.createCopyTarget(visitor.storedVariable));
@@ -66,7 +66,7 @@ public class UnnecessaryStoreResolution extends BugResolution {
             infixExpression.setOperator(convertAssignOperatorToInfixOperator(assignOperator));
             baseExpression = infixExpression;
         }
-        
+
         retVal.setExpression(baseExpression);
         return retVal;
     }
@@ -104,7 +104,7 @@ public class UnnecessaryStoreResolution extends BugResolution {
 
         public Statement unnecessaryStoreStatement;
 
-        public Expression unnecessaryStoreExpression; 
+        public Expression unnecessaryStoreExpression;
 
         public ReturnStatement originalReturn;
 
@@ -154,11 +154,11 @@ public class UnnecessaryStoreResolution extends BugResolution {
             if (storeExpression instanceof Assignment) {
                 Assignment assignment = (Assignment) storeExpression;
                 this.unnecessaryStoreStatement = storeStatement;
-                
+
                 this.storedVariable = assignment.getLeftHandSide();
                 this.unnecessaryStoreOperator = assignment.getOperator();
                 this.unnecessaryStoreExpression = assignment.getRightHandSide();
-                
+
                 return true;
             }
             return false;

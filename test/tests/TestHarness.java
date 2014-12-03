@@ -283,7 +283,7 @@ public abstract class TestHarness {
     protected void setDetector(String dotSeperatedDetectorClass, boolean enabled) {
         DetectorFactory factory = DetectorFactoryCollection.instance().getFactoryByClassName(dotSeperatedDetectorClass);
         if (factory == null) {
-            fail("Could not find a detector with class "+dotSeperatedDetectorClass);
+            fail("Could not find a detector with class " + dotSeperatedDetectorClass);
         }
         if (!enabled) {
             detectorsToReenable.add(dotSeperatedDetectorClass);
@@ -292,7 +292,7 @@ public abstract class TestHarness {
     }
 
     private void restoreDisabledDetectors() {
-        for(String detector : detectorsToReenable) {
+        for (String detector : detectorsToReenable) {
             setDetector(detector, true);
         }
     }
@@ -313,7 +313,7 @@ public abstract class TestHarness {
             FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinPriority(minPriority);
             return;
         }
-        fail("minPriority ["+minPriority+"] must be one of \"High\", \"Medium\", or \"Low\"");
+        fail("minPriority [" + minPriority + "] must be one of \"High\", \"Medium\", or \"Low\"");
     }
 
     /**
@@ -329,12 +329,12 @@ public abstract class TestHarness {
             FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinRank(minRank);
             return;
         }
-        fail("minRank ["+minRank+"] must be between 1 and 20 inclusively");
+        fail("minRank [" + minRank + "] must be between 1 and 20 inclusively");
     }
 
     public void tearDown() {
         restoreDisabledDetectors();
-        
+
     }
 
 }

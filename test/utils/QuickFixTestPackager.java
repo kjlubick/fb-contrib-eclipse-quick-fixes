@@ -1,12 +1,12 @@
 package utils;
 
+import static org.junit.Assert.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * A utility class to concisely generate lists of QuickFixTestPackage

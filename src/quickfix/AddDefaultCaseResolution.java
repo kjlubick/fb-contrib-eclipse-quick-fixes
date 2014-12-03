@@ -32,38 +32,39 @@ public class AddDefaultCaseResolution extends BugResolution {
         node = TraversalUtil.backtrackToBlock(node);
         DefaultCaseVisitor visitor = new DefaultCaseVisitor();
         node.accept(visitor);
-        
+
         if (visitor.badSwitchStatement != null) {
-            ListRewrite statementsRewrite = rewrite.getListRewrite(visitor.badSwitchStatement, SwitchStatement.STATEMENTS_PROPERTY);
+            ListRewrite statementsRewrite = rewrite.getListRewrite(visitor.badSwitchStatement,
+                    SwitchStatement.STATEMENTS_PROPERTY);
             SwitchCase defaultCase = rewrite.getAST().newSwitchCase();
             defaultCase.setExpression(null);
             statementsRewrite.insertLast(defaultCase, null);
             statementsRewrite.insertLast(rewrite.getAST().newBreakStatement(), null);
         }
     }
-    
+
     private static class DefaultCaseVisitor extends ASTVisitor {
-        
+
         private SwitchStatement badSwitchStatement;
-        
+
         @SuppressWarnings("unchecked")
         @Override
         public boolean visit(SwitchStatement node) {
             if (badSwitchStatement != null) {
                 return false;
             }
-            
+
             List<Statement> switchStatements = node.statements();
-            for(Statement statement: switchStatements) {
+            for (Statement statement : switchStatements) {
                 if (statement instanceof SwitchCase) {
                     if (((SwitchCase) statement).getExpression() == null) {
-                        return true;        //this one has a default case...skip it
+                        return true; // this one has a default case...skip it
                     }
                 }
             }
-            
+
             badSwitchStatement = node;
-            
+
             return false;
         }
     }

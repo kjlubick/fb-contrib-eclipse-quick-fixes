@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import edu.umd.cs.findbugs.BugInstance;
-import edu.umd.cs.findbugs.ba.heap.FieldSet;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;

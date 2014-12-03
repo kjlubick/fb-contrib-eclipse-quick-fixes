@@ -22,7 +22,6 @@ import quickfix.SerializingErrorResolution;
 import quickfix.SwitchFallThroughResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
-import utils.TestingUtils;
 
 @RunWith(JUnit4.class)
 public class TestContributedQuickFixes extends TestHarness {
@@ -54,7 +53,7 @@ public class TestContributedQuickFixes extends TestHarness {
     public void setup() {
         super.setup();
     }
-    
+
     @Override
     @After
     public void tearDown() {
@@ -453,14 +452,14 @@ public class TestContributedQuickFixes extends TestHarness {
 
         packager.fillExpectedBugPatterns("SPP_EQUALS_ON_ENUM");
         packager.fillExpectedLabels("Replace method call with ==");
-        
+
         packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX);
 
         checkBugsAndPerformResolution(packager.asList(), "EqualsOnEnumBugs.java");
     }
-    
+
     @Test
-    public void testNeedsDefaultCaseResolution() throws Exception {
+    public void testAddDefaultCaseResolution() throws Exception {
         setRank(19);
         setPriority("Medium");
 
@@ -472,7 +471,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
         checkBugsAndPerformResolution(packager.asList(), "NeedsDefaultCaseBugs.java");
     }
-    
+
     @Test
     public void testSwitchFallThroughResolution() throws Exception {
         setRank(5);
@@ -486,17 +485,16 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(1, "Add a break after store", "Return field thing before fallthrough");
         packager.setExpectedLabels(2, "Add a break after store");
         packager.setExpectedLabels(3, "Add a break after store");
-        
+
         packager.fillExpectedDescriptions(SwitchFallThroughResolution.BREAK_DESCRIPTION);
         packager.setExpectedDescriptions(1, SwitchFallThroughResolution.BREAK_DESCRIPTION,
-                                SwitchFallThroughResolution.RETURN_FIELD.replace("YYY", "thing"));
+                SwitchFallThroughResolution.RETURN_FIELD.replace("YYY", "thing"));
 
-        
         packager.setFixToPerform(1, 1);
-        
+
         checkBugsAndPerformResolution(packager.asList(), "SwitchDeadStoreBugs.java");
     }
-    
+
     @Test
     public void testUseEnumCollectionsResolution() throws Exception {
         setRank(18);
@@ -510,7 +508,7 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(1, "Declare badSet to be an EnumSet");
         packager.setExpectedLabels(2, "Declare badLocalSet to be an EnumSet");
         packager.setExpectedLabels(3, "Declare badLocalMap to be an EnumMap");
-        
+
         checkBugsAndPerformResolution(packager.asList(), "UseEnumCollectionBugs.java");
     }
 }
