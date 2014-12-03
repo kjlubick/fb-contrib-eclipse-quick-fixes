@@ -15,6 +15,7 @@ public class NeedsDefaultCaseBugs {
             thing--;
             break;
         default:
+            break;
         }
        
         return "Thing: "+(thing + i);

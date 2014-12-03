@@ -264,6 +264,12 @@
             pattern="SPP_EQUALS_ON_ENUM">
     </quickFix>
    
+   <quickFix
+            class="quickfix.AddDefaultCaseResolution"
+            label="Add a blank default case"
+            pattern="SF_SWITCH_NO_DEFAULT">
+    </quickFix>
+   
    </extension>
 
 </plugin>
