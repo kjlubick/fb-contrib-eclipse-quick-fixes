@@ -1,5 +1,5 @@
 #FindBugs User Preferences
-#Sun Oct 26 11:16:43 EDT 2014
+#Wed Dec 03 09:23:08 EST 2014
 cloud_id=edu.umd.cs.findbugs.cloud.doNothingCloud
 detectorAbnormalFinallyBlockReturn=AbnormalFinallyBlockReturn|true
 detectorAbstractClassEmptyMethods=AbstractClassEmptyMethods|true
@@ -144,6 +144,7 @@ detectorInconsistentAnnotations=InconsistentAnnotations|true
 detectorInconsistentKeyNameCasing=InconsistentKeyNameCasing|true
 detectorIncorrectInternalClassUse=IncorrectInternalClassUse|true
 detectorInefficientIndexOf=InefficientIndexOf|true
+detectorInefficientInitializationInsideLoop=InefficientInitializationInsideLoop|true
 detectorInefficientMemberAccess=InefficientMemberAccess|false
 detectorInefficientStringBuffering=InefficientStringBuffering|true
 detectorInefficientToArray=InefficientToArray|true

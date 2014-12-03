@@ -85,6 +85,8 @@ Additionally, the launch configuration will use the workspace version of fb-cont
 
 Unit tests are encouraged.  Write some buggy code (preferably sticking to one family of bugs), place it in [classesToFix](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/tree/master/classesToFix) and a fixed version in [fixedClasses](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/tree/master/fixedClasses).  Then, add a test case to [TestContributedQuickFix.java](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/blob/7cbb5cb7a5a77436b626e76212b742c0a763b302/test/tests/TestContributedQuickFixes.java) - look at the other test cases for examples of how to use the high-level assertion TestHarness.
 
+To run the tests, you'll need to find rt.jar from your JAVA_HOME/lib and copy it to [testResources](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/tree/master/testresources).  For Java 1.7, name it rt17.jar, for Java 1.8, rt18.jar, and so on.  This allows the test code to compile.
+
 Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/blog/post/3?building-your-first-eclipse-quick-fix) and [its follow up tutorial](http://kjlubick.github.io/blog/post/4?a-slightly-more-advanced-quickfix)?
 
 ##License##
