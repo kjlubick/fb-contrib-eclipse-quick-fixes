@@ -61,7 +61,11 @@ public class UseCharacterParameterizedMethodResolution extends BugResolution {
 
     @Override
     protected ASTNode getNodeForMarker(IMarker marker) throws JavaModelException, ASTNodeNotFoundException {
-        return TraversalUtil.backtrackToBlock(super.getNodeForMarker(marker));
+        ASTNode originalNode = super.getNodeForMarker(marker);
+        if (originalNode != null) {
+            return TraversalUtil.backtrackToBlock(originalNode);
+        }
+        throw new ASTNodeNotFoundException();
     }
 
     @Override
