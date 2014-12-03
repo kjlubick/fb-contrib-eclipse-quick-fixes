@@ -258,7 +258,11 @@
             pattern="UEC_USE_ENUM_COLLECTIONS">
     </quickFix>     
     
-    
+    <quickFix
+            class="quickfix.ChangeEnumEqualsResolution"
+            label="Replace method call with =="
+            pattern="SPP_EQUALS_ON_ENUM">
+    </quickFix>
    
    </extension>
 

@@ -128,6 +128,7 @@ public abstract class TestHarness {
                 return;
             }
             System.out.println("Trying again for bugs...");
+            clearMarkersAndBugs();
             scanForBugs(testResource);
             TestingUtils.waitForUiEvents(1000);
         }

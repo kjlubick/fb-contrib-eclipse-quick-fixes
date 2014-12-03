@@ -11,8 +11,9 @@ public class EqualsOnEnumBugs {
         return thing.equals(Thing.TWO);
     }
     
-    public boolean checkOtherThing(Thing t) {
-        return t.equals(thing);
+    public boolean checkOtherThing(Thing t, String str) {
+        return t.equals(thing) && "Foo".equals(str)
+                && !thing.equals(Thing.FOUR);
     }
 
 }

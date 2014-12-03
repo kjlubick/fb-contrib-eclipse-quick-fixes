@@ -21,6 +21,7 @@ import quickfix.SerializingErrorResolution;
 import quickfix.SwitchFallThroughResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
+import utils.TestingUtils;
 
 @RunWith(JUnit4.class)
 public class TestContributedQuickFixes extends TestHarness {
@@ -33,7 +34,7 @@ public class TestContributedQuickFixes extends TestHarness {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            // TestingUtils.waitForUiEvents(20_000);
+            TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
@@ -436,15 +437,17 @@ public class TestContributedQuickFixes extends TestHarness {
     }
 
     @Test
-    public void testEqualsOnEnumResolution() throws Exception {
+    public void testChangeEnumEqualsResolution() throws Exception {
         setRank(10);
         setPriority("Medium");
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(11, 15);
+        packager.setExpectedLines(11, 15, 16);
 
         packager.fillExpectedBugPatterns("SPP_EQUALS_ON_ENUM");
         packager.fillExpectedLabels("Replace method call with ==");
+        
+        packager.setFixToPerform(1, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX);
 
         checkBugsAndPerformResolution(packager.asList(), "EqualsOnEnumBugs.java");
     }
