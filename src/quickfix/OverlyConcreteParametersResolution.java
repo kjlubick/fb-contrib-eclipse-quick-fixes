@@ -4,18 +4,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import de.tobject.findbugs.reporter.MarkerUtil;
-
 import edu.umd.cs.findbugs.BugAnnotation;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
-import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil;
 
 import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.ParameterizedType;
@@ -29,7 +24,7 @@ public class OverlyConcreteParametersResolution extends BugResolution {
     
     private Pattern annotationParser = Pattern.compile(".*parameter '(.+)' could be declared as (.+) instead.*");
     private String paramName;
-    private String newDotSeperatedClass;
+    private String newDotSeparatedClass;
     private AST ast;
     private Type badParamType;
 
@@ -43,14 +38,18 @@ public class OverlyConcreteParametersResolution extends BugResolution {
         MethodDeclaration method = TraversalUtil.findEnclosingMethod(workingUnit, bug.getPrimarySourceLineAnnotation());
         ast = rewrite.getAST();
         
+        // this is an odd resolution as we don't have to use a visitor - all the information comes
+        // from FindBugs (fb-contrib) and the starting node
         parseParamAndNewClass(bug.getAnnotations());
         findBadParameter(method);
 
-        String unqualifiedClass = newDotSeperatedClass.substring(newDotSeperatedClass.lastIndexOf('.')+1);   
+        // Use the unqualified class name, otherwise the java.util.Set or whatever looks unusual
+        // There may be an edge case (I'm thinking of java.util.List/java.awt.List
+        String unqualifiedClass = newDotSeparatedClass.substring(newDotSeparatedClass.lastIndexOf('.')+1);   
         Type fixedType = makeFixedType(unqualifiedClass); 
         
         rewrite.replace(badParamType, fixedType, null);     
-        ASTUtil.addImports(rewrite, workingUnit, newDotSeperatedClass);
+        ASTUtil.addImports(rewrite, workingUnit, newDotSeparatedClass);
     }
 
     private Type makeFixedType(String unqualifiedClass) {
@@ -77,6 +76,7 @@ public class OverlyConcreteParametersResolution extends BugResolution {
     
     @SuppressWarnings("unchecked")
     private void transferTypeArguments(ParameterizedType existingType, ParameterizedType newType) {
+        // This is similar to the implementation from EntrySetResolution
         List<Type> oldTypeArgs = existingType.typeArguments();
 
         while (!oldTypeArgs.isEmpty()) {
@@ -96,7 +96,7 @@ public class OverlyConcreteParametersResolution extends BugResolution {
         Matcher matcher = annotationParser.matcher(toParse);
         if (matcher.matches()) {
             paramName = matcher.group(1);
-            newDotSeperatedClass = matcher.group(2); 
+            newDotSeparatedClass = matcher.group(2); 
         }
         
     }
