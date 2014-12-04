@@ -272,7 +272,7 @@
     
     <quickFix
             class="quickfix.OverlyConcreteParametersResolution"
-            label="Declare parameter YYY"
+            label="Make parameter more abstract"
             pattern="OCP_OVERLY_CONCRETE_PARAMETER">
     </quickFix>
    

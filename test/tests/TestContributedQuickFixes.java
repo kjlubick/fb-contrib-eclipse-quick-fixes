@@ -537,9 +537,10 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLines(26, 41, 51);
 
         packager.fillExpectedBugPatterns("OCP_OVERLY_CONCRETE_PARAMETER");
-        packager.setExpectedLabels(0, "Declare parameter s to be a Set");
-        packager.setExpectedLabels(1, "Declare parameter dh to be a ContextHandler");
-        packager.setExpectedLabels(2, "Declare parameter list to be a List");
+        packager.fillExpectedLabels("Make parameter more abstract");
+//        packager.setExpectedLabels(0, "Declare parameter s to be a Set");
+//        packager.setExpectedLabels(1, "Declare parameter dh to be a ContextHandler");
+//        packager.setExpectedLabels(2, "Declare parameter list to be a List");
        
         checkBugsAndPerformResolution(packager.asList(), "OverlyConcreteBugs.java");
     }
