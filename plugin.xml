@@ -275,6 +275,12 @@
             label="Make parameter more abstract"
             pattern="OCP_OVERLY_CONCRETE_PARAMETER">
     </quickFix>
+    
+    <quickFix
+            class="quickfix.IsEmptyResolution"
+            label="Replace with a call to isEmpty()"
+            pattern="SPP_USE_ISEMPTY">
+    </quickFix>
    
    </extension>
 
