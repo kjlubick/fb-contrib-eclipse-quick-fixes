@@ -33,29 +33,29 @@ public class IsEmptyResolution extends BugResolution {
         node = backtrackToBlock(node);
         IsEmptyVisitor visitor = new IsEmptyVisitor();
         node.accept(visitor);
-        
-        for(ResolutionBundle bundle : visitor.resolutionBundles) {
-            
+
+        for (ResolutionBundle bundle : visitor.resolutionBundles) {
+
             Expression newIsEmpty = makeCallToIsEmpty(rewrite, bundle);
-            
+
             rewrite.replace(bundle.badEqualsCheck, newIsEmpty, null);
         }
     }
-    
+
     private Expression makeCallToIsEmpty(ASTRewrite rewrite, ResolutionBundle bundle) {
-        
+
         AST ast = rewrite.getAST();
         MethodInvocation callToEmpty = ast.newMethodInvocation();
         callToEmpty.setName(ast.newSimpleName("isEmpty"));
         callToEmpty.setExpression((Expression) rewrite.createCopyTarget(bundle.collectionToFix));
-        
+
         if (bundle.wasNegated) {
             PrefixExpression negatedExpression = ast.newPrefixExpression();
             negatedExpression.setOperator(PrefixExpression.Operator.NOT);
             negatedExpression.setOperand(callToEmpty);
             return negatedExpression;
         }
-        
+
         return callToEmpty;
     }
 
@@ -65,7 +65,7 @@ public class IsEmptyResolution extends BugResolution {
         public Expression badEqualsCheck;
 
         public Expression collectionToFix;
-        
+
         public ResolutionBundle(Expression collectionToFix, InfixExpression badEqualsCheck, boolean wasNegated) {
             this.collectionToFix = collectionToFix;
             this.badEqualsCheck = badEqualsCheck;
@@ -73,11 +73,11 @@ public class IsEmptyResolution extends BugResolution {
         }
 
     }
-    
+
     private static class IsEmptyVisitor extends ASTVisitor {
-        
+
         public List<ResolutionBundle> resolutionBundles = new ArrayList<>();
-        
+
         @Override
         public boolean visit(InfixExpression node) {
             if (node.getOperator() == InfixExpression.Operator.EQUALS ||
@@ -101,7 +101,8 @@ public class IsEmptyResolution extends BugResolution {
 
         private void foundPotentialNewCollection(MethodInvocation callToSize, InfixExpression node) {
             if ("size".equals(callToSize.getName().getIdentifier())) {
-                resolutionBundles.add(new ResolutionBundle(callToSize.getExpression(), node, node.getOperator() == InfixExpression.Operator.NOT_EQUALS));
+                resolutionBundles.add(new ResolutionBundle(callToSize.getExpression(), node,
+                        node.getOperator() == InfixExpression.Operator.NOT_EQUALS));
             }
         }
     }

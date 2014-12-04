@@ -511,7 +511,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
         checkBugsAndPerformResolution(packager.asList(), "UseEnumCollectionBugs.java");
     }
-    
+
     @Test
     public void testIsEmptyResolution() throws Exception {
         setRank(17);
@@ -522,12 +522,12 @@ public class TestContributedQuickFixes extends TestHarness {
 
         packager.fillExpectedBugPatterns("SPP_USE_ISEMPTY");
         packager.fillExpectedLabels("Replace with a call to isEmpty()");
-        
-        packager.setFixToPerform(2, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX);  //it's fixed with the marker on line 21
+
+        packager.setFixToPerform(2, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX); // it's fixed with the marker on line 21
 
         checkBugsAndPerformResolution(packager.asList(), "IsEmptyBugs.java");
     }
-    
+
     @Test
     public void testOverlyConcreteParametersResolution() throws Exception {
         setRank(17);
@@ -538,12 +538,11 @@ public class TestContributedQuickFixes extends TestHarness {
 
         packager.fillExpectedBugPatterns("OCP_OVERLY_CONCRETE_PARAMETER");
         packager.fillExpectedLabels("Make parameter more abstract");
-//        packager.setExpectedLabels(0, "Declare parameter s to be a Set");
-//        packager.setExpectedLabels(1, "Declare parameter dh to be a ContextHandler");
-//        packager.setExpectedLabels(2, "Declare parameter list to be a List");
-       
+        // packager.setExpectedLabels(0, "Declare parameter s to be a Set");
+        // packager.setExpectedLabels(1, "Declare parameter dh to be a ContextHandler");
+        // packager.setExpectedLabels(2, "Declare parameter list to be a List");
+
         checkBugsAndPerformResolution(packager.asList(), "OverlyConcreteBugs.java");
     }
-    
-    
+
 }
