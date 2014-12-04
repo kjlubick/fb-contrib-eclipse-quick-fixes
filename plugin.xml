@@ -269,6 +269,12 @@
             label="Add a blank default case"
             pattern="SF_SWITCH_NO_DEFAULT">
     </quickFix>
+    
+    <quickFix
+            class="quickfix.OverlyConcreteParametersResolution"
+            label="Declare parameter YYY"
+            pattern="OCP_OVERLY_CONCRETE_PARAMETER">
+    </quickFix>
    
    </extension>
 
