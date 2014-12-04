@@ -527,4 +527,22 @@ public class TestContributedQuickFixes extends TestHarness {
 
         checkBugsAndPerformResolution(packager.asList(), "IsEmptyBugs.java");
     }
+    
+    @Test
+    public void testOverlyConcreteParametersResolution() throws Exception {
+        setRank(17);
+        setPriority("Medium");
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(26, 41, 51);
+
+        packager.fillExpectedBugPatterns("OCP_OVERLY_CONCRETE_PARAMETER");
+        packager.setExpectedLabels(0, "Declare parameter s to be a Set");
+        packager.setExpectedLabels(1, "Declare parameter dh to be a ContextHandler");
+        packager.setExpectedLabels(2, "Declare parameter list to be a List");
+       
+        checkBugsAndPerformResolution(packager.asList(), "OverlyConcreteBugs.java");
+    }
+    
+    
 }
