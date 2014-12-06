@@ -538,11 +538,26 @@ public class TestContributedQuickFixes extends TestHarness {
 
         packager.fillExpectedBugPatterns("OCP_OVERLY_CONCRETE_PARAMETER");
         packager.fillExpectedLabels("Make parameter more abstract");
-        // packager.setExpectedLabels(0, "Declare parameter s to be a Set");
-        // packager.setExpectedLabels(1, "Declare parameter dh to be a ContextHandler");
-        // packager.setExpectedLabels(2, "Declare parameter list to be a List");
 
         checkBugsAndPerformResolution(packager.asList(), "OverlyConcreteBugs.java");
     }
+    
+    @Test
+    public void testConvertingStringLiterals() throws Exception {
+        setRank(10);
+        setPriority("Low");
+
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(7, 8, 11, 16, 20, 24, 28, 32);
+
+        packager.fillExpectedBugPatterns("SPP_CONVERSION_OF_STRING_LITERAL");
+        packager.fillExpectedLabels("Apply chained methods to string literal");
+        
+        packager.setFixToPerform(5, QuickFixTestPackage.IGNORE_FIX);
+
+        checkBugsAndPerformResolution(packager.asList(), "StringLiteralBugs.java");
+    }
+    
+    
 
 }
