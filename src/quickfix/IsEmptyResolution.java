@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
@@ -78,6 +79,8 @@ public class IsEmptyResolution extends BugResolution {
 
         public List<ResolutionBundle> resolutionBundles = new ArrayList<>();
 
+        @SuppressFBWarnings(value="PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS",
+                justification="The extra local variables would make things more confusing." )
         @Override
         public boolean visit(InfixExpression node) {
             if (node.getOperator() == InfixExpression.Operator.EQUALS ||
