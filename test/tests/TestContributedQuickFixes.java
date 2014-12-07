@@ -548,12 +548,18 @@ public class TestContributedQuickFixes extends TestHarness {
         setPriority("Low");
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(7, 8, 11, 16, 20, 24, 28, 32);
+        packager.setExpectedLines(7, 8, 11, 16, 20, 20, 24, 28, 32, 32);
 
         packager.fillExpectedBugPatterns("SPP_CONVERSION_OF_STRING_LITERAL");
         packager.fillExpectedLabels("Apply extraneous methods to string literal");
+        //at 4 and 9  FindBugs puts another marker because there is both a medium and low version
+        // So, at 4, we'll just ignore it (because the locale is static), and at 8, it will have no solutions
+        packager.setFixToPerform(4, QuickFixTestPackage.FIXED_BY_ANOTHER_FIX);
+        packager.setFixToPerform(6, QuickFixTestPackage.IGNORE_FIX);
+        packager.setFixToPerform(9, QuickFixTestPackage.IGNORE_FIX);
         
-        packager.setFixToPerform(5, QuickFixTestPackage.IGNORE_FIX);
+        packager.setExpectedLabels(6);
+        packager.setExpectedLabels(9);
 
         checkBugsAndPerformResolution(packager.asList(), "StringLiteralBugs.java");
     }

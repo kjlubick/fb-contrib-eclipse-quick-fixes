@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
@@ -24,6 +25,11 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
     @Override
     protected boolean resolveBindings() {
         return true;
+    }
+    
+    @Override
+    protected ASTVisitor getApplicabilityVisitor() {
+        return new StringLiteralVisitor(); 
     }
 
     @Override
@@ -46,9 +52,7 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
         dummyMethods.add("toUpperCase");
     }
     
-    private class StringLiteralVisitor extends ASTVisitor {
-        
-        
+    private class StringLiteralVisitor extends ASTVisitor implements ApplicabilityVisitor{
         
         private MethodInvocation badMethodInvocation;
         private String fixedStringLiteral;
@@ -126,6 +130,13 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
                 return true;
             }
             return !(arguments.get(0) instanceof MethodInvocation);
+        }
+
+        @Override
+        public boolean isApplicable() {
+            return badMethodInvocation != null; //&& //we have to have found something
+                  // and, because FindBugs reports more   
+                 //   badMethodInvocation.getExpression().resolveConstantExpressionValue() != null;
         }
         
     }

@@ -52,7 +52,7 @@ public class QuickFixTestPackager {
                     if (o1.lineNumber != o2.lineNumber) {
                         return o1.lineNumber - o2.lineNumber;
                     }
-                    if (o1.resolutionToExecute == QuickFixTestPackage.IGNORE_FIX) {
+                    if (o1.resolutionToExecute < 0) {
                         return -5; // on the same line, do ignore fixes first
                     }
                     return o1.resolutionToExecute - o2.resolutionToExecute;
