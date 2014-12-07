@@ -543,7 +543,7 @@ public class TestContributedQuickFixes extends TestHarness {
     }
     
     @Test
-    public void testConvertingStringLiterals() throws Exception {
+    public void testConvertingStringLiteralsResolution() throws Exception {
         setRank(10);
         setPriority("Low");
 
@@ -551,7 +551,7 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLines(7, 8, 11, 16, 20, 24, 28, 32);
 
         packager.fillExpectedBugPatterns("SPP_CONVERSION_OF_STRING_LITERAL");
-        packager.fillExpectedLabels("Apply chained methods to string literal");
+        packager.fillExpectedLabels("Apply extraneous methods to string literal");
         
         packager.setFixToPerform(5, QuickFixTestPackage.IGNORE_FIX);
 

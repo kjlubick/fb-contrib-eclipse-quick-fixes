@@ -281,6 +281,12 @@
             label="Replace with a call to isEmpty()"
             pattern="SPP_USE_ISEMPTY">
     </quickFix>
+    
+    <quickFix
+            class="quickfix.ConvertingStringLiteralsResolution"
+            label="Apply extraneous methods to string literal"
+            pattern="SPP_CONVERSION_OF_STRING_LITERAL">
+    </quickFix>
    
    </extension>
 
