@@ -1,7 +1,5 @@
 package tests;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -619,6 +617,29 @@ public class TestContributedQuickFixes extends TestHarness {
         checkBugsAndPerformResolution(packager.asList(), "HttpClientBugs.java");
     }
     
+    
+    @Test
+    public void testFormatStringResolution() throws Exception {
+        setRank(20);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(8, 9, 10, 11, 13);
+
+        packager.setExpectedBugPatterns("A_FORMAT_STRING_BAD_CONVERSION_FROM_ARRAY",
+                "VA_FORMAT_STRING_BAD_CONVERSION_TO_BOOLEAN",
+                "VA_FORMAT_STRING_BAD_CONVERSION",
+                "VA_FORMAT_STRING_BAD_CONVERSION",
+                "VA_FORMAT_STRING_USES_NEWLINE" );
+        
+        packager.setExpectedLabels(0, "Wrap array with Arrays.toString()");
+        packager.setExpectedLabels(1, "Replace bad format specifier with %s");
+        packager.setExpectedLabels(2, "Replace bad format specifier with %s");
+        packager.setExpectedLabels(3, "Replace bad format specifier with %s");
+        packager.setExpectedLabels(4, "Replace \n with %n");
+        
+        checkBugsAndPerformResolution(packager.asList(), "FormatStringBugs.java");
+    }
     
      
 
