@@ -595,7 +595,22 @@ public class TestContributedQuickFixes extends TestHarness {
         checkBugsAndPerformResolution(packager.asList(), "Log4jBugs.java");
     }
     
-    
+    @Test
+    public void testHttpResourceResetResolution() throws Exception {
+        setRank(10);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(15, 29, 49, 65);
+
+        packager.fillExpectedBugPatterns("HCP_HTTP_REQUEST_RESOURCES_NOT_FREED_LOCAL");
+        packager.setExpectedLabels(0, "Add finally block to release connections of httpGet",
+                "Add call to httpGet.releaseConnection() after catch block");
+        packager.setExpectedLabels(1, "Add finally block to release connections of httpGet",
+                "Add call to httpGet.releaseConnection() after catch block");
+        
+        checkBugsAndPerformResolution(packager.asList(), "Log4jBugs.java");
+    }
     
     
      
