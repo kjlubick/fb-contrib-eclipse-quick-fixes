@@ -581,6 +581,23 @@ public class TestContributedQuickFixes extends TestHarness {
         checkBugsAndPerformResolution(packager.asList(), "VarArgsBugs.java");
     }
     
+    @Test
+    public void testLoggerOdditiesResolution() throws Exception {
+        setRank(10);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(8, 10, 12);
+
+        packager.fillExpectedBugPatterns("LO_SUSPECT_LOG_CLASS");
+        packager.fillExpectedLabels("Create logger for class Log4jBugs instead");
+        
+        checkBugsAndPerformResolution(packager.asList(), "Log4jBugs.java");
+    }
     
+    
+    
+    
+     
 
 }
