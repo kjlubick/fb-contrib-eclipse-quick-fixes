@@ -608,8 +608,15 @@ public class TestContributedQuickFixes extends TestHarness {
                 "Add call to httpGet.releaseConnection() after catch block");
         packager.setExpectedLabels(1, "Add finally block to release connections of httpGet",
                 "Add call to httpGet.releaseConnection() after catch block");
+        packager.setExpectedLabels(2, "Add call to httpGet.releaseConnection() to finally block",
+                "Add call to httpGet.releaseConnection() after finally block");
+        packager.setExpectedLabels(3, "Add call to httpGet.releaseConnection() to finally block",
+                "Add call to httpGet.releaseConnection() after finally block");
         
-        checkBugsAndPerformResolution(packager.asList(), "Log4jBugs.java");
+        packager.setFixToPerform(1, 1);
+        packager.setFixToPerform(3, 1);
+        
+        checkBugsAndPerformResolution(packager.asList(), "HttpClientBugs.java");
     }
     
     
