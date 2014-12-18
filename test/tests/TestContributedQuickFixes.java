@@ -1,5 +1,7 @@
 package tests;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -562,6 +564,21 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(9);
 
         checkBugsAndPerformResolution(packager.asList(), "StringLiteralBugs.java");
+    }
+    
+    @Test
+    public void testVarArgsResolution() throws Exception {
+        setRank(20);
+        setPriority("Low");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(5, 9);
+
+        packager.fillExpectedBugPatterns("UVA_USE_VAR_ARGS");
+        packager.fillExpectedLabels("Change last parameter to use varargs (...)");
+        packager.fillExpectedDescriptions("Changing the last parameter to use varargs instead of an array is backwards compatible and makes it easier for clients to call the method");
+    
+        checkBugsAndPerformResolution(packager.asList(), "VarArgsBugs.java");
     }
     
     
