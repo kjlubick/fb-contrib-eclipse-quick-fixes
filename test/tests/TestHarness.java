@@ -309,6 +309,8 @@ public abstract class TestHarness {
         // short hand for seeing if minPriority is one of High, Medium or Low
         // Each of the three valid strings are padded to be 6 chars long with spaces
         // if minPriority is one of the valid strings, the index will be 0, 6 or 12
+        // it's about 40% slower than either doing a set or an explicit 3- case, but takes
+        // less than 1ms for 1000 iterations (in any event)
         if ("High  MediumLow   ".indexOf(minPriority.trim()) % 6 == 0) {
             FindbugsPlugin.getProjectPreferences(testIProject, false).getFilterSettings().setMinPriority(minPriority);
             return;
