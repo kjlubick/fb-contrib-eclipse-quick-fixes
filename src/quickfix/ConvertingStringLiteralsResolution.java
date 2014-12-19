@@ -3,8 +3,10 @@ package quickfix;
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 import static util.TraversalUtil.backtrackToBlock;
 
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.BugInstance;
@@ -16,9 +18,13 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.omg.CORBA.FieldNameHelper;
 
 public class ConvertingStringLiteralsResolution extends BugResolution {
 
@@ -56,55 +62,90 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
         
         private MethodInvocation badMethodInvocation;
         private String fixedStringLiteral;
+        private boolean isApplicable = false;
 
+        @SuppressWarnings("unchecked")
         @Override
         public boolean visit(MethodInvocation node) {
             
-            if (isRedundantMethod(node)) {
-                if (isInvokedOnStringLiteral(node.getExpression())) {
-                    this.badMethodInvocation = node;
-                    this.fixedStringLiteral = fixStringLiteral(node);
-                    return false;
+            try {
+                if (isRedundantMethod(node)) {
+                    if (isInvokedOnStringLiteral(node.getExpression())) {
+                        isApplicable = true;
+                        this.badMethodInvocation = node;
+                        this.fixedStringLiteral = fixStringLiteral(node);
+                        List<Expression> arguments = node.arguments();
+                        if (arguments.size() > 0) {
+                            isApplicable = parseLocale(arguments.get(0)) != null;
+                        }
+                        return false;
+                    }
                 }
+            } catch (RuntimeException e) {
+                return false;
             }
             return true;
         }
 
+        @SuppressWarnings("unchecked")
         private String fixStringLiteral(MethodInvocation node) {
             Expression expr = node.getExpression();
             
-            String retVal = (String) expr.resolveConstantExpressionValue();
-            if (retVal == null && expr instanceof MethodInvocation) {
-                retVal = fixStringLiteral((MethodInvocation) expr);
+            String fixedString = (String) expr.resolveConstantExpressionValue();
+            if (fixedString == null && expr instanceof MethodInvocation) {
+                fixedString = fixStringLiteral((MethodInvocation) expr);
             }
             
-            if (retVal == null) {
-                throw new RuntimeException("Could not find literal");
+            if (fixedString == null) {
+                throw new RuntimeException("Could not find literal in "+node);
             }
             
+            List<Expression> arguments = node.arguments();
             switch (node.getName().getIdentifier()) {
             case "trim":
-                retVal = retVal.trim();
+                fixedString = fixedString.trim();
                 break;
             case "toLowerCase":
-                if (node.arguments().isEmpty()) {
-                    retVal = retVal.toLowerCase();
+                if (arguments.isEmpty()) {
+                    fixedString = fixedString.toLowerCase();
                 } else {
-                    // TODO handle locales
+                    Locale parsedLocale = parseLocale(arguments.get(0));
+                    if (parsedLocale != null) {
+                        fixedString = fixedString.toLowerCase(parsedLocale);
+                    }
                 }
                 break;
             case "toUpperCase":
-                if (node.arguments().isEmpty()) {
-                    retVal = retVal.toUpperCase();
+                if (arguments.isEmpty()) {
+                    fixedString = fixedString.toUpperCase();
                 } else {
-                    // TODO handle locales
+                    Locale parsedLocale = parseLocale(arguments.get(0));
+                    if (parsedLocale != null) {
+                        fixedString = fixedString.toUpperCase(parsedLocale);
+                    }
                 }
                 break;
             default:
                 break;
             }
 
-            return retVal;
+            return fixedString;
+        }
+
+        private Locale parseLocale(Expression expression) {
+            if (expression instanceof Name) {
+                IBinding varBinding = ((Name) expression).resolveBinding();
+                String fieldName = ((IVariableBinding) varBinding).getName();
+
+                Class<Locale> localeClass = Locale.class;
+                try {
+                    Field f = localeClass.getField(fieldName);
+                    return (Locale) f.get(null);        //gets the actual locale, if it exists
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+            return null;
         }
 
         private boolean isInvokedOnStringLiteral(Expression expression) {
@@ -134,11 +175,9 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
 
         @Override
         public boolean isApplicable() {
-            return badMethodInvocation != null; //&& //we have to have found something
-                  // and, because FindBugs reports more   
-                 //   badMethodInvocation.getExpression().resolveConstantExpressionValue() != null;
+            return isApplicable;
         }
-        
+
     }
 
 }

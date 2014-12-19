@@ -22,6 +22,7 @@ import quickfix.SerializingErrorResolution;
 import quickfix.SwitchFallThroughResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
+import utils.TestingUtils;
 
 @RunWith(JUnit4.class)
 public class TestContributedQuickFixes extends TestHarness {
@@ -34,7 +35,7 @@ public class TestContributedQuickFixes extends TestHarness {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            // TestingUtils.waitForUiEvents(20_000);
+            //TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
@@ -62,12 +63,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testCharsetIssuesResolution() throws Exception {
-        // CharsetIssuesResolution.java
         setPriority("Medium");
         setRank(15);
-        // disables NP_NULL_PARAM_DEREF_NONVIRTUAL which happens because the rtstubs17.jar
-        // defines the constants as null
-        setDetector("edu.umd.cs.findbugs.detect.FindNullDeref", false);
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(16, 23, 25, 30, 32, 34, // CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
@@ -559,7 +556,6 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setFixToPerform(9, QuickFixTestPackage.IGNORE_FIX);
         
         packager.setExpectedLabels(6);
-        packager.setExpectedLabels(9);
 
         checkBugsAndPerformResolution(packager.asList(), "StringLiteralBugs.java");
     }

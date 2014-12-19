@@ -8,7 +8,7 @@ public class StringLiteralBugs {
             System.out.println("WASSUP");
         }
         
-        args[1] = "kiens' kasdf ksdfie  ad".trim();
+        args[1] = "kiens' kasdf ksdfie  ad";
         
     }
     
