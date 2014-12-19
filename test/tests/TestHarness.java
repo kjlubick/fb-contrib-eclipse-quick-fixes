@@ -180,7 +180,8 @@ public abstract class TestHarness {
         TestingUtils.sortMarkersByPatterns(markers);
 
         // packages and markers should now be lined up to match up one to one.
-        assertEquals(packages.size(), markers.length);
+        assertEquals("The number of markers is wrong, check your turned off detectors?",
+                packages.size(), markers.length);
 
         TestingUtils.assertBugPatternsMatch(packages, markers);
         TestingUtils.assertLabelsAndDescriptionsMatch(packages, markers, resolutionSource);

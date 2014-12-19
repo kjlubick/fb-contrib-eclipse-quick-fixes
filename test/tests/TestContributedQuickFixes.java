@@ -20,6 +20,7 @@ import quickfix.InsecureRandomResolution;
 import quickfix.ReturnValueIgnoreResolution;
 import quickfix.SerializingErrorResolution;
 import quickfix.SwitchFallThroughResolution;
+import quickfix.UseVarArgsResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
 import utils.TestingUtils;
@@ -35,7 +36,7 @@ public class TestContributedQuickFixes extends TestHarness {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            //TestingUtils.waitForUiEvents(20_000);
+            TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
@@ -561,16 +562,18 @@ public class TestContributedQuickFixes extends TestHarness {
     }
     
     @Test
-    public void testVarArgsResolution() throws Exception {
+    public void testUseVarArgsResolution() throws Exception {
         setRank(20);
         setPriority("Low");
+
+        setDetector("com.mebigfatguy.fbcontrib.detect.FinalParameters", false);
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(5, 9);
 
         packager.fillExpectedBugPatterns("UVA_USE_VAR_ARGS");
         packager.fillExpectedLabels("Change last parameter to use varargs (...)");
-        packager.fillExpectedDescriptions("Changing the last parameter to use varargs instead of an array is backwards compatible and makes it easier for clients to call the method");
+        packager.fillExpectedDescriptions(UseVarArgsResolution.DESCRIPTION);
     
         checkBugsAndPerformResolution(packager.asList(), "VarArgsBugs.java");
     }

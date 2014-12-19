@@ -287,6 +287,13 @@
             label="Apply extraneous methods to string literal"
             pattern="SPP_CONVERSION_OF_STRING_LITERAL">
     </quickFix>
+    
+    <quickFix
+            class="quickfix.UseVarArgsResolution"
+            label="Change last parameter to use varargs (...)"
+            pattern="UVA_USE_VAR_ARGS">
+    </quickFix>
+    
    
    </extension>
 
