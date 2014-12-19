@@ -294,6 +294,12 @@
             pattern="UVA_USE_VAR_ARGS">
     </quickFix>
     
+    <quickFix
+            class="quickfix.LoggerOdditiesResolution"
+            label="Create logger for class Log4jBugs instead"
+            pattern="LO_SUSPECT_LOG_CLASS">
+    </quickFix>
+    
    
    </extension>
 
