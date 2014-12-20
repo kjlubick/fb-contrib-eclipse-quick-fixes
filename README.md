@@ -57,14 +57,14 @@ This project isn't quite ready for release yet.  But, if you really want, check 
 
 
 ##Setting up the project for development##
-1. Download/install [Eclipse](https://www.eclipse.org/home/index.php), ideally 4.3 (Kepler) or newer.  The standard release (for Java) will work fine.
-2. Install findbugs-eclipse-plugin-3.0.1.zip, following the above instructions.  It's recommended that you don't install the compiled fb-contrib-quick-fixes (see below).
-3. Clone findbugs : `git clone https://code.google.com/p/findbugs/`  [GitHub for Windows](https://windows.github.com/) or [GitHub for Mac](https://mac.github.com/) are good clients if you don't already have one.  There are a lot of folders associated with that project, but you only need the `findbugs` folder.
-4. Open Eclipse.  File>Import and then choose "Existing projects into workspace", and find the `findbugs` folder you just cloned.
+1. Download/install [Eclipse](https://www.eclipse.org/home/index.php), ideally 4.3 (Kepler) or newer.  The Eclipse for RCP and RAP Developers will work fine.
+2. **Install** findbugs-eclipse-plugin-3.0.1.zip, following the above instructions.  It's recommended that you don't install the compiled fb-contrib-quick-fixes (see below).
+3. Clone findbugs : `git clone https://code.google.com/p/findbugs/`  [GitHub for Windows](https://windows.github.com/) or [GitHub for Mac](https://mac.github.com/) are good clients if you don't already have one.  There are a lot of folders and projects associated with the root project, but you only need the `findbugs`.  You may optionally include the `findBugsEclipsePlugin` project.
+4. Open Eclipse.  File>Import and then choose "Existing projects into workspace", and find the `findbugs` project (not the root project) you just cloned.  You may have to run the build.xml in `findBugsEclipsePlugin` to get the lib jars copied over, if you imported that project as well.
 5. Clone and import [fb-contrib](https://github.com/mebigfatguy/fb-contrib) into Eclipse.  Follow the readme to get it setup to build.
 6. Build fb-contrib by running the ant script `build.xml`.
 7. Copy `fb-contrib-6.1.0.jar` (or later) to `[Eclipse folder]\plugins\edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20140817-dd3f35c\plugin` where [Eclipse folder] is wherever you installed/extracted Eclipse to.
-8. [Fork/Clone](https://help.github.com/articles/fork-a-repo) this git repo. Import this project into Eclipse.  There should be no compile errors.
+8. [Fork/Clone](https://help.github.com/articles/fork-a-repo) this git repo. Import this project into Eclipse.  You should have now imported 3 or 4 projects, `fb-contrib`, `fb-contrib-eclipse-quick-fixes`, `findbugs` and [optionally] `findBugsEclipsePlugin`. There should be no compile errors.
 
 ###Deploying fb-contrib quickfixes from Eclipse###
 1. There are two default Run Configurations for Eclipse.  If you don't see the included Launch Configurations under the green Run button, you may need to refresh the projects, or browse Run Configurations.  Launch 3.x was tested on Indigo and Launch 4.x was tested on Kepler.  Don't run either yet.
