@@ -288,6 +288,14 @@
             pattern="SPP_CONVERSION_OF_STRING_LITERAL">
     </quickFix>
    
+   
+   <quickFix
+            class="quickfix.ArrayToStringResolution"
+            label="Wrap array with Arrays.toString()"
+            pattern="VA_FORMAT_STRING_BAD_CONVERSION_FROM_ARRAY">
+    </quickFix>
+   
+   
    </extension>
 
 </plugin>

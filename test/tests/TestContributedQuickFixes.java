@@ -22,7 +22,6 @@ import quickfix.SerializingErrorResolution;
 import quickfix.SwitchFallThroughResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
-import utils.TestingUtils;
 
 @RunWith(JUnit4.class)
 public class TestContributedQuickFixes extends TestHarness {
@@ -622,7 +621,7 @@ public class TestContributedQuickFixes extends TestHarness {
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(8, 9, 10, 11, 13);
 
-        packager.setExpectedBugPatterns("A_FORMAT_STRING_BAD_CONVERSION_FROM_ARRAY",
+        packager.setExpectedBugPatterns("VA_FORMAT_STRING_BAD_CONVERSION_FROM_ARRAY",
                 "VA_FORMAT_STRING_BAD_CONVERSION_TO_BOOLEAN",
                 "VA_FORMAT_STRING_BAD_CONVERSION",
                 "VA_FORMAT_STRING_BAD_CONVERSION",
