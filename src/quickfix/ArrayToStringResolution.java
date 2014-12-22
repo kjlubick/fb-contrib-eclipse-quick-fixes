@@ -62,18 +62,22 @@ public class ArrayToStringResolution extends BugResolution {
         static {
             methodsToCheck.add("java.io.PrintStream.println");
             methodsToCheck.add("java.io.PrintStream.print");
+            methodsToCheck.add("java.io.PrintStream.printf");
             methodsToCheck.add("java.lang.StringBuilder.append");
             methodsToCheck.add("java.lang.StringBuffer.append");
+            methodsToCheck.add("java.lang.String.format");
+            methodsToCheck.add("java.util.Formatter.format");
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public boolean visit(MethodInvocation node) {
             // for stringBuilder.append(array); and System.out.println(one);
             if (methodsToCheck.contains(asQualifiedString(node)))
             {
-                if (node.arguments().size() == 1) {
-                    Expression firstArg = (Expression) node.arguments().get(0);
-                    checkOperand(firstArg);
+                List<Expression> arguments = node.arguments();
+                for(Expression argument: arguments) {
+                    checkOperand(argument);
                 }
             }
             return true;
