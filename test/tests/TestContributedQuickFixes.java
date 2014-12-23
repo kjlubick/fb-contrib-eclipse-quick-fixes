@@ -23,6 +23,7 @@ import quickfix.SwitchFallThroughResolution;
 import quickfix.UseVarArgsResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
+import utils.TestingUtils;
 
 @RunWith(JUnit4.class)
 public class TestContributedQuickFixes extends TestHarness {
@@ -35,7 +36,7 @@ public class TestContributedQuickFixes extends TestHarness {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            TestingUtils.waitForUiEvents(20_000);
+            // TestingUtils.waitForUiEvents(20_000);
         }
 
         @Override
@@ -634,7 +635,7 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedLabels(1, "Replace bad format specifier with %s");
         packager.setExpectedLabels(2, "Replace bad format specifier with %s");
         packager.setExpectedLabels(3, "Replace bad format specifier with %s");
-        packager.setExpectedLabels(4, "Replace \n with %n");
+        packager.setExpectedLabels(4, "Replace \\n with %n");
         
         checkBugsAndPerformResolution(packager.asList(), "FormatStringBugs.java");
     }
