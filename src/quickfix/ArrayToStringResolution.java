@@ -76,7 +76,7 @@ public class ArrayToStringResolution extends BugResolution {
             if (methodsToCheck.contains(asQualifiedString(node)))
             {
                 List<Expression> arguments = node.arguments();
-                for(Expression argument: arguments) {
+                for (Expression argument : arguments) {
                     checkOperand(argument);
                 }
             }

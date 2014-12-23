@@ -79,8 +79,8 @@ public class IsEmptyResolution extends BugResolution {
 
         public List<ResolutionBundle> resolutionBundles = new ArrayList<>();
 
-        @SuppressFBWarnings(value="PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS",
-                justification="The extra local variables would make things more confusing." )
+        @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS",
+                justification = "The extra local variables would make things more confusing.")
         @Override
         public boolean visit(InfixExpression node) {
             if (node.getOperator() == InfixExpression.Operator.EQUALS ||

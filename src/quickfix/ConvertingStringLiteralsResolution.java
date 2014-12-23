@@ -24,7 +24,6 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
-import org.omg.CORBA.FieldNameHelper;
 
 public class ConvertingStringLiteralsResolution extends BugResolution {
 
@@ -32,10 +31,10 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
     protected boolean resolveBindings() {
         return true;
     }
-    
+
     @Override
     protected ASTVisitor getApplicabilityVisitor() {
-        return new StringLiteralVisitor(); 
+        return new StringLiteralVisitor();
     }
 
     @Override
@@ -44,30 +43,32 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
         node = backtrackToBlock(node);
         StringLiteralVisitor visitor = new StringLiteralVisitor();
         node.accept(visitor);
-        
+
         StringLiteral newLiteral = rewrite.getAST().newStringLiteral();
         newLiteral.setLiteralValue(visitor.fixedStringLiteral);
         rewrite.replace(visitor.badMethodInvocation, newLiteral, null);
     }
-    
+
     private static Set<String> dummyMethods = new HashSet<String>(3);
-    
+
     static {
         dummyMethods.add("trim");
         dummyMethods.add("toLowerCase");
         dummyMethods.add("toUpperCase");
     }
-    
-    private class StringLiteralVisitor extends ASTVisitor implements ApplicabilityVisitor{
-        
+
+    private class StringLiteralVisitor extends ASTVisitor implements ApplicabilityVisitor {
+
         private MethodInvocation badMethodInvocation;
+
         private String fixedStringLiteral;
+
         private boolean isApplicable = false;
 
         @SuppressWarnings("unchecked")
         @Override
         public boolean visit(MethodInvocation node) {
-            
+
             try {
                 if (isRedundantMethod(node)) {
                     if (isInvokedOnStringLiteral(node.getExpression())) {
@@ -90,16 +91,16 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
         @SuppressWarnings("unchecked")
         private String fixStringLiteral(MethodInvocation node) {
             Expression expr = node.getExpression();
-            
+
             String fixedString = (String) expr.resolveConstantExpressionValue();
             if (fixedString == null && expr instanceof MethodInvocation) {
                 fixedString = fixStringLiteral((MethodInvocation) expr);
             }
-            
+
             if (fixedString == null) {
-                throw new RuntimeException("Could not find literal in "+node);
+                throw new RuntimeException("Could not find literal in " + node);
             }
-            
+
             List<Expression> arguments = node.arguments();
             switch (node.getName().getIdentifier()) {
             case "trim":
@@ -140,7 +141,7 @@ public class ConvertingStringLiteralsResolution extends BugResolution {
                 Class<Locale> localeClass = Locale.class;
                 try {
                     Field f = localeClass.getField(fieldName);
-                    return (Locale) f.get(null);        //gets the actual locale, if it exists
+                    return (Locale) f.get(null); // gets the actual locale, if it exists
                 } catch (Exception e) {
                     return null;
                 }

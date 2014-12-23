@@ -33,7 +33,7 @@ public class LoggerOdditiesResolution extends BugResolution {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         LOVisitor visitor = new LOVisitor();
         node.accept(visitor);
-        
+
         TypeLiteral fixedTypeLiteral = makeTypeLiteral(rewrite, node);
         rewrite.replace(visitor.badArgument, fixedTypeLiteral, null);
     }
@@ -47,22 +47,20 @@ public class LoggerOdditiesResolution extends BugResolution {
         fixedTypeLiteral.setType(parentType);
         return fixedTypeLiteral;
     }
-    
-    
+
     private static class LOVisitor extends ASTVisitor
     {
 
         public Expression badArgument;
-        
-        
+
         @Override
         public boolean visit(MethodInvocation node) {
             if (badArgument != null) {
                 return false;
             }
-            
+
             QMethod qm = QMethod.make(node);
-            
+
             if ("getLogger".equals(qm.invokedMethodString) && "org.apache.log4j.Logger".equals(qm.qualifiedTypeString)) {
                 if (node.arguments().size() > 0) {
                     badArgument = (Expression) node.arguments().get(0);
