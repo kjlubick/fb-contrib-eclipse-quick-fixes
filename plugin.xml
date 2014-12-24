@@ -323,6 +323,22 @@
             label="Replace \n with %n"
             pattern="VA_FORMAT_STRING_USES_NEWLINE">
     </quickFix>
+    
+    <quickFix
+    		arguments="appendToOrAddFinally=false"
+            class="quickfix.HTTPClientResolution"
+            label="Add call to httpGet.releaseConnection() after YYY block"
+            pattern="HCP_HTTP_REQUEST_RESOURCES_NOT_FREED_LOCAL">
+    </quickFix>
+    
+    <quickFix
+    		arguments="appendToOrAddFinally=true"
+            class="quickfix.HTTPClientResolution"
+            label="YYY"
+            pattern="HCP_HTTP_REQUEST_RESOURCES_NOT_FREED_LOCAL">
+    </quickFix>
+    
+    
    
    </extension>
 

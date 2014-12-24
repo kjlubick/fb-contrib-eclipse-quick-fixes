@@ -598,7 +598,7 @@ public class TestContributedQuickFixes extends TestHarness {
         setPriority("Medium");
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(15, 29, 49, 65);
+        packager.setExpectedLines(15, 29, 49, 65, 93);
 
         packager.fillExpectedBugPatterns("HCP_HTTP_REQUEST_RESOURCES_NOT_FREED_LOCAL");
         packager.setExpectedLabels(0, "Add finally block to release connections of httpGet",
@@ -609,9 +609,11 @@ public class TestContributedQuickFixes extends TestHarness {
                 "Add call to httpGet.releaseConnection() after finally block");
         packager.setExpectedLabels(3, "Add call to httpGet.releaseConnection() to finally block",
                 "Add call to httpGet.releaseConnection() after finally block");
+        packager.setExpectedLabels(4);
         
         packager.setFixToPerform(1, 1);
         packager.setFixToPerform(3, 1);
+        packager.setFixToPerform(4, QuickFixTestPackage.IGNORE_FIX);
         
         checkBugsAndPerformResolution(packager.asList(), "HttpClientBugs.java");
     }
