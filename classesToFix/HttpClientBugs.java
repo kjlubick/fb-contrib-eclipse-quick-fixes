@@ -80,7 +80,18 @@ public class HttpClientBugs {
                 }
             }
         }
+        
+        try {
+            System.out.println(response); // decoy try/finally
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }
 
     }
-
+    
+    public void tooComplexToFix() throws URISyntaxException, IOException {
+        HttpGet httpGet = new HttpGet(new URI("http://www.example.com"));
+        CloseableHttpResponse response = client.execute(httpGet);
+        System.out.println("response: " + response);
+    }
 }
