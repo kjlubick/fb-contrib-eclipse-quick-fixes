@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.BugInstance;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.CustomLabelVisitor;
@@ -66,16 +67,16 @@ public class HTTPClientResolution extends BugResolution {
         ExpressionStatement callToReset = makeCallToReset(rewrite, visitor);
         
         if (appendToOrAddFinally) {
-            
             Block finallyBlock = lastTryStatement.getFinally();
             if (finallyBlock == null) {
                 finallyBlock = rewrite.getAST().newBlock();
             }
+            // first add the call to reset
             ListRewrite finallyRewrite = rewrite.getListRewrite(finallyBlock, Block.STATEMENTS_PROPERTY);
             finallyRewrite.insertFirst(callToReset, null);
             
-            rewrite.set(lastTryStatement, TryStatement.FINALLY_PROPERTY, finallyBlock, null);
-            
+            //replace/insert the finally block
+            rewrite.set(lastTryStatement, TryStatement.FINALLY_PROPERTY, finallyBlock, null);    
         } else {
             //just stick it after the try
             Block parentBlock = TraversalUtil.findClosestAncestor(lastTryStatement, Block.class); 
@@ -95,6 +96,9 @@ public class HTTPClientResolution extends BugResolution {
 
     @SuppressWarnings("unchecked")
     private static TryStatement findLastTryStatementUsingVariable(SimpleName variable) {
+        //looks for the last try statement that has a reference to the variable referred to
+        // by the included simpleName.
+        // If we can't find such a try block, we give up trying to fix
         Block parentBlock = TraversalUtil.findClosestAncestor(variable, Block.class);  
         List<Statement> statements = parentBlock.statements(); 
         for(int i = statements.size() - 1;i>=0; i--) {
@@ -131,6 +135,8 @@ public class HTTPClientResolution extends BugResolution {
         private TryStatement associatedTryStatement;
         
         @Override
+        @SuppressFBWarnings(value="PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification=
+        "node.getName() does not need to local - code's concise as is")
         public boolean visit(VariableDeclarationFragment node) {
             if (badHTTPVerb != null) {
                 return false;
@@ -150,15 +156,19 @@ public class HTTPClientResolution extends BugResolution {
         @Override
         public String getLabelReplacement() {
             if (associatedTryStatement.getFinally() != null) {
+                // a finally is defined
                 if (appendToOrAddFinally) {
                     return "Add call to httpGet.releaseConnection() to finally block";
                 } else {
+                 // put resetConnection after "finally" block
                     return "finally";
                 }
             } else {
+                //no finally defined
                 if (appendToOrAddFinally) {
                     return "Add finally block to release connections of httpGet";
                 } else {
+                    // put resetConnection after "catch" block
                     return "catch";
                 }
             }
@@ -173,6 +183,8 @@ public class HTTPClientResolution extends BugResolution {
     }
     
     private static class TryInspector extends ASTVisitor {
+        // a simple visitor that simply keeps track of if we saw a simple name
+        // with the same identifier as the SimpleName passed in
         
         private SimpleName nameSoughtAfter;
         public boolean foundName;
