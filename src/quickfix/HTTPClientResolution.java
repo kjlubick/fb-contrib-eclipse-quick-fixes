@@ -46,26 +46,26 @@ public class HTTPClientResolution extends BugResolution {
     public void setOptions(Map<String, String> options) {
         this.appendToOrAddFinally = Boolean.parseBoolean(options.get("appendToOrAddFinally"));
     }
-    
+
     @Override
     protected ASTVisitor getApplicabilityVisitor() {
         return new HCPVisitor();
     }
-    
+
     @Override
     protected ASTVisitor getCustomLabelVisitor() {
         return new HCPVisitor();
     }
-    
+
     @Override
     protected void repairBug(ASTRewrite rewrite, CompilationUnit workingUnit, BugInstance bug) throws BugResolutionException {
         ASTNode node = getASTNode(workingUnit, bug.getPrimarySourceLineAnnotation());
         HCPVisitor visitor = new HCPVisitor();
         node.accept(visitor);
-        
+
         TryStatement lastTryStatement = findLastTryStatementUsingVariable(visitor.badHTTPVerb);
         ExpressionStatement callToReset = makeCallToReset(rewrite, visitor);
-        
+
         if (appendToOrAddFinally) {
             Block finallyBlock = lastTryStatement.getFinally();
             if (finallyBlock == null) {
@@ -74,16 +74,16 @@ public class HTTPClientResolution extends BugResolution {
             // first add the call to reset
             ListRewrite finallyRewrite = rewrite.getListRewrite(finallyBlock, Block.STATEMENTS_PROPERTY);
             finallyRewrite.insertFirst(callToReset, null);
-            
-            //replace/insert the finally block
-            rewrite.set(lastTryStatement, TryStatement.FINALLY_PROPERTY, finallyBlock, null);    
+
+            // replace/insert the finally block
+            rewrite.set(lastTryStatement, TryStatement.FINALLY_PROPERTY, finallyBlock, null);
         } else {
-            //just stick it after the try
-            Block parentBlock = TraversalUtil.findClosestAncestor(lastTryStatement, Block.class); 
+            // just stick it after the try
+            Block parentBlock = TraversalUtil.findClosestAncestor(lastTryStatement, Block.class);
             ListRewrite statements = rewrite.getListRewrite(parentBlock, Block.STATEMENTS_PROPERTY);
             statements.insertAfter(callToReset, lastTryStatement, null);
         }
-        
+
     }
 
     private ExpressionStatement makeCallToReset(ASTRewrite rewrite, HCPVisitor visitor) {
@@ -96,15 +96,15 @@ public class HTTPClientResolution extends BugResolution {
 
     @SuppressWarnings("unchecked")
     private static TryStatement findLastTryStatementUsingVariable(SimpleName variable) {
-        //looks for the last try statement that has a reference to the variable referred to
+        // looks for the last try statement that has a reference to the variable referred to
         // by the included simpleName.
         // If we can't find such a try block, we give up trying to fix
-        Block parentBlock = TraversalUtil.findClosestAncestor(variable, Block.class);  
-        List<Statement> statements = parentBlock.statements(); 
-        for(int i = statements.size() - 1;i>=0; i--) {
+        Block parentBlock = TraversalUtil.findClosestAncestor(variable, Block.class);
+        List<Statement> statements = parentBlock.statements();
+        for (int i = statements.size() - 1; i >= 0; i--) {
             Statement s = statements.get(i);
             if (s instanceof TryStatement) {
-                TryStatement tryStatement = (TryStatement)s;
+                TryStatement tryStatement = (TryStatement) s;
                 if (tryRefersToVariable(tryStatement, variable)) {
                     return tryStatement;
                 }
@@ -112,9 +112,9 @@ public class HTTPClientResolution extends BugResolution {
         }
         return null;
     }
-    
+
     private static boolean tryRefersToVariable(TryStatement s, SimpleName badHTTPVerb) {
-        TryInspector inspector = new TryInspector(badHTTPVerb);  
+        TryInspector inspector = new TryInspector(badHTTPVerb);
         s.accept(inspector);
         return inspector.foundName;
     }
@@ -128,20 +128,21 @@ public class HTTPClientResolution extends BugResolution {
         httpVerbClasses.add("org.apache.http.client.methods.HttpPost");
         httpVerbClasses.add("org.apache.http.client.methods.HttpPatch");
     }
-    
+
     private class HCPVisitor extends ASTVisitor implements ApplicabilityVisitor, CustomLabelVisitor {
-        
+
         public SimpleName badHTTPVerb;
+
         private TryStatement associatedTryStatement;
-        
+
         @Override
-        @SuppressFBWarnings(value="PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification=
-        "node.getName() does not need to local - code's concise as is")
+        @SuppressFBWarnings(value = "PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS", justification =
+                "node.getName() does not need to local - code's concise as is")
         public boolean visit(VariableDeclarationFragment node) {
             if (badHTTPVerb != null) {
                 return false;
             }
-            
+
             IBinding binding = node.getName().resolveBinding();
             if (binding instanceof IVariableBinding) {
                 if (httpVerbClasses.contains(((IVariableBinding) binding).getType().getQualifiedName())) {
@@ -160,11 +161,11 @@ public class HTTPClientResolution extends BugResolution {
                 if (appendToOrAddFinally) {
                     return "Add call to httpGet.releaseConnection() to finally block";
                 } else {
-                 // put resetConnection after "finally" block
+                    // put resetConnection after "finally" block
                     return "finally";
                 }
             } else {
-                //no finally defined
+                // no finally defined
                 if (appendToOrAddFinally) {
                     return "Add finally block to release connections of httpGet";
                 } else {
@@ -179,16 +180,17 @@ public class HTTPClientResolution extends BugResolution {
             // if we can't find a verb or a try statement, it's much too complex to fix
             return null != badHTTPVerb && null != associatedTryStatement;
         }
-        
+
     }
-    
+
     private static class TryInspector extends ASTVisitor {
         // a simple visitor that simply keeps track of if we saw a simple name
         // with the same identifier as the SimpleName passed in
-        
+
         private SimpleName nameSoughtAfter;
+
         public boolean foundName;
-        
+
         public TryInspector(SimpleName nameSoughtAfter) {
             this.nameSoughtAfter = nameSoughtAfter;
         }

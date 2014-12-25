@@ -1,5 +1,5 @@
 #FindBugs User Preferences
-#Wed Dec 03 09:23:08 EST 2014
+#Thu Dec 25 11:37:16 CST 2014
 cloud_id=edu.umd.cs.findbugs.cloud.doNothingCloud
 detectorAbnormalFinallyBlockReturn=AbnormalFinallyBlockReturn|true
 detectorAbstractClassEmptyMethods=AbstractClassEmptyMethods|true
@@ -32,6 +32,7 @@ detectorCheckRelaxingNullnessAnnotation=CheckRelaxingNullnessAnnotation|true
 detectorCheckTypeQualifiers=CheckTypeQualifiers|true
 detectorCircularDependencies=CircularDependencies|true
 detectorClassEnvy=ClassEnvy|false
+detectorClassImpersonatingString=ClassImpersonatingString|true
 detectorCloneIdiom=CloneIdiom|true
 detectorCloneUsability=CloneUsability|true
 detectorCollectMethodsReturningImmutableCollections=CollectMethodsReturningImmutableCollections|true
@@ -54,6 +55,7 @@ detectorContainsBasedConditional=ContainsBasedConditional|true
 detectorContraVariantArrayAssignment=ContraVariantArrayAssignment|true
 detectorCookieDetector=CookieDetector|false
 detectorCopiedOverriddenMethod=CopiedOverriddenMethod|true
+detectorCovariantArrayAssignment=CovariantArrayAssignment|true
 detectorCrossSiteScripting=CrossSiteScripting|true
 detectorCustomBuiltXML=CustomBuiltXML|true
 detectorCustomMessageDigestDetector=CustomMessageDigestDetector|false
