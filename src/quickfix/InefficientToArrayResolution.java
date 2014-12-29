@@ -13,9 +13,11 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ArrayCreation;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
 public class InefficientToArrayResolution extends BugResolution {
@@ -89,7 +91,7 @@ public class InefficientToArrayResolution extends BugResolution {
         }
 
         private String findArrayTypeName(ArrayCreation node) {
-            return node.getType().getComponentType().toString();
+            return node.getType().getElementType().toString();
         }
 
         private Expression findCollection(ArrayCreation node) throws NotPartOfToArrayMethodInvocationException {
