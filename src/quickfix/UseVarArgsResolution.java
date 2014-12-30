@@ -6,12 +6,15 @@ import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Dimension;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.eclipse.jdt.core.dom.rewrite.ListRewrite;
 
 import util.TraversalUtil;
 
@@ -37,14 +40,27 @@ public class UseVarArgsResolution extends BugResolution {
         List<SingleVariableDeclaration> params = thisMethod.parameters();
         SingleVariableDeclaration lastParam = params.get(params.size() - 1);
 
-        // removes any additional dimensions (for the int a[] declaration of params)
-        rewrite.set(lastParam, SingleVariableDeclaration.EXTRA_DIMENSIONS_PROPERTY, 0, null);
+        removeArrayDimensions(rewrite, lastParam);
         rewrite.set(lastParam, SingleVariableDeclaration.VARARGS_PROPERTY, Boolean.TRUE, null);
 
         Type lastType = lastParam.getType();
         if (lastType.isArrayType()) { // can be false for the int a[] declaration
             Type bareType = ((ArrayType) lastType).getElementType();
             rewrite.replace(lastType, rewrite.createCopyTarget(bareType), null);
+        }
+    }
+
+    @SuppressWarnings({ "deprecation", "unchecked" })
+    private void removeArrayDimensions(ASTRewrite rewrite, SingleVariableDeclaration lastParam) {
+        // removes any additional dimensions (for variables declared like int a[])
+        if (rewrite.getAST().apiLevel() <= AST.JLS4) {  //reverse compatibility
+            rewrite.set(lastParam, SingleVariableDeclaration.EXTRA_DIMENSIONS_PROPERTY, 0, null);
+        } else {
+            ListRewrite extraDimensionsRewrite = rewrite.getListRewrite(lastParam, SingleVariableDeclaration.EXTRA_DIMENSIONS2_PROPERTY);
+            List<Dimension> extraDimensions = lastParam.extraDimensions();
+            for(Dimension d:extraDimensions) {
+                extraDimensionsRewrite.remove(d, null); 
+            }
         }
     }
 
