@@ -642,6 +642,19 @@ public class TestContributedQuickFixes extends TestHarness {
         checkBugsAndPerformResolution(packager.asList(), "FormatStringBugs.java");
     }
     
+    @Test
+    public void testEmptyAbstractResolution() throws Exception {
+        setRank(17);
+        setPriority("Medium");
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(11);
+        
+        packager.setExpectedBugPatterns("ACEM_ABSTRACT_CLASS_EMPTY_METHODS");
+        packager.setExpectedLabels(0, "Make method abstract");
+        
+        checkBugsAndPerformResolution(packager.asList(), "EmptyMethodBugs.java");
+    }
      
 
 }
