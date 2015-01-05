@@ -653,7 +653,7 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.setExpectedBugPatterns("ACEM_ABSTRACT_CLASS_EMPTY_METHODS");
         packager.setExpectedLabels(0, "Make method abstract");
         
-        checkBugsAndPerformResolution(packager.asList(), "EmptyMethodBugs.java");
+        checkBugsAndPerformResolution(packager.asList(), "EmptyMethodsBugs.java");
     }
      
 

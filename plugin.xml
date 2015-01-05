@@ -338,7 +338,11 @@
             pattern="HCP_HTTP_REQUEST_RESOURCES_NOT_FREED_LOCAL">
     </quickFix>
     
-    
+    <quickFix
+            class="quickfix.EmptyAbstractResolution"
+            label="Make method abstract"
+            pattern="ACEM_ABSTRACT_CLASS_EMPTY_METHODS">
+    </quickFix>
    
    </extension>
 
