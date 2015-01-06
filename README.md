@@ -11,7 +11,8 @@ Because the aforementioned extension point is [only in dev](https://code.google.
 ##Supported quickfixes##
 See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb-contrib](http://fb-contrib.sourceforge.net/bugdescriptions.html) bug description pages for more info
 
-**fb-contrib**
+**fb-contrib**  
+- ACEM_ABSTRACT_CLASS_EMPTY_METHODS
 - CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET
 - CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
 - COM_COPIED_OVERRIDDEN_METHOD
