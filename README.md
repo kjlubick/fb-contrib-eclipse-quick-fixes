@@ -1,5 +1,5 @@
 ##fb-contrib Eclipse quick fix plugin (fb-contrib quickfixes, for short) [![Build Status](https://travis-ci.org/kjlubick/fb-contrib-eclipse-quick-fixes.svg?branch=master)](https://travis-ci.org/kjlubick/fb-contrib-eclipse-quick-fixes) ##
-This repository extends the quick-fixes offered by the [FindBugs](http://findbugs.sourceforge.net/) [Eclipse Plugin](http://findbugs.sourceforge.net/downloads.html) to cover the bugs detected by [fb-contrib](http://fb-contrib.sourceforge.net/).
+This repository extends the quick-fixes offered by the [FindBugs](http://findbugs.sourceforge.net/) [Eclipse Plugin](http://findbugs.sourceforge.net/downloads.html) to cover the bugs detected by [fb-contrib](http://fb-contrib.sourceforge.net/), [Find Security Bugs](http://h3xstream.github.io/find-sec-bugs/) and FindBugs itself.
 
 ![quickfix-demo](https://cloud.githubusercontent.com/assets/6819944/4264324/b5e2f5ba-3c21-11e4-966b-3264f7e22dae.gif)
 
@@ -69,6 +69,9 @@ See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb
 - VA_FORMAT_STRING_USES_NEWLINE
 - WMI_WRONG_MAP_ITERATOR
 
+**Find Security Bugs**
+- PREDICTABLE_RANDOM
+
 ##Simultaneous Quickfixes##
 Do you have many bugs detected with a quickfix? The base FindBugs plugin supports multiple fixes simultaneously:
 ![multiple-quickfixes](https://cloud.githubusercontent.com/assets/6819944/4324949/7e882a7c-3f5f-11e4-9170-bac5b24c2dbc.gif)
@@ -115,7 +118,7 @@ To run the tests, you'll need to find rt.jar from your JAVA_HOME/lib and copy it
 Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/blog/post/3?building-your-first-eclipse-quick-fix) and [its follow up tutorial](http://kjlubick.github.io/blog/post/4?a-slightly-more-advanced-quickfix)?
 
 ##License##
-[FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html) and [fb-contrib](https://github.com/mebigfatguy/fb-contrib) are all released under the [LGPL](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
+[FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html), [fb-contrib](https://github.com/mebigfatguy/fb-contrib), [Find Security Bugs](https://github.com/h3xstream/find-sec-bugs), are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
 
 Some small pieces of the testing framework are redistributed (having been modified) under the [Eclipse Public License](https://tldrlegal.com/license/eclipse-public-license-1.0-(epl-1.0)).  Those source files have links to the originals.
 

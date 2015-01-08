@@ -126,6 +126,13 @@
       </quickFix>
       
       <quickFix
+      		arguments="useSecureRandomObject=true"
+            class="quickfix.InsecureRandomResolution"
+            label="Replace using a SecureRandom object"
+            pattern="PREDICTABLE_RANDOM">
+      </quickFix>
+      
+      <quickFix
       		arguments="useBooleanConstants=false"
             class="quickfix.NeedlessBoxingResolution"
             label="Replace with YYY"
