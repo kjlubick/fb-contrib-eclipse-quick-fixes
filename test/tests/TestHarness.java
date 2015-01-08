@@ -16,10 +16,11 @@ import de.tobject.findbugs.builder.FindBugsWorker;
 import de.tobject.findbugs.builder.WorkItem;
 import de.tobject.findbugs.reporter.MarkerUtil;
 
-import edu.umd.cs.findbugs.BugCode;
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
+import edu.umd.cs.findbugs.Plugin;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import edu.umd.cs.findbugs.config.UserPreferences;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolutionGenerator;
 
 import org.eclipse.core.resources.IMarker;
@@ -37,6 +38,7 @@ import org.eclipse.jdt.testplugin.JavaProjectHelper;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.PartInitException;
+import org.junit.Assume;
 
 import utils.BugResolutionSource;
 import utils.QuickFixTestPackage;
@@ -54,6 +56,10 @@ public abstract class TestHarness {
 
     private static IProject testIProject;
 
+    private static boolean fb_contribInstalled;
+
+    private static boolean findSecurityBugsInstalled;
+
     private BugResolutionSource resolutionSource;
 
     private Set<String> detectorsToReenable = new HashSet<String>();
@@ -68,16 +74,46 @@ public abstract class TestHarness {
         testIProject.build(IncrementalProjectBuilder.FULL_BUILD, null);
 
         FindbugsPlugin.setProjectSettingsEnabled(testIProject, null, true);
+        UserPreferences userPrefs = FindbugsPlugin.getUserPreferences(testIProject);
+        // enables categories like Security, which are disabled by default
+        userPrefs.getFilterSettings().clearAllCategories();
 
         checkFBContribInstalled();
+        checkFindSecurityBugsInstalled();
 
         TestingUtils.waitForUiEvents(100);
     }
 
     private static void checkFBContribInstalled() {
-        // this was the first fb-contrib bug code
-        BugCode knownFBContribBugCode = new BugCode("ISB", "Inefficient String Buffering");
-        assertTrue(FindbugsPlugin.getKnownPatternTypes().contains(knownFBContribBugCode));
+        fb_contribInstalled = Plugin.getByPluginId("com.mebigfatguy.fbcontrib") != null;
+        System.out.printf("fb-contrib (com.mebigfatguy.fbcontrib) is %sinstalled%n", fb_contribInstalled ? "": "not ");
+    }
+    
+    protected void needsFBContrib() {   //convenience
+        needsFBContrib(true);
+    }
+    
+    protected void needsFBContrib(boolean isNeeded) {
+        if (isNeeded || fb_contribInstalled) {
+            Assume.assumeTrue(fb_contribInstalled);
+            enablePlugins("com.mebigfatguy.fbcontrib", isNeeded);
+        }
+    }
+
+    private static void checkFindSecurityBugsInstalled() {
+        findSecurityBugsInstalled = Plugin.getByPluginId("com.h3xstream.findsecbugs") != null;
+        System.out.printf("Find Security Bugs (com.h3xstream.findsecbugs) is %sinstalled%n", findSecurityBugsInstalled ? "": "not ");
+    }
+    
+    protected void needsFindSecurityBugs() {
+        needsFindSecurityBugs(true);
+    }
+    
+    protected void needsFindSecurityBugs(boolean isNeeded) {
+        if (isNeeded || findSecurityBugsInstalled) {
+            Assume.assumeTrue(findSecurityBugsInstalled);
+            enablePlugins("com.h3xstream.findsecbugs", isNeeded);
+        }
     }
 
     private static void clearMarkersAndBugs() throws CoreException {
@@ -275,6 +311,23 @@ public abstract class TestHarness {
     }
 
     /**
+     * Enables or disables a FindBugs plugin.
+     * 
+     * @param plugins 
+     * @param enabled
+     */
+    protected void enablePlugins(String pluginId, boolean enabled) {
+        Plugin plugin = Plugin.getByPluginId(pluginId);
+        if (plugin != null) {
+            if (!enabled && plugin.cannotDisable()) {
+                fail("Cannot disable plugin: " + plugin.getPluginId() + '\n' + plugin.getShortDescription());
+            } else {
+                plugin.setGloballyEnabled(enabled);
+            }
+        }
+    }
+
+    /**
      * Enables or disables a detector. This can only disable an entire detector (class-level),
      * not just one bug pattern.
      * 
@@ -285,7 +338,12 @@ public abstract class TestHarness {
     protected void setDetector(String dotSeperatedDetectorClass, boolean enabled) {
         DetectorFactory factory = DetectorFactoryCollection.instance().getFactoryByClassName(dotSeperatedDetectorClass);
         if (factory == null) {
-            fail("Could not find a detector with class " + dotSeperatedDetectorClass);
+            if (enabled) {
+                fail("Could not find a detector with class " + dotSeperatedDetectorClass);
+            } else {
+                System.err.println("Could not find a detector with class " + dotSeperatedDetectorClass);
+            }
+            return;
         }
         if (!enabled) {
             detectorsToReenable.add(dotSeperatedDetectorClass);
@@ -335,10 +393,9 @@ public abstract class TestHarness {
         }
         fail("minRank [" + minRank + "] must be between 1 and 20 inclusively");
     }
-
+    
     public void tearDown() {
         restoreDisabledDetectors();
-
     }
 
 }

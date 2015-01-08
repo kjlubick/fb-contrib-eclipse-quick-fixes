@@ -64,7 +64,8 @@ public class TestContributedQuickFixes extends TestHarness {
     }
 
     @Test
-    public void testCharsetIssuesResolution() {
+    public void testCharsetIssuesResolution() throws Exception {
+        needsFBContrib();
         setPriority("Medium");
         setRank(15);
 
@@ -98,7 +99,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testUseCharacterParameterizedMethodResolution() throws Exception {
-        // StringToCharResolution.java
+        needsFBContrib();
         setPriority("Medium");
         setRank(20);
         // this pops up when fixing the bug on line 31 (not the fixes fault, but the tests)
@@ -128,7 +129,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testEntrySetResolution() throws Exception {
-        // EntrySetResolution.java
+        // No plugins needed because WMI is in FindBugsProper
         setPriority("Medium");
         setRank(18);
 
@@ -158,7 +159,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testDeadShadowStoreResolution() throws Exception {
-        // DeadShadowStoreResolution.java
+        // No plugins needed because DLS is in FindBugsProper
         setPriority("Medium");
         setRank(15);
 
@@ -182,7 +183,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testLiteralStringComparisonResolution() throws Exception {
-        // LiteralStringComparisonResolution.java
+        needsFBContrib();
         setPriority("High");
         setRank(17);
 
@@ -200,7 +201,9 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testInsecureRandomResolution() throws Exception {
-        // InsecureRandomResolution.java
+        needsFBContrib();
+        
+        setDetector("com.h3xstream.findsecbugs.PredictableRandomDetector", false); //don't want duplicate reports
         setPriority("Low");
         setRank(20);
 
@@ -219,7 +222,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testNeedlessBoxingResolution() throws Exception {
-        // NeedlessBoxingResolution.java
+        needsFBContrib();
+        
         setPriority("Low");
         setRank(20);
         setDetector("edu.umd.cs.findbugs.detect.UnreadFields", false);
@@ -261,7 +265,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testBigDecimalConstructorResolution() throws Exception {
-        // BigDecimalConstructorResolution.java
+        // No plugins needed because DMI is in FindBugsProper
+        
         setDetector("com.mebigfatguy.fbcontrib.detect.SillynessPotPourri", false); // these have duplicate bugs
         setRank(10);
         setPriority("Medium");
@@ -284,7 +289,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testReturnValueIgnoreResolution() throws Exception {
-        // ReturnValueIgnoreResolution
+        // No plugins needed because RV is in FindBugsProper
 
         setRank(19);
         setPriority("Low");
@@ -326,7 +331,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testArraysToStringResolution() throws Exception {
-        // ArraysToStringResolution.java
+        // No plugins needed because DMI is in FindBugsProper
         setRank(10);
         setPriority("Medium");
 
@@ -343,7 +348,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testSQLOffByOneResolution() throws Exception {
-        // SQLOffByOneResolution.java
+        // No plugins needed because SQL is in FindBugsProper
         setRank(1);
         setPriority("High");
 
@@ -362,6 +367,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testIsNANResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(10);
         setPriority("Medium");
 
@@ -384,6 +391,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testCopyOverridenMethodResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(17);
         setPriority("Medium");
         setDetector("com.mebigfatguy.fbcontrib.detect.OverlyPermissiveMethod", false);
@@ -399,6 +408,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testShouldBeTransientResolution() throws Exception {
+        // No plugins needed because SE is in FindBugsProper
+        
         setRank(14);
         setPriority("Medium");
 
@@ -414,6 +425,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testInefficiantToArrayResolution() throws Exception {
+        // No plugins needed because ITA is in FindBugsProper
+        
         setRank(20);
         setPriority("Low");
         setDetector("com.mebigfatguy.fbcontrib.detect.FinalParameters", false);
@@ -431,6 +444,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testUnnecessaryStoreResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(17);
         setPriority("Medium");
 
@@ -445,6 +460,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testChangeEnumEqualsResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(10);
         setPriority("Medium");
 
@@ -461,6 +478,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testAddDefaultCaseResolution() throws Exception {
+        // No plugins needed because SF is in FindBugsProper
+        
         setRank(19);
         setPriority("Medium");
 
@@ -475,6 +494,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testSwitchFallThroughResolution() throws Exception {
+        // No plugins needed because SF is in FindBugsProper
+        
         setRank(5);
         setPriority("Medium");
 
@@ -498,6 +519,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testUseEnumCollectionsResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(18);
         setPriority("Medium");
 
@@ -515,6 +538,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testIsEmptyResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(17);
         setPriority("Medium");
 
@@ -531,6 +556,8 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testOverlyConcreteParametersResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(17);
         setPriority("Medium");
 
@@ -545,6 +572,8 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testConvertingStringLiteralsResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(10);
         setPriority("Low");
 
@@ -566,6 +595,8 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testUseVarArgsResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(20);
         setPriority("Low");
 
@@ -583,6 +614,8 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testLoggerOdditiesResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(10);
         setPriority("Medium");
         
@@ -597,6 +630,8 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testHttpResourceResetResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(10);
         setPriority("Medium");
         
@@ -624,6 +659,7 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testFormatStringResolution() throws Exception {
+        // No plugins needed because VA is in FindBugsProper
         setRank(20);
         setPriority("Medium");
         
@@ -647,6 +683,8 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testEmptyAbstractResolution() throws Exception {
+        needsFBContrib();
+        
         setRank(19);
         setPriority("Medium");
         
@@ -661,6 +699,8 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testFloatingCompareToResolution() throws Exception {
+        // No plugins needed because CO is in FindBugsProper
+        
         setRank(17);
         setPriority("Medium");
         setDetector("edu.umd.cs.findbugs.detect.FindHEmismatch", false);
