@@ -344,6 +344,13 @@
             pattern="ACEM_ABSTRACT_CLASS_EMPTY_METHODS">
     </quickFix>
    
+   <quickFix
+            class="quickfix.CompareFloatResolution"
+            label="Replace with YYY"
+            pattern="CO_COMPARETO_INCORRECT_FLOATING">
+    </quickFix>
+    
+   
    </extension>
 
 </plugin>
