@@ -7,10 +7,13 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionException;
 
+import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
+import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
@@ -37,7 +40,16 @@ public class CompareFloatResolution extends BugResolution {
         node.accept(visitor);
         
         if (visitor.expressionToReplace != null) {
+
+            AST ast = rewrite.getAST();
+            ast.newSimpleName(visitor.firstFloat.getIdentifier());
+            MethodInvocation newMethod = ast.newMethodInvocation();
+            newMethod.setName(ast.newSimpleName("compare"));
+            newMethod.setExpression(ast.newSimpleName(visitor.floatOrDouble));
             
+            if (visitor.optionalTempVariableToDelete != null) {
+                rewrite.remove(visitor.optionalTempVariableToDelete, null);
+            }
         }
     }
     
@@ -45,6 +57,11 @@ public class CompareFloatResolution extends BugResolution {
         
         ConditionalExpression expressionToReplace;
         VariableDeclarationStatement optionalTempVariableToDelete;
+        
+        SimpleName firstFloat;
+        SimpleName secondFloat;
+        
+        String floatOrDouble;
         
         @Override
         public boolean visit(ConditionalExpression node) {
