@@ -26,7 +26,7 @@ public class EmptyAbstractResolution extends BugResolution {
         Modifier abstractKeyword = rewrite.getAST().newModifier(Modifier.ModifierKeyword.ABSTRACT_KEYWORD);
         // adds abstract key word
         modifiers.insertLast(abstractKeyword, null);
-        
+
         // sets "no body" on the method, which ends up being a ; on the end.
         rewrite.set(method, MethodDeclaration.BODY_PROPERTY, null, null);
     }

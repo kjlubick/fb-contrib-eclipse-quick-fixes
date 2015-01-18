@@ -26,7 +26,7 @@ public class CompareFloatResolution extends BugResolution {
     protected boolean resolveBindings() {
         return true;
     }
-    
+
     @Override
     protected ASTVisitor getApplicabilityVisitor() {
         return new CompareToVisitor();
@@ -38,7 +38,7 @@ public class CompareFloatResolution extends BugResolution {
         node = TraversalUtil.backtrackToBlock(node);
         CompareToVisitor visitor = new CompareToVisitor();
         node.accept(visitor);
-        
+
         if (visitor.expressionToReplace != null) {
 
             AST ast = rewrite.getAST();
@@ -46,23 +46,25 @@ public class CompareFloatResolution extends BugResolution {
             MethodInvocation newMethod = ast.newMethodInvocation();
             newMethod.setName(ast.newSimpleName("compare"));
             newMethod.setExpression(ast.newSimpleName(visitor.floatOrDouble));
-            
+
             if (visitor.optionalTempVariableToDelete != null) {
                 rewrite.remove(visitor.optionalTempVariableToDelete, null);
             }
         }
     }
-    
+
     private static class CompareToVisitor extends ASTVisitor implements ApplicabilityVisitor {
-        
+
         ConditionalExpression expressionToReplace;
+
         VariableDeclarationStatement optionalTempVariableToDelete;
-        
+
         SimpleName firstFloat;
+
         SimpleName secondFloat;
-        
+
         String floatOrDouble;
-        
+
         @Override
         public boolean visit(ConditionalExpression node) {
             // TODO Auto-generated method stub

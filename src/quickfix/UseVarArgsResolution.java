@@ -53,13 +53,14 @@ public class UseVarArgsResolution extends BugResolution {
     @SuppressWarnings({ "deprecation", "unchecked" })
     private void removeArrayDimensions(ASTRewrite rewrite, SingleVariableDeclaration lastParam) {
         // removes any additional dimensions (for variables declared like int a[])
-        if (rewrite.getAST().apiLevel() <= AST.JLS4) {  //reverse compatibility
+        if (rewrite.getAST().apiLevel() <= AST.JLS4) { // reverse compatibility
             rewrite.set(lastParam, SingleVariableDeclaration.EXTRA_DIMENSIONS_PROPERTY, 0, null);
         } else {
-            ListRewrite extraDimensionsRewrite = rewrite.getListRewrite(lastParam, SingleVariableDeclaration.EXTRA_DIMENSIONS2_PROPERTY);
+            ListRewrite extraDimensionsRewrite = rewrite.getListRewrite(lastParam,
+                    SingleVariableDeclaration.EXTRA_DIMENSIONS2_PROPERTY);
             List<Dimension> extraDimensions = lastParam.extraDimensions();
-            for(Dimension d:extraDimensions) {
-                extraDimensionsRewrite.remove(d, null); 
+            for (Dimension d : extraDimensions) {
+                extraDimensionsRewrite.remove(d, null);
             }
         }
     }
