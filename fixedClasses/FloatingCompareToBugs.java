@@ -40,7 +40,7 @@ public class FloatingCompareToBugs {
         public int compareTo(DoubleHolder o) {
             double d1 = d;
             double d2 = o.d;
-            return Double.compare(d1, d2);
+            return Double.compare(d2, d1);
         }
     }
     

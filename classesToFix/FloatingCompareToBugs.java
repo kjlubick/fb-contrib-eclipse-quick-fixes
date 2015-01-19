@@ -41,7 +41,7 @@ public class FloatingCompareToBugs {
         public int compareTo(DoubleHolder o) {
             double d1 = d;
             double d2 = o.d;
-            return d1 > d2 ? 1: d1 == d2 ? 0 : -1;
+            return d1 < d2 ? -1: d1 == d2 ? 0 : 1;
         }
     }
     
