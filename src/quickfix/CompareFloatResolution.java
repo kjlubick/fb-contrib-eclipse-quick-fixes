@@ -2,6 +2,8 @@ package quickfix;
 
 import static edu.umd.cs.findbugs.plugin.eclipse.quickfix.util.ASTUtil.getASTNode;
 
+import java.util.List;
+
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.ApplicabilityVisitor;
 import edu.umd.cs.findbugs.plugin.eclipse.quickfix.BugResolution;
@@ -11,15 +13,20 @@ import edu.umd.cs.findbugs.plugin.eclipse.quickfix.exception.BugResolutionExcept
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.BlockComment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.eclipse.jface.text.projection.Fragment;
 
 import util.TraversalUtil;
 
@@ -93,6 +100,16 @@ public class CompareFloatResolution extends BugResolution {
                     } else {
                         //diff
                         
+                        if (condExpr.getLeftOperand() instanceof SimpleName) {
+                            findDiffAndFloats((SimpleName) condExpr.getLeftOperand());
+                        } else if (condExpr.getRightOperand() instanceof SimpleName) {
+                            findDiffAndFloats((SimpleName) condExpr.getRightOperand());
+                        } else {
+                            return true;    //unexpected comparison
+                        }
+
+                        
+                        
                     }
                     return false;
                 } else if (condExpr.getOperator() == InfixExpression.Operator.LESS) {
@@ -103,12 +120,44 @@ public class CompareFloatResolution extends BugResolution {
                         floatOrDouble = getFloatOrDouble(firstFloat, secondFloat);
                     } else {
                         //diff
-                        
+                        if (condExpr.getLeftOperand() instanceof SimpleName) {
+                            findDiffAndFloats((SimpleName) condExpr.getLeftOperand());
+                        } else if (condExpr.getRightOperand() instanceof SimpleName) {
+                            findDiffAndFloats((SimpleName) condExpr.getRightOperand());
+                        } else {
+                            return true;    //unexpected comparison
+                        }
+                        //swap first and second due to the less than
+                        SimpleName temp = firstFloat;
+                        firstFloat = secondFloat;
+                        secondFloat = temp;
                     }
                     return false;
                 } 
             }
             return true;
+        }
+
+        private void findDiffAndFloats(SimpleName diffName) throws CouldntFindDiffException {
+            // TODO Auto-generated method stub
+            ASTNode originalLine = TraversalUtil.backtrackToBlock(diffName);
+            Block surroundingBlock = TraversalUtil.findClosestAncestor(originalLine, Block.class);
+            
+            List<Statement> blockStatements = surroundingBlock.statements();
+            for(int i = blockStatements.indexOf(originalLine); i>= 0;i--) {
+                Statement statement = blockStatements.get(i);
+                if (statement instanceof VariableDeclarationStatement) {
+                    List<VariableDeclarationFragment> frags = ((VariableDeclarationStatement) statement).fragments();
+                    VariableDeclarationFragment fragment = frags.get(0); //I'm going to ignore other fragments, if they exist
+                    if (fragment.getName().getIdentifier().equals(diffName.getIdentifier())) {
+                        //TODO this is our fragment
+                    }
+                    else {
+                        throw new CouldntFindDiffException();
+                    }
+                }
+            }
+            
         }
 
         private String getFloatOrDouble(SimpleName... variables) {
@@ -140,6 +189,10 @@ public class CompareFloatResolution extends BugResolution {
             return String.format("%s.compare(%s,%s)", this.floatOrDouble, this.firstFloat, this.secondFloat);
         }
         
+        
+    }
+    
+    private static class CouldntFindDiffException extends Exception {
         
     }
 
