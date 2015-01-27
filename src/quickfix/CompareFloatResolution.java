@@ -14,19 +14,17 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
-import org.eclipse.jdt.core.dom.BlockComment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
-import org.eclipse.jface.text.projection.Fragment;
 
 import util.TraversalUtil;
 
@@ -57,7 +55,6 @@ public class CompareFloatResolution extends BugResolution {
         if (visitor.expressionToReplace != null) {
 
             AST ast = rewrite.getAST();
-            ast.newSimpleName(visitor.firstFloat.getIdentifier());
             MethodInvocation newMethod = ast.newMethodInvocation();
             newMethod.setName(ast.newSimpleName("compare"));
             newMethod.setExpression(ast.newSimpleName(visitor.floatOrDouble));
@@ -77,9 +74,9 @@ public class CompareFloatResolution extends BugResolution {
 
         VariableDeclarationStatement optionalTempVariableToDelete;
 
-        SimpleName firstFloat;
+        Name firstFloat;
 
-        SimpleName secondFloat;
+        Name secondFloat;
 
         String floatOrDouble;
 
@@ -104,13 +101,8 @@ public class CompareFloatResolution extends BugResolution {
         }
 
         private boolean findFirstAndSecondFloat(ConditionalExpression node, InfixExpression condExpr) {
-            if (areSimpleNames(condExpr.getLeftOperand(), condExpr.getRightOperand())) {
-                firstFloat = (SimpleName) condExpr.getLeftOperand();
-                secondFloat = (SimpleName) condExpr.getRightOperand();
-                expressionToReplace = node;
-                floatOrDouble = getFloatOrDouble(firstFloat, secondFloat);
-            } else {
-                // diff
+            if (!handleTwoSimpleNames(node, condExpr)) {
+                // this is a if diff > 0 case
                 try {
                     if (condExpr.getLeftOperand() instanceof SimpleName) {
                         findDiffAndFloats((SimpleName) condExpr.getLeftOperand());
@@ -119,6 +111,8 @@ public class CompareFloatResolution extends BugResolution {
                     } else {
                         return true; // unexpected comparison
                     }
+                    floatOrDouble = getFloatOrDouble(firstFloat, secondFloat);
+                    expressionToReplace = node;
 
                 } catch (CouldntFindDiffException e) {
                     return true; // keep nesting if we have a problem
@@ -127,45 +121,67 @@ public class CompareFloatResolution extends BugResolution {
             return false;
         }
 
+        private boolean handleTwoSimpleNames(ConditionalExpression node, InfixExpression condExpr) {
+            if (!areNames(condExpr.getLeftOperand(), condExpr.getRightOperand())) {
+                return false;
+            }
+            firstFloat = (Name) condExpr.getLeftOperand();
+            secondFloat = (Name) condExpr.getRightOperand();
+            expressionToReplace = node;
+            floatOrDouble = getFloatOrDouble(firstFloat, secondFloat);
+            return true;
+        }
+
         private void swapFirstAndSecondFloat() {
-            SimpleName temp = firstFloat;
+            Name temp = firstFloat;
             firstFloat = secondFloat;
             secondFloat = temp;
         }
 
+        @SuppressWarnings("unchecked")
         private void findDiffAndFloats(SimpleName diffName) throws CouldntFindDiffException {
             ConditionalExpression originalLine = TraversalUtil.findClosestAncestor(diffName, ConditionalExpression.class);
-            
-            if (originalLine == null) {
+
+            if (originalLine == null || !(originalLine.getExpression() instanceof InfixExpression)) {
                 throw new CouldntFindDiffException();
             }
-            
-            findOptionalDiffStatement(originalLine, diffName);
-            
-        }
 
-        private void findOptionalDiffStatement(ASTNode originalLine, SimpleName diffName) {
             Block surroundingBlock = TraversalUtil.findClosestAncestor(originalLine, Block.class);
-            
+
             List<Statement> blockStatements = surroundingBlock.statements();
-            for(int i = blockStatements.indexOf(originalLine); i>= 0;i--) {
+            for (int i = blockStatements.size() - 1; i >= 0; i--) {
                 Statement statement = blockStatements.get(i);
                 if (statement instanceof VariableDeclarationStatement) {
                     List<VariableDeclarationFragment> frags = ((VariableDeclarationStatement) statement).fragments();
-                    if (frags.size() == 1) {
-                        // I won't fix the the diff variable if it's nested with other frags, if they exist
-                        VariableDeclarationFragment fragment = frags.get(0);
-                        if (fragment.getName().getIdentifier().equals(diffName.getIdentifier())) {
-                            this.optionalTempVariableToDelete = (VariableDeclarationStatement) statement;
+
+                    // I won't fix the the diff variable if it's nested with other frags, if they exist
+                    // but we do need to look at them
+                    VariableDeclarationFragment fragment = frags.get(0);
+                    if (fragment.getName().getIdentifier().equals(diffName.getIdentifier())) {
+                        Expression initializer = fragment.getInitializer();
+                        if (initializer instanceof InfixExpression) {
+                            InfixExpression subtraction = (InfixExpression) initializer;
+                            if (subtraction.getOperator() == InfixExpression.Operator.MINUS &&
+                                    areNames(subtraction.getLeftOperand(), subtraction.getRightOperand())) {
+
+                                this.firstFloat = (Name) subtraction.getLeftOperand();
+                                this.secondFloat = (Name) subtraction.getRightOperand();
+
+                                if (frags.size() == 1) {
+                                    this.optionalTempVariableToDelete = (VariableDeclarationStatement) statement;
+                                }
+                                return;
+                            }
                         }
                     }
                 }
             }
+            throw new CouldntFindDiffException();
         }
 
-        private String getFloatOrDouble(SimpleName... variables) {
-            boolean isDouble =false;
-            for(SimpleName v : variables) {
+        private String getFloatOrDouble(Name... variables) {
+            boolean isDouble = false;
+            for(Name v : variables) {
                 if ("double".equals(v.resolveTypeBinding().getQualifiedName())) {
                     isDouble = true;
                 }
@@ -173,9 +189,9 @@ public class CompareFloatResolution extends BugResolution {
             return isDouble ? "Double" : "Float";
         }
 
-        private boolean areSimpleNames(Expression... expressions) {  //returns true if all expressions are simple names
+        private boolean areNames(Expression... expressions) {  //returns true if all expressions are simple names
             for (Expression e: expressions) {
-                if (!(e instanceof SimpleName)) {
+                if (!(e instanceof Name)) {
                     return false;
                 }
             }
