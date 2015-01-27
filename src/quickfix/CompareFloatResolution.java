@@ -39,7 +39,7 @@ public class CompareFloatResolution extends BugResolution {
     protected ASTVisitor getApplicabilityVisitor() {
         return new CompareToVisitor();
     }
-    
+
     @Override
     protected ASTVisitor getCustomLabelVisitor() {
         return new CompareToVisitor();
@@ -60,7 +60,7 @@ public class CompareFloatResolution extends BugResolution {
             newMethod.setExpression(ast.newSimpleName(visitor.floatOrDouble));
             newMethod.arguments().add(rewrite.createCopyTarget(visitor.firstFloat));
             newMethod.arguments().add(rewrite.createCopyTarget(visitor.secondFloat));
-            
+
             if (visitor.optionalTempVariableToDelete != null) {
                 rewrite.remove(visitor.optionalTempVariableToDelete, null);
             }
@@ -85,17 +85,17 @@ public class CompareFloatResolution extends BugResolution {
             if (expressionToReplace != null) {
                 return false;
             }
-            
+
             if (node.getExpression() instanceof InfixExpression) {
                 InfixExpression condExpr = (InfixExpression) node.getExpression();
                 boolean retVal = findFirstAndSecondFloat(node, condExpr);
                 if (condExpr.getOperator() == InfixExpression.Operator.GREATER) {
                     return retVal;
-                } 
+                }
                 else if (condExpr.getOperator() == InfixExpression.Operator.LESS) {
                     swapFirstAndSecondFloat();
                     return retVal;
-                } 
+                }
             }
             return true;
         }
@@ -181,7 +181,7 @@ public class CompareFloatResolution extends BugResolution {
 
         private String getFloatOrDouble(Name... variables) {
             boolean isDouble = false;
-            for(Name v : variables) {
+            for (Name v : variables) {
                 if ("double".equals(v.resolveTypeBinding().getQualifiedName())) {
                     isDouble = true;
                 }
@@ -189,8 +189,8 @@ public class CompareFloatResolution extends BugResolution {
             return isDouble ? "Double" : "Float";
         }
 
-        private boolean areNames(Expression... expressions) {  //returns true if all expressions are simple names
-            for (Expression e: expressions) {
+        private boolean areNames(Expression... expressions) { // returns true if all expressions are simple names
+            for (Expression e : expressions) {
                 if (!(e instanceof Name)) {
                     return false;
                 }
@@ -202,17 +202,16 @@ public class CompareFloatResolution extends BugResolution {
         public boolean isApplicable() {
             return expressionToReplace != null;
         }
-        
+
         @Override
         public String getLabelReplacement() {
             return String.format("%s.compare(%s, %s)", this.floatOrDouble, this.firstFloat, this.secondFloat);
         }
-        
-        
+
     }
-    
+
     private static class CouldntFindDiffException extends Exception {
-        
+
     }
 
 }
