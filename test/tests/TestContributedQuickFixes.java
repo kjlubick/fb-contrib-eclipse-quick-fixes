@@ -667,7 +667,7 @@ public class TestContributedQuickFixes extends TestHarness {
         packager.fillExpectedBugPatterns("CO_COMPARETO_INCORRECT_FLOATING");
         packager.setExpectedLabels(0, "Replace with Float.compare(d1, d2)");
         packager.setExpectedLabels(1, "Replace with Float.compare(d, o.d)");
-        packager.setExpectedLabels(2, "Replace with Double.compare(d1, d2)");
+        packager.setExpectedLabels(2, "Replace with Double.compare(d2, d1)");
         
         checkBugsAndPerformResolution(packager.asList(), "FloatingCompareToBugs.java");
     }    

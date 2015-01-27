@@ -205,7 +205,7 @@ public class CompareFloatResolution extends BugResolution {
         
         @Override
         public String getLabelReplacement() {
-            return String.format("%s.compare(%s,%s)", this.floatOrDouble, this.firstFloat, this.secondFloat);
+            return String.format("%s.compare(%s, %s)", this.floatOrDouble, this.firstFloat, this.secondFloat);
         }
         
         
