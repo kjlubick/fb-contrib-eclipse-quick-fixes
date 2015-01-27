@@ -91,56 +91,60 @@ public class CompareFloatResolution extends BugResolution {
             
             if (node.getExpression() instanceof InfixExpression) {
                 InfixExpression condExpr = (InfixExpression) node.getExpression();
+                boolean retVal = findFirstAndSecondFloat(node, condExpr);
                 if (condExpr.getOperator() == InfixExpression.Operator.GREATER) {
-                    if (areSimpleNames(condExpr.getLeftOperand(), condExpr.getRightOperand())) {
-                        firstFloat = (SimpleName) condExpr.getLeftOperand();
-                        secondFloat = (SimpleName) condExpr.getRightOperand();
-                        expressionToReplace = node;
-                        floatOrDouble = getFloatOrDouble(firstFloat, secondFloat);
-                    } else {
-                        //diff
-                        
-                        if (condExpr.getLeftOperand() instanceof SimpleName) {
-                            findDiffAndFloats((SimpleName) condExpr.getLeftOperand());
-                        } else if (condExpr.getRightOperand() instanceof SimpleName) {
-                            findDiffAndFloats((SimpleName) condExpr.getRightOperand());
-                        } else {
-                            return true;    //unexpected comparison
-                        }
-
-                        
-                        
-                    }
-                    return false;
-                } else if (condExpr.getOperator() == InfixExpression.Operator.LESS) {
-                    if (areSimpleNames(condExpr.getLeftOperand(), condExpr.getRightOperand())) {
-                        firstFloat = (SimpleName) condExpr.getRightOperand();
-                        secondFloat = (SimpleName) condExpr.getLeftOperand();
-                        expressionToReplace = node;
-                        floatOrDouble = getFloatOrDouble(firstFloat, secondFloat);
-                    } else {
-                        //diff
-                        if (condExpr.getLeftOperand() instanceof SimpleName) {
-                            findDiffAndFloats((SimpleName) condExpr.getLeftOperand());
-                        } else if (condExpr.getRightOperand() instanceof SimpleName) {
-                            findDiffAndFloats((SimpleName) condExpr.getRightOperand());
-                        } else {
-                            return true;    //unexpected comparison
-                        }
-                        //swap first and second due to the less than
-                        SimpleName temp = firstFloat;
-                        firstFloat = secondFloat;
-                        secondFloat = temp;
-                    }
-                    return false;
+                    return retVal;
+                } 
+                else if (condExpr.getOperator() == InfixExpression.Operator.LESS) {
+                    swapFirstAndSecondFloat();
+                    return retVal;
                 } 
             }
             return true;
         }
 
+        private boolean findFirstAndSecondFloat(ConditionalExpression node, InfixExpression condExpr) {
+            if (areSimpleNames(condExpr.getLeftOperand(), condExpr.getRightOperand())) {
+                firstFloat = (SimpleName) condExpr.getLeftOperand();
+                secondFloat = (SimpleName) condExpr.getRightOperand();
+                expressionToReplace = node;
+                floatOrDouble = getFloatOrDouble(firstFloat, secondFloat);
+            } else {
+                // diff
+                try {
+                    if (condExpr.getLeftOperand() instanceof SimpleName) {
+                        findDiffAndFloats((SimpleName) condExpr.getLeftOperand());
+                    } else if (condExpr.getRightOperand() instanceof SimpleName) {
+                        findDiffAndFloats((SimpleName) condExpr.getRightOperand());
+                    } else {
+                        return true; // unexpected comparison
+                    }
+
+                } catch (CouldntFindDiffException e) {
+                    return true; // keep nesting if we have a problem
+                }
+            }
+            return false;
+        }
+
+        private void swapFirstAndSecondFloat() {
+            SimpleName temp = firstFloat;
+            firstFloat = secondFloat;
+            secondFloat = temp;
+        }
+
         private void findDiffAndFloats(SimpleName diffName) throws CouldntFindDiffException {
-            // TODO Auto-generated method stub
-            ASTNode originalLine = TraversalUtil.backtrackToBlock(diffName);
+            ConditionalExpression originalLine = TraversalUtil.findClosestAncestor(diffName, ConditionalExpression.class);
+            
+            if (originalLine == null) {
+                throw new CouldntFindDiffException();
+            }
+            
+            findOptionalDiffStatement(originalLine, diffName);
+            
+        }
+
+        private void findOptionalDiffStatement(ASTNode originalLine, SimpleName diffName) {
             Block surroundingBlock = TraversalUtil.findClosestAncestor(originalLine, Block.class);
             
             List<Statement> blockStatements = surroundingBlock.statements();
@@ -148,16 +152,15 @@ public class CompareFloatResolution extends BugResolution {
                 Statement statement = blockStatements.get(i);
                 if (statement instanceof VariableDeclarationStatement) {
                     List<VariableDeclarationFragment> frags = ((VariableDeclarationStatement) statement).fragments();
-                    VariableDeclarationFragment fragment = frags.get(0); //I'm going to ignore other fragments, if they exist
-                    if (fragment.getName().getIdentifier().equals(diffName.getIdentifier())) {
-                        //TODO this is our fragment
-                    }
-                    else {
-                        throw new CouldntFindDiffException();
+                    if (frags.size() == 1) {
+                        // I won't fix the the diff variable if it's nested with other frags, if they exist
+                        VariableDeclarationFragment fragment = frags.get(0);
+                        if (fragment.getName().getIdentifier().equals(diffName.getIdentifier())) {
+                            this.optionalTempVariableToDelete = (VariableDeclarationStatement) statement;
+                        }
                     }
                 }
             }
-            
         }
 
         private String getFloatOrDouble(SimpleName... variables) {
