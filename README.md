@@ -34,6 +34,7 @@ See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb
 - UVA_USE_VAR_ARGS
 
 **FindBugs**
+- CO_COMPARETO_INCORRECT_FLOATING
 - DLS_DEAD_LOCAL_STORE_SHADOWS_FIELD
 - DLS_DEAD_LOCAL_STORE
 - DMI_BIGDECIMAL_CONSTRUCTED_FROM_DOUBLE
