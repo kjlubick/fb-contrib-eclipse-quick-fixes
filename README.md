@@ -1,4 +1,4 @@
-##fb-contrib Eclipse quick fix plugin (fb-contrib quickfixes, for short)##
+##fb-contrib Eclipse quick fix plugin (fb-contrib quickfixes, for short) [![Build Status](https://travis-ci.org/kjlubick/fb-contrib-eclipse-quick-fixes.svg?branch=testsFromAnt)](https://travis-ci.org/kjlubick/fb-contrib-eclipse-quick-fixes) ##
 This repository extends the quick-fixes offered by the [FindBugs](http://findbugs.sourceforge.net/) [Eclipse Plugin](http://findbugs.sourceforge.net/downloads.html) to cover the bugs detected by [fb-contrib](http://fb-contrib.sourceforge.net/).
 
 ![quickfix-demo](https://cloud.githubusercontent.com/assets/6819944/4264324/b5e2f5ba-3c21-11e4-966b-3264f7e22dae.gif)
