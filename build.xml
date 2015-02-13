@@ -102,7 +102,7 @@
 		<unzip src="eclipse.zip" dest="${eclipsePlugin.dir}"/>
 	</target>
 
-	<target name="extractJar" depends="init">
+	<target name="extractJar" depends="init, downloadFB-contrib">
 		<echo message="Copying fb-contrib classes to Eclipse plugin"/>
 		<unzip src="${fb-contrib.jar}" dest="${bin.dir}">
 			<patternset>
