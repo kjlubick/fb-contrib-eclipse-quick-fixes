@@ -27,7 +27,7 @@
     
     See local.properties.example for an example setup file
 -->
-	<!-- <property file="local.properties" /> -->
+	<property file="local.properties" />
 
 	<property file="build.properties" />
 	
@@ -91,18 +91,18 @@
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/fb-contrib-6.1.0.jar" dest="${fb-contrib.jar}"/>
 	</target>
 	
-	<target name="eclipse.check">
-	    <condition property="eclipse.exists">
+	<target name="eclipse-deps.check">
+	    <condition property="eclipse-deps.exists">
 	      <available file="${eclipsePlugin.dir}" type="dir"/>
 	    </condition>
 		<echo message="Does the eclipse file exist?" />
 		<echoproperties />
 	  </target>
 	
-	<target name="downloadEclipse" depends="clean, eclipse.check" unless="eclipse.exists" description="download Eclipse if it doesn't exist">
+	<target name="downloadEclipseDeps" depends="clean, eclipse-deps.check" unless="eclipse-deps.exists" description="download Eclipse if it doesn't exist">
 		<echo message="Downloading Eclipse" />
 		<mkdir dir="${eclipsePlugin.dir}"/>
-		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/eclipse-with-findbugs3.0.1.zip" dest="eclipse.zip"/>	<!--Eclipse-luna with findbugs 3.0.1 01/05/2015-->
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/eclipse-dependencies.zip" dest="eclipse.zip"/>	<!--Eclipse-luna with findbugs 3.0.1 01/05/2015-->
 		<unzip src="eclipse.zip" dest="${eclipsePlugin.dir}"/>
 	</target>
 
@@ -119,7 +119,7 @@
 		</unzip>
 	</target>
 
-	<target name="classes" depends="init, extractJar, downloadEclipse, downloadFB-contrib" description="Compile java source files">
+	<target name="classes" depends="init, extractJar, downloadEclipseDeps, downloadFB-contrib" description="Compile java source files">
 		<echo message="Compiling fb-contrib Eclipse quickfixes plugin" />
 		<echo>Requires JDK 1.7.x (not 1.8!), using: ${ant.java.version}</echo>
 		<fail message="Requires JDK 7.x (not 8!), using: ${ant.java.version}">
