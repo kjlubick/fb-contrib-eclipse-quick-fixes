@@ -44,3 +44,5 @@ zips/
 local.properties
 *.log
 testresources/*.jar
+eclipse/
+eclipse.zip
