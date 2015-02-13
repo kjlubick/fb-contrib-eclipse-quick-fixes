@@ -34,8 +34,6 @@
 	<!-- Sets a default plugin location -->
 	<property name="eclipsePlugin.dir" value="./eclipse" />
 
-	<property name="fbcontrib.dir" value="."/>
-
 	<property name="src.dir" value="src"/>
 	<property name="zip.dir" value="zips"/>
 	<property name="dist.dir" value="dist"/>
@@ -78,6 +76,17 @@
 		</delete>
 	</target>
 	
+	<target name="fb-contrib.check">
+		    <condition property="fb-contrib.exists">
+		      <available file="${fb-contrib.jar}" type="file"/>
+		    </condition>
+	</target>
+	
+	<target name="downloadFB-contrib" depends="clean, fb-contrib.check" unless="fb-contrib.exists" description="download fb-contrib if it doesn't exist">
+		<echo message="Downloading fb-contrib" />
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/fb-contrib-6.1.0.jar" dest="${fb-contrib.jar}"/>
+	</target>
+	
 	<target name="eclipse.check">
 	    <condition property="eclipse.exists">
 	      <available file="${eclipsePlugin.dir}" type="dir"/>
@@ -106,7 +115,7 @@
 		</unzip>
 	</target>
 
-	<target name="classes" depends="init, extractJar, downloadEclipse" description="Compile java source files">
+	<target name="classes" depends="init, extractJar, downloadEclipse, downloadFB-contrib" description="Compile java source files">
 		<echo message="Compiling fb-contrib Eclipse quickfixes plugin" />
 		<echo>Requires JDK 1.7.x (not 1.8!), using: ${ant.java.version}</echo>
 		<fail message="Requires JDK 7.x (not 8!), using: ${ant.java.version}">
