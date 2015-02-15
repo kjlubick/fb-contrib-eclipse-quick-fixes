@@ -6,7 +6,7 @@
     Use the site target to build an update site.
 -->
 
-<project name="fbcontribeclipse" default="site">
+<project name="fbcontribeclipse" default="stable-release">
 
 	<!-- Eclipse plugin id, will never change -->
 	<property name="plugin.id" value="fb-contrib-eclipse-quick-fixes" />
@@ -231,7 +231,7 @@
 		</exec>
 	</target>
 
-	<target name="site" depends="srcdist" description="create files for eclipse auto-update site">
+	<target name="stable-release" depends="srcdist" description="Creates Eclipse update site with this version as the primary version">
 		<echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
 
 		<filterset id="sitevars">
@@ -265,7 +265,7 @@
 		<!-- site.xml -->
 		<echo level="info" message="copying site.xml to ${site.dir}"/>
 
-		<copy file="${build.dir}/plugin_site.xml" toFile="${site.dir}/site.xml">
+		<copy file="${build.dir}/plugin_site_stable.xml" toFile="${site.dir}/site.xml">
 			<filterset refid="sitevars"/>
 		</copy>
 		
@@ -275,7 +275,7 @@
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"
 			dest="${site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
 		
-		<echo>Built site for plugin version ${plugin.version}</echo>
+		<echo>Built site for stable plugin version ${plugin.version}</echo>
 	</target>
 
 </project>

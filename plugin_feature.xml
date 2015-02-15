@@ -42,7 +42,7 @@ SOFTWARE.
    </license>
 
    <url>
-      <update label="fb-contrib Eclipse update site" url="http://kjlubick.github.io/fb-contrib-eclipse/"/>
+      <update label="fb-contrib Eclipse update site" url="http://dl.bintray.com/kjlubick/fb-contrib-eclipse-quickfixes/"/>
    </url>
 
    <requires>
