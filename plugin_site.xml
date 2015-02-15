@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-
    <description url="http://kjlubick.github.io/fb-contrib-eclipse/">
       This is the Eclipse update site for fb-contrib features, which extends FindBugs (tm).
    </description>
-
-   <feature url="features/@FEATURE_ID@_@FEATURE_VERSION@.jar"
-            id="@FEATURE_ID@"
-            version="@FEATURE_VERSION@">
+   <feature url="features/@FEATURE_ID@_@FEATURE_VERSION@.jar" id="@FEATURE_ID@" version="@FEATURE_VERSION@">
       <category name="fb-contrib"/>
    </feature>
-
+   <feature url="features/edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" id="edu.umd.cs.findbugs.plugin.eclipse" version="3.0.1.20150212-23b0732">
+      <category name="FindBugs-dev"/>
+   </feature>
    <category-def name="fb-contrib" label="fb-contrib">
       <description>
          This is the Eclipse category for fb-contrib features, which extends FindBugs (tm).
       </description>
    </category-def>
-
+   <category-def name="FindBugs-dev" label="FindBugs (dev)"/>
 </site>

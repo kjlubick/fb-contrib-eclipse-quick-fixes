@@ -60,7 +60,6 @@ SOFTWARE.
 	  <import plugin="edu.umd.cs.findbugs.plugin.eclipse" version="3.0.1" match="greaterOrEqual" />
    </requires>
 
-   <!--TODO update -->
    <plugin
          id="@PLUGIN_ID@"
          install-size="580"
