@@ -3,5 +3,5 @@ sudo: false
 
 language: java
 
-install: ant site
+install: ant dev-release
 script: true
