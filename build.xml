@@ -277,5 +277,56 @@
 		
 		<echo>Built site for stable plugin version ${plugin.version}</echo>
 	</target>
+	
+	<target name="dev-release" depends="srcdist" description="Creates Eclipse update site with this version added as a dev version">
+		<echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
+		
+		<mkdir dir="${site.dir}"/>
+		<mkdir dir="${site.dir}/dev-features"/>
+		<mkdir dir="${site.dir}/plugins"/>
+
+		<!-- for debugging 
+		<copy file="${build.dir}/old_site.xml" toFile="${site.dir}/old_site.xml" overwrite="true"></copy>
+		-->
+		
+		<!-- Download old site.xml (with normal version-->
+		<get src="http://dl.bintray.com/kjlubick/fb-contrib-eclipse-quickfixes/site.xml"
+					dest="${site.dir}/old_site.xml"/> 
+		
+		<!-- Copy old_site.xml and remove anything starting with the dev prefix --> <!--dev-->
+		<!-- or </site --> 
+		<copy file="${site.dir}/old_site.xml" 
+			toFile="${site.dir}/site.xml" overwrite="true">
+			<filterchain>
+				<linecontains negate="true">
+				  <contains value="&lt;!--dev--&gt;"/>
+				</linecontains>
+				<linecontains negate="true">
+				  <contains value="&lt;/site&gt;"/>
+				</linecontains>
+			</filterchain>
+		</copy>
+		
+		<!-- load the dev portions (Bleeding edge category and our new feature) and fill with 
+		Appropriate version details -->
+		<loadfile srcFile="${build.dir}/plugin_site_dev.xml" 
+			property="dev.release.xml">
+			<filterchain>
+				<replacetokens>
+			        <token key="FEATURE_ID" value="${plugin.id}"/>
+					<token key="FEATURE_ID" value="${plugin.version}"/>
+			    </replacetokens>
+			</filterchain>
+		</loadfile>
+		
+		<!-- combine the two above steps to make a new site.xml -->
+		<concat destfile="${site.dir}/site.xml" append="yes">${dev.release.xml}</concat>
+		
+		<delete file="${site.dir}/old_site.xml" />
+		
+		<!-- add dev feature to dev-features and put jar in plugins/ with a dev_ prefix-->
+		<!-- Deploy script will clear out dev-features folder, delete all dev_ prefix files in plugins
+		 and then upload new plugin/feature/site.xml-->
+	</target>
 
 </project>
