@@ -6,7 +6,7 @@
    <feature url="features/@FEATURE_ID@_@FEATURE_VERSION@.jar" id="@FEATURE_ID@" version="@FEATURE_VERSION@">
       <category name="fb-contrib"/>
    </feature>
-   <feature url="features/edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" id="edu.umd.cs.findbugs.plugin.eclipse" version="3.0.1.20150212-23b0732">
+   <feature url="features/edu.umd.cs.findbugs.plugin.eclipse_@FINDBUGS_VERSION@.jar" id="edu.umd.cs.findbugs.plugin.eclipse" version="@FINDBUGS_VERSION@">
       <category name="FindBugs-dev"/>
    </feature>
    <category-def name="fb-contrib" label="fb-contrib">

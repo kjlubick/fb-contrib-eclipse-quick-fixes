@@ -239,6 +239,7 @@
 			<filter token="PLUGIN_VERSION" value="${plugin.version}"/>
 			<filter token="FEATURE_ID" value="${plugin.id}"/>
 			<filter token="FEATURE_VERSION" value="${plugin.version}"/>
+			<filter token="FINDBUGS_VERSION" value="${find_bugs_dev_version}"/>
 		</filterset>
 
 		<mkdir dir="${site.dir}"/>
