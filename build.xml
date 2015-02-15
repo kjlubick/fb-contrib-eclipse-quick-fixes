@@ -278,8 +278,18 @@
 		<echo>Built site for stable plugin version ${plugin.version}</echo>
 	</target>
 	
+	
+	
 	<target name="dev-release" depends="srcdist" description="Creates Eclipse update site with this version added as a dev version">
 		<echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
+		
+		<filterset id="sitevars">
+			<filter token="PLUGIN_ID" value="${plugin.id}"/>
+			<filter token="PLUGIN_VERSION" value="${plugin.version}"/>
+			<filter token="FEATURE_ID" value="${plugin.id}"/>
+			<filter token="FEATURE_VERSION" value="${plugin.version}"/>
+			<filter token="FINDBUGS_VERSION" value="${find_bugs_dev_version}"/>
+		</filterset>
 		
 		<mkdir dir="${site.dir}"/>
 		<mkdir dir="${site.dir}/dev-features"/>
@@ -314,16 +324,30 @@
 			<filterchain>
 				<replacetokens>
 			        <token key="FEATURE_ID" value="${plugin.id}"/>
-					<token key="FEATURE_ID" value="${plugin.version}"/>
+					<token key="FEATURE_VERSION" value="${plugin.version}"/>
 			    </replacetokens>
 			</filterchain>
 		</loadfile>
 		
 		<!-- combine the two above steps to make a new site.xml -->
-		<concat destfile="${site.dir}/site.xml" append="yes">${dev.release.xml}</concat>
-		
+		<concat destfile="${site.dir}/site.xml" append="yes">${dev.release.xml}</concat>	
 		<delete file="${site.dir}/old_site.xml" />
 		
+		<!-- use zip task, not jar task, since we don't want a manifest -->
+		<zip destfile="${site.dir}/plugins/dev_${plugin.id}_${plugin.version}.jar">
+			<fileset dir="${dist.dir}" includes="**"/>
+		</zip>
+	
+		<!-- feature.jar -->
+		<copy file="${build.dir}/plugin_feature.xml" toFile="${site.dir}/feature.xml">
+			<filterset refid="sitevars"/>
+		</copy>
+		<!-- use zip task, not jar task, since we don't want a manifest -->
+		<zip destfile="${site.dir}/dev-features/${plugin.id}_${plugin.version}.jar" compress="false">
+			<fileset file="${site.dir}/feature.xml"/>
+		</zip>
+		
+		<delete file="${site.dir}/feature.xml"/>
 		<!-- add dev feature to dev-features and put jar in plugins/ with a dev_ prefix-->
 		<!-- Deploy script will clear out dev-features folder, delete all dev_ prefix files in plugins
 		 and then upload new plugin/feature/site.xml-->
