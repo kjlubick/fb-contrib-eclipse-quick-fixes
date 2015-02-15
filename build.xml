@@ -52,7 +52,7 @@
 	<!-- fb-contrib core package name in slashed notation -->
 	<property name="fbcontribpackage" value="com/mebigfatguy/fbcontrib" />
 	
-	<mkdir dir="${fb-contrib.dir}"/>
+	<property name="find_bugs_dev_version" value="3.0.1.20150212-23b0732" />
 	
 	<!-- Location of fb-contrib.jar to extract and include in this build -->
 	<property name="fb-contrib.jar" value="${fb-contrib.dir}/fb-contrib-${fb-contrib.version}.jar" />
@@ -66,6 +66,7 @@
 	</path>
 
 	<target name="init">
+		<mkdir dir="${fb-contrib.dir}"/>
 		<mkdir dir="${dist.dir}"/>
 		<mkdir dir="${bin.dir}"/>
 		<mkdir dir="${zip.dir}"/>
@@ -266,7 +267,13 @@
 		<copy file="${build.dir}/plugin_site.xml" toFile="${site.dir}/site.xml">
 			<filterset refid="sitevars"/>
 		</copy>
-
+		
+		<echo level="info" message="Downloading FindBugs dev version ${find_bugs_dev_version}" />
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"
+			dest="${site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"
+			dest="${site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
+		
 		<echo>Built site for plugin version ${plugin.version}</echo>
 	</target>
 
