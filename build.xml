@@ -223,7 +223,7 @@
 		<mkdir dir="${dist.dir}/src"/>
 		<delete dir="${dist.dir}/src/eclipsePlugin-${plugin.version}"/>
 
-		<exec executable="git" spawn="false" dir="${basedir}"  failonerror="true">
+		<exec executable="${git.full-path}" spawn="false" dir="${basedir}"  failonerror="true">
 			<arg value="archive"/>
 			<arg value="-o"/>
 			<arg value="${zip.dir}/${plugin.id}_${plugin.version}-source.zip"/>
@@ -351,6 +351,15 @@
 		<!-- add dev feature to dev-features and put jar in plugins/ with a dev_ prefix-->
 		<!-- Deploy script will clear out dev-features folder, delete all dev_ prefix files in plugins
 		 and then upload new plugin/feature/site.xml-->
+	</target>
+	
+	
+	<target name="make-p2" depends="stable-release">
+		<p2.publish.featuresAndBundles repository="file://${basedir}/output-site" repositoryName="findbugs-eclipse-quickfixes" compress="true">
+			<features dir="${site.dir}/features"/>
+			<bundles dir="${site.dir}/plugins"/>
+		</p2.publish.featuresAndBundles>
+
 	</target>
 
 </project>

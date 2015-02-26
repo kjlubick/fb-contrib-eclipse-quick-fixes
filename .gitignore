@@ -46,3 +46,4 @@ local.properties
 testresources/*.jar
 eclipse/
 eclipse.zip
+output-site/
