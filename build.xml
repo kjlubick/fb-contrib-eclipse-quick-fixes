@@ -368,8 +368,8 @@
 	<target name="p2-headless-eclipse" unless="eclipse.running">
 		<java jar="../eclipse-relang/plugins/org.eclipse.equinox.launcher.jar" fork="true" failonerror="true">
 			<arg line="-application org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
-			<arg line="-metadataRepository file:\\${basedir}/output-site" />
-			<arg line="-artifactRepository file:\\${basedir}/output-site" />
+			<arg line="-metadataRepository file:${basedir}/output-site" />
+			<arg line="-artifactRepository file:${basedir}/output-site" />
 			<arg line="-source ${basedir}/${site.dir}" />
 			<arg line="-compress" />
 			<arg line="-publishArtifacts" />
