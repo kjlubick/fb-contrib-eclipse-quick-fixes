@@ -3,5 +3,11 @@ sudo: false
 
 language: java
 
-install: ant dev-release
+# Cache eclipse
+cache:
+  directories:
+    - '$HOME/eclipse-relang'
+
+before_install: './scripts/download_eclipse.sh'
+install: ant make-stable-p2
 script: true
