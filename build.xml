@@ -22,6 +22,7 @@
 	<!--
     The local.properties file must contain the location of
        - Eclipse platform (key is "eclipsePlugin.dir", value is the 3.3+ Eclipse plugins folder)
+       - a git installation (key is "git.full-path", value is the absolute path to the git executable)
     This values are likely to be different for each checkout of the plugin,
     so the local.properties file is not managed by version control.
     
@@ -33,6 +34,9 @@
 	
 	<!-- Sets a default plugin location -->
 	<property name="eclipsePlugin.dir" value="./eclipse" />
+	
+	<!-- Sets a default git location (for Ubuntu) -->
+	<property name="git.full-path" value="/usr/bin/git" />
 	
 	<property name="build.dir" value="."/>
 
