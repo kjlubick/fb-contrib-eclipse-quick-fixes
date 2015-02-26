@@ -6,7 +6,7 @@
     Use the site target to build an update site.
 -->
 
-<project name="fbcontribeclipse" default="stable-release">
+<project name="fbcontribeclipse" default="stable-site">
 
 	<!-- Eclipse plugin id, will never change -->
 	<property name="plugin.id" value="fb-contrib-eclipse-quick-fixes" />
@@ -235,7 +235,7 @@
 		</exec>
 	</target>
 
-	<target name="stable-release" depends="srcdist" description="Creates Eclipse update site with this version as the primary version">
+	<target name="stable-site" depends="srcdist" description="Creates Eclipse update site with this version as the primary version">
 		<echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
 
 		<filterset id="sitevars">
@@ -284,7 +284,7 @@
 	
 	
 	
-	<target name="dev-release" depends="srcdist" description="Creates Eclipse update site with this version added as a dev version">
+	<target name="dev-site" depends="srcdist" description="Creates Eclipse update site with this version added as a dev version">
 		<echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
 		
 		<filterset id="sitevars">
@@ -357,13 +357,20 @@
 		 and then upload new plugin/feature/site.xml-->
 	</target>
 	
-	
-	<target name="make-p2" depends="stable-release">
+	<target name="p2-eclipse" if="eclipse.running">
+		<echo>Using Eclipse's featuresAndBundles p2 output</echo>
 		<p2.publish.featuresAndBundles repository="file://${basedir}/output-site" repositoryName="findbugs-eclipse-quickfixes" compress="true">
 			<features dir="${site.dir}/features"/>
 			<bundles dir="${site.dir}/plugins"/>
 		</p2.publish.featuresAndBundles>
-
+	</target>
+	
+	<target name="p2-headless-eclipse" unless="eclipse.running">
+	
+	</target>
+	
+	<target name="make-stable-p2" depends="stable-site, p2-eclipse, p2-headless-eclipse">
+		
 	</target>
 
 </project>
