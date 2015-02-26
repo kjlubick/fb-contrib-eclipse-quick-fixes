@@ -9,7 +9,7 @@ cache:
     - '$HOME/eclipse-relang'
 
 before_install: 
-    - chmod +x './scripts/download_eclipse.sh'
-    -'./scripts/download_eclipse.sh'
+  - chmod +x './scripts/download_eclipse.sh'
+  - './scripts/download_eclipse.sh'
 install: ant make-stable-p2
 script: true
