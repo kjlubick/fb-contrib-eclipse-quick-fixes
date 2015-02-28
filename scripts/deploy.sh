@@ -10,7 +10,7 @@ if [ "$build_version" != "$current_version" ]; then
    echo $response
    if [[ $response != *"created"* ]]; then
       echo "Could not make new version "$build_version
-      exit 1
+      exit 10
    fi
    
    #updates metadata files
@@ -31,13 +31,13 @@ if [ "$build_version" != "$current_version" ]; then
    echo $response
    if [[ $response != *"success"* ]]; then
       echo "Failed to upload output-site/features/"$eclipse_plugin_jar
-      exit 2
+      exit 11
    fi
    response=`curl -X PUT -u kjlubick:$API_KEY --data-binary @output-site/plugins/$eclipse_plugin_jar https://api.bintray.com/content/kjlubick/fb-contrib-eclipse-quickfixes/plugins/$eclipse_plugin_jar -H "X-Bintray-Package: fb-contrib-eclipse-quickfixes" -H "X-Bintray-Version: $current_version"`
    echo $response
    if [[ $response != *"success"* ]]; then
       echo "Failed to upload output-site/plugins/"$eclipse_plugin_jar
-      exit 3
+      exit 12
    fi
    
    #curl -X POST -u kjlubick:$API_KEY https://api.bintray.com/content/kjlubick/fb-contrib-eclipse-quickfixes/fb-contrib-eclipse-quickfixes/$current_version/publish
