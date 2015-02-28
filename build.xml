@@ -172,6 +172,8 @@
 			</filterchain>
 		</loadfile>
 
+		<echo message="${eclipse.release.base}" file="${basedir}/version.txt" />
+		
 		<!-- 1) set the values for plugin.version -->
 		<property name="plugin.qualifier" value="${plugin.date}" />
 		<property name="plugin.version" value="${eclipse.release.base}.${plugin.qualifier}" />

@@ -47,3 +47,4 @@ testresources/*.jar
 eclipse/
 eclipse.zip
 output-site/
+version.txt
