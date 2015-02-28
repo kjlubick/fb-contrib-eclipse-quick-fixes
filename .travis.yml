@@ -2,6 +2,7 @@
 sudo: false
 
 language: java
+secure: "GyDtVM1CGcvV43kUjB1F32EHtYLwPt6DqnuSZVGPBBdBTI3BF3/Gg02r6vttCAv11HSBeIbHApU/tlVAbfOR07tK+ph45KmNha8an2qI5UrR6ptTPVN6RIzvR+RzbMJ17dXtC0nwLCe/nXsScpUmAXoEtoqC+S33LX02lsx/8ds="
 
 # Cache eclipse
 cache:
