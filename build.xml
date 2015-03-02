@@ -382,5 +382,24 @@
 	<target name="make-stable-p2" depends="stable-site, p2-eclipse, p2-headless-eclipse">
 		
 	</target>
+	
+	
+	<target name="test-swt-bot">
+		<!--Build my test plugin -->
+		
+		<!--make temp copy of Eclipse or Eclipse-relang -->
+		
+		<!--install SWT bot
+		Update site: http://download.eclipse.org/technology/swtbot/releases/latest/ 
+		(may not actually need swt bot) 
+		https://wiki.eclipse.org/Platform-releng/Eclipse_Test_Framework
+		-->
+		
+		<!-- install my plugin -->
+		
+		<!-- install my test plugin -->
+		
+		<!-- run my tests https://wiki.eclipse.org/SWTBot/Automate_test_execution#Ant -->
+	</target>
 
 </project>
