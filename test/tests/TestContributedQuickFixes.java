@@ -36,7 +36,7 @@ public class TestContributedQuickFixes extends TestHarness {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            TestingUtils.waitForUiEvents(20_000);
+            // TestingUtils.waitForUiEvents(40_000);
         }
 
         @Override
@@ -385,7 +385,8 @@ public class TestContributedQuickFixes extends TestHarness {
     public void testCopyOverridenMethodResolution() throws Exception {
         setRank(17);
         setPriority("Medium");
-
+        setDetector("com.mebigfatguy.fbcontrib.detect.OverlyPermissiveMethod", false);
+        
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(7, 16, 22);
 
