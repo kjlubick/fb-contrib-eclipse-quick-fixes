@@ -182,7 +182,7 @@
 		<property name="plugin.qualifier" value="${plugin.date}" />
 		<property name="plugin.version" value="${eclipse.release.base}.${plugin.qualifier}" />
 
-		<echo>plugin version  ${plugin.version}</echo>
+		<echo>plugin version ${plugin.version}</echo>
 
 		<!-- 3) Copy META-INF/MANIFEST.MF to ${dist.dir}, update "qualifier" to current date/time -->
 		<copy file="META-INF/MANIFEST.MF" toFile="${dist.dir}/META-INF/MANIFEST.MF" overwrite="true">
@@ -397,17 +397,13 @@
 	</target>
 	
 	
-	<target name="build-test-plugin" depends="version">
+	<target name="build-test-plugin">
 		<property name="include.tests" value="true"/>
-		<antcall target="classes"/>
-		<jar destfile="${dist.dir}/fb-contrib-eclipse-plugin-test.jar" >
-			<fileset dir="${bin.dir}"/>
-		</jar>
 		<antcall target="test-site"/>
 	</target>
 	
-	<target name="test-site">
-		<echo message="Creating test update sites"/>
+	<target name="test-site" depends="dist">
+		<echo message="Creating test update sites ${plugin.version}"/>
 
 		<filterset id="sitevars">
 			<filter token="PLUGIN_ID" value="${plugin.id}"/>
@@ -421,6 +417,7 @@
 		<mkdir dir="${test-site.dir}/features"/>
 		<mkdir dir="${test-site.dir}/plugins"/>
 
+		<echo message="zipping up test-site"/>
 		<!-- plugin.jar: can't rename the .zip file from the 'dist' target because of the prefix -->
 		<zip destfile="${test-site.dir}/plugins/${plugin.id}_${plugin.version}.jar">
 			<fileset dir="${dist.dir}" includes="**"/>
@@ -456,6 +453,11 @@
 		</antcall>
 		
 		<echo>Built site for test plugin site</echo>
+		
+		<p2.publish.featuresAndBundles repository="file://${basedir}/output-test-site" repositoryName="findbugs-eclipse-quickfixes-test" compress="true">
+			<features dir="${test-site.dir}/features"/>
+			<bundles dir="${test-site.dir}/plugins"/>
+		</p2.publish.featuresAndBundles>
 	</target>
 	
 	<target name="test-swt-bot">
