@@ -85,9 +85,9 @@
 	</target>
 	
 	<target name="fb-contrib.check">
-		    <condition property="fb-contrib.exists">
-		      <available file="${fb-contrib.jar}" type="file"/>
-		    </condition>
+	    <condition property="fb-contrib.exists">
+	      <available file="${fb-contrib.jar}" type="file"/>
+	    </condition>
 	</target>
 	
 	<target name="downloadFB-contrib" depends="clean, fb-contrib.check" unless="fb-contrib.exists" description="download fb-contrib if it doesn't exist">
@@ -195,18 +195,14 @@
         description="Build a plugin distributable">
 		<echo message="Creating fb-contrib Eclipse quickfixes plugin binary distribution"/>
 		<jar destfile="${dist.dir}/fb-contrib-eclipse-plugin.jar" >
-			<fileset dir="${bin.dir}" excludes="de/tobject/findbugs/tools/**" />
+			<fileset dir="${bin.dir}"/>
 		</jar>
 		<copy todir="${dist.dir}" >
 			<fileset dir="${build.dir}" >
-				<!-- content is invalid right now
-                <include name="welcome.xml"/>
-                -->
 				<include name="RELEASENOTES"/>
 				<include name="plugin.xml"/>
 				<include name=".options"/>
 				<include name="plugin*.properties"/>
-				<!--match plugin.properties and plugin_ja.properties -->
 				<include name="about.*"/>
 				<include name="plugin/*.*" />
 				<!-- p2 installation instructions, added because of bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=265525#c18
@@ -277,15 +273,26 @@
 			<filterset refid="sitevars"/>
 		</copy>
 		
+		<condition property="findbugs.alreadydownloaded">
+			<and>
+	      		<available file="${site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar" type="file"/>
+				<available file="${site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar" type="file"/>
+			</and>
+	    </condition>
+		
+		<antcall target="download-findbugs-dev-plugin"/>
+		
+		<echo>Built site for stable plugin version ${plugin.version}</echo>
+	</target>
+	
+	<target name="download-findbugs-dev-plugin" unless="findbugs.alreadydownloaded">
 		<echo level="info" message="Downloading FindBugs dev version ${find_bugs_dev_version}" />
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"
 			dest="${site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"
 			dest="${site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
-		
-		<echo>Built site for stable plugin version ${plugin.version}</echo>
+				
 	</target>
-	
 	
 	
 	<target name="dev-site" depends="srcdist" description="Creates Eclipse update site with this version added as a dev version">
@@ -389,7 +396,9 @@
 	<target name="build-test-plugin">
 		<property name="include.tests" value="true"/>
 		<antcall target="classes"/>
-		
+		<jar destfile="${dist.dir}/fb-contrib-eclipse-plugin-test.jar" >
+			<fileset dir="${bin.dir}"/>
+		</jar>
 	</target>
 	
 	<target name="test-swt-bot">
