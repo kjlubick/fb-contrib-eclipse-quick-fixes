@@ -4,9 +4,7 @@ sudo: false
 language: java
 
 env:
-  global:
-   - secure: "hxvuAkgWRtZek4NzSIUjs46UcwBK5Jj2rM7KLgVP5Rfg9UDU1cLR2XulTvboQnvO4/AhNthaZtc1VwXMm/bIJi42iGNXGFyMDURE+lZNZyP/nsBH5EbKNB6vtQ8FqoeeK6Uy9u0hkVW+R5COykBMlTc+iaIo1643qvXYTTYiFzY="
-   - secure: "GyDtVM1CGcvV43kUjB1F32EHtYLwPt6DqnuSZVGPBBdBTI3BF3/Gg02r6vttCAv11HSBeIbHApU/tlVAbfOR07tK+ph45KmNha8an2qI5UrR6ptTPVN6RIzvR+RzbMJ17dXtC0nwLCe/nXsScpUmAXoEtoqC+S33LX02lsx/8ds="
+ - secure: "GyDtVM1CGcvV43kUjB1F32EHtYLwPt6DqnuSZVGPBBdBTI3BF3/Gg02r6vttCAv11HSBeIbHApU/tlVAbfOR07tK+ph45KmNha8an2qI5UrR6ptTPVN6RIzvR+RzbMJ17dXtC0nwLCe/nXsScpUmAXoEtoqC+S33LX02lsx/8ds="
 
 # Cache eclipse
 cache:
@@ -23,16 +21,3 @@ script:
 #TODO Test
   - true  
   - './scripts/deploy.sh'
-  
-
-addons:
-  coverity_scan:
-    project:
-      name: "kjlubick/fb-contrib-eclipse-quick-fixes"
-      description: "A plugin that augments FindBugs in Eclipse with quickfixes"
-    notification_email: kjlubick@ncsu.edu
-    build_command_prepend: 
-        - chmod +x './scripts/download_eclipse.sh'
-        - './scripts/download_eclipse.sh'
-    build_command:   "ant make-stable-p2"
-    branch_pattern: coverity_scan
