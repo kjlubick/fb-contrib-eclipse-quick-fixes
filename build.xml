@@ -453,11 +453,6 @@
 		</antcall>
 		
 		<echo>Built site for test plugin site</echo>
-		
-		<p2.publish.featuresAndBundles repository="file://${basedir}/output-test-site" repositoryName="findbugs-eclipse-quickfixes-test" compress="true">
-			<features dir="${test-site.dir}/features"/>
-			<bundles dir="${test-site.dir}/plugins"/>
-		</p2.publish.featuresAndBundles>
 	</target>
 	
 	<target name="test-swt-bot">
