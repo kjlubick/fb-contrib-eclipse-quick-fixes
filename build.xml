@@ -41,6 +41,8 @@
 	<property name="build.dir" value="."/>
 
 	<property name="src.dir" value="src"/>
+	<property name="test.dir" value="test"/>
+	
 	<property name="zip.dir" value="zips"/>
 	<property name="dist.dir" value="dist"/>
 
@@ -133,6 +135,22 @@
             message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file.  See local.properties.example"/>
 		<!-- Compile Java source files. -->
 		<javac srcdir="${src.dir}"
+                  includeantruntime="false"
+          destdir="${bin.dir}"
+                source="1.7"
+                target="1.7"
+                debug="on">
+			<classpath refid="plugin.classpath"/>
+			<compilerarg value="-Xlint:all,-path,-unchecked"/>
+		</javac>
+		
+		<antcall target="classes-test"/>
+		
+	</target>
+	
+	<target name="classes-test" if="include.tests">
+		<!-- Compile test files. -->
+		<javac srcdir="${test.dir}"
                   includeantruntime="false"
           destdir="${bin.dir}"
                 source="1.7"
@@ -367,6 +385,12 @@
 		
 	</target>
 	
+	
+	<target name="build-test-plugin">
+		<property name="include.tests" value="true"/>
+		<antcall target="classes"/>
+		
+	</target>
 	
 	<target name="test-swt-bot">
 		<!--Build my test plugin -->
