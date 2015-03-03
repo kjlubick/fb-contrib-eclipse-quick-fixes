@@ -45,12 +45,14 @@
 	
 	<property name="zip.dir" value="zips"/>
 	<property name="dist.dir" value="dist"/>
+	
 
 	<!-- the binaries/classes, built by javac -->
 	<property name="bin.dir" value="bin_build" />
 
 	<!-- update site destination directory -->
 	<property name="site.dir" value="${bin.dir}/site" />
+	<property name="test-site.dir" value="${bin.dir}/test-site" />
 	
 	<!-- fb-contrib core package name in slashed notation -->
 	<property name="fbcontribpackage" value="com/mebigfatguy/fbcontrib" />
@@ -280,7 +282,9 @@
 			</and>
 	    </condition>
 		
-		<antcall target="download-findbugs-dev-plugin"/>
+		<antcall target="download-findbugs-dev-plugin">
+			<param name="dl.loc" value="${site.dir}"/>
+		</antcall>
 		
 		<echo>Built site for stable plugin version ${plugin.version}</echo>
 	</target>
@@ -288,9 +292,9 @@
 	<target name="download-findbugs-dev-plugin" unless="findbugs.alreadydownloaded">
 		<echo level="info" message="Downloading FindBugs dev version ${find_bugs_dev_version}" />
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"
-			dest="${site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
+			dest="${dl.loc}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"
-			dest="${site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
+			dest="${dl.loc}/features/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
 				
 	</target>
 	
@@ -393,12 +397,65 @@
 	</target>
 	
 	
-	<target name="build-test-plugin">
+	<target name="build-test-plugin" depends="version">
 		<property name="include.tests" value="true"/>
 		<antcall target="classes"/>
 		<jar destfile="${dist.dir}/fb-contrib-eclipse-plugin-test.jar" >
 			<fileset dir="${bin.dir}"/>
 		</jar>
+		<antcall target="test-site"/>
+	</target>
+	
+	<target name="test-site">
+		<echo message="Creating test update sites"/>
+
+		<filterset id="sitevars">
+			<filter token="PLUGIN_ID" value="${plugin.id}"/>
+			<filter token="PLUGIN_VERSION" value="${plugin.version}"/>
+			<filter token="FEATURE_ID" value="${plugin.id}"/>
+			<filter token="FEATURE_VERSION" value="${plugin.version}"/>
+			<filter token="FINDBUGS_VERSION" value="${find_bugs_dev_version}"/>
+		</filterset>
+
+		<mkdir dir="${test-site.dir}"/>
+		<mkdir dir="${test-site.dir}/features"/>
+		<mkdir dir="${test-site.dir}/plugins"/>
+
+		<!-- plugin.jar: can't rename the .zip file from the 'dist' target because of the prefix -->
+		<zip destfile="${test-site.dir}/plugins/${plugin.id}_${plugin.version}.jar">
+			<fileset dir="${dist.dir}" includes="**"/>
+		</zip>
+
+		<!-- feature.jar -->
+		<copy file="${build.dir}/plugin_feature.xml" toFile="${test-site.dir}/feature.xml">
+			<filterset refid="sitevars"/>
+		</copy>
+		<!-- use zip task, not jar task, since we don't want a manifest -->
+		<zip destfile="${test-site.dir}/features/${plugin.id}_${plugin.version}.jar" compress="false">
+			<fileset file="${test-site.dir}/feature.xml"/>
+		</zip>
+		<move file="${test-site.dir}/feature.xml" tofile="${test-site.dir}/.feature.xml"/>
+
+
+		<!-- site.xml -->
+		<echo level="info" message="copying site.xml to ${test-site.dir}"/>
+
+		<copy file="${build.dir}/plugin_site_stable.xml" toFile="${test-site.dir}/site.xml">
+			<filterset refid="sitevars"/>
+		</copy>
+		
+		<condition property="findbugs.alreadydownloaded">
+			<and>
+	      		<available file="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar" type="file"/>
+				<available file="${test-site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar" type="file"/>
+			</and>
+	    </condition>
+		
+		<antcall target="download-findbugs-dev-plugin">
+			<param name="dl.loc" value="${test-site.dir}"/>
+		</antcall>
+		
+		<echo>Built site for test plugin site</echo>
 	</target>
 	
 	<target name="test-swt-bot">
