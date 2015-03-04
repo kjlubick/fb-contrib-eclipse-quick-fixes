@@ -2,6 +2,8 @@ package tests;
 
 import java.io.IOException;
 
+import junit.framework.JUnit4TestAdapter;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import org.eclipse.core.runtime.CoreException;
@@ -14,6 +16,8 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 import quickfix.DeadShadowStoreResolution;
 import quickfix.InsecureRandomResolution;
@@ -23,9 +27,9 @@ import quickfix.SwitchFallThroughResolution;
 import quickfix.UseVarArgsResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
-import utils.TestingUtils;
 
 @RunWith(JUnit4.class)
+@Suite.SuiteClasses( { TestContributedQuickFixes.class})
 public class TestContributedQuickFixes extends TestHarness {
 
     @Rule
@@ -63,7 +67,7 @@ public class TestContributedQuickFixes extends TestHarness {
     }
 
     @Test
-    public void testCharsetIssuesResolution() throws Exception {
+    public void testCharsetIssuesResolution() {
         setPriority("Medium");
         setRank(15);
 
