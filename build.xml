@@ -34,6 +34,7 @@
 	
 	<!-- Sets a default plugin location -->
 	<property name="eclipsePlugin.dir" value="./eclipse" />
+	<property name="test.eclipse.dir" value = "" />
 	
 	<!-- Sets a default git location (for Ubuntu) -->
 	<property name="git.full-path" value="/usr/bin/git" />
@@ -473,20 +474,22 @@
 		<echo>Built site for test plugin site</echo>
 	</target>
 	
-	<target name="test-swt-bot">
-		<!--Build my test plugin -->
+	<target name="test-headless" depends="build-test-plugin">
+		<!--make temp copy of Eclipse or Eclipse-relang (actually in prescript probably)-->
 		
-		<!--make temp copy of Eclipse or Eclipse-relang -->
-		
-		<!--install SWT bot
-		Update site: http://download.eclipse.org/technology/swtbot/releases/latest/ 
-		(may not actually need swt bot) 
-		https://wiki.eclipse.org/Platform-releng/Eclipse_Test_Framework
-		-->
-		
-		<!-- install my plugin -->
+		<!-- uninstall old test plugins -->
+		<delete>
+           <fileset dir="${test.eclipse.dir}/dropins" includes="**/*"/>
+        </delete>
 		
 		<!-- install my test plugin -->
+	    <copy todir="${test.eclipse.dir}/dropins">
+           <fileset dir="${test-site.dir}">
+           	  <include name="**/*.jar"/>
+           </fileset>
+       </copy>
+		
+		
 		
 		<!-- run my tests https://wiki.eclipse.org/SWTBot/Automate_test_execution#Ant -->
 	</target>
