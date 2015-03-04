@@ -49,3 +49,5 @@ eclipse.zip
 output-site/
 output-test-site/
 version.txt
+reports/
+pde_test_port.properties

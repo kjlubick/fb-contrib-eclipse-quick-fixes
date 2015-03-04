@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" hostname="Lubick-Laptop" name="fb-contrib-eclipse-quick-fixes" tests="1" time="0.004" timestamp="2015-03-04T04:32:37">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment" />
+    <property name="sun.boot.library.path" value="C:\Program Files (x86)\Java\jre7\bin" />
+    <property name="java.vm.version" value="24.75-b04" />
+    <property name="java.vm.vendor" value="Oracle Corporation" />
+    <property name="java.vendor.url" value="http://java.oracle.com/" />
+    <property name="path.separator" value=";" />
+    <property name="java.vm.name" value="Java HotSpot(TM) Client VM" />
+    <property name="file.encoding.pkg" value="sun.io" />
+    <property name="user.script" value="" />
+    <property name="user.country" value="US" />
+    <property name="sun.java.launcher" value="SUN_STANDARD" />
+    <property name="sun.os.patch.level" value="" />
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
+    <property name="user.dir" value="C:\Users\KevinLubick\Documents\GitHub\fb-contrib-eclipse-quick-fixes" />
+    <property name="java.runtime.version" value="1.7.0_75-b13" />
+    <property name="java.awt.graphicsenv" value="sun.awt.Win32GraphicsEnvironment" />
+    <property name="java.endorsed.dirs" value="C:\Program Files (x86)\Java\jre7\lib\endorsed" />
+    <property name="os.arch" value="x86" />
+    <property name="java.io.tmpdir" value="C:\Users\KEVINL~1\AppData\Local\Temp\" />
+    <property name="line.separator" value="&#xd;&#xa;" />
+    <property name="java.vm.specification.vendor" value="Oracle Corporation" />
+    <property name="user.variant" value="" />
+    <property name="os.name" value="Windows 8.1" />
+    <property name="sun.jnu.encoding" value="Cp1252" />
+    <property name="java.library.path" value="C:\Program Files (x86)\Java\jre7\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:/Program Files (x86)/Java/jre7/bin/client;C:/Program Files (x86)/Java/jre7/bin;C:/Program Files (x86)/Java/jre7/lib/i386;C:\ProgramData\Oracle\Java\javapath;C:\PROGRAM FILES (X86)\INTEL\ICLS CLIENT\;C:\PROGRAM FILES\INTEL\ICLS CLIENT\;C:\WINDOWS\SYSTEM32;C:\WINDOWS;C:\WINDOWS\SYSTEM32\WBEM;C:\WINDOWS\SYSTEM32\WINDOWSPOWERSHELL\V1.0\;C:\PROGRAM FILES (X86)\INTEL\OPENCL SDK\2.0\BIN\X86;C:\PROGRAM FILES (X86)\INTEL\OPENCL SDK\2.0\BIN\X64;C:\PROGRAMDATA\LENOVO\READYAPPS;C:\PROGRAM FILES\INTEL\INTEL(R) MANAGEMENT ENGINE COMPONENTS\DAL;C:\PROGRAM FILES\INTEL\INTEL(R) MANAGEMENT ENGINE COMPONENTS\IPT;C:\PROGRAM FILES (X86)\INTEL\INTEL(R) MANAGEMENT ENGINE COMPONENTS\DAL;C:\PROGRAM FILES (X86)\INTEL\INTEL(R) MANAGEMENT ENGINE COMPONENTS\IPT;;C:\PROGRAM FILES (X86)\INTEL\OPENCL SDK\2.0\BIN\X86;C:\PROGRAM FILES (X86)\INTEL\OPENCL SDK\2.0\BIN\X64;C:\PROGRAM FILES\MICROSOFT\WEB PLATFORM INSTALLER\;C:\PROGRAM FILES (X86)\MICROSOFT ASP.NET\ASP.NET WEB PAGES\V1.0\;C:\PROGRAM FILES (X86)\WINDOWS KITS\8.0\WINDOWS PERFORMANCE TOOLKIT\;C:\PROGRAM FILES\MICROSOFT SQL SERVER\110\TOOLS\BINN\;C:\WINDOWS\SYSTEM32;C:\WINDOWS;C:\WINDOWS\SYSTEM32\WBEM;C:\WINDOWS\SYSTEM32\WINDOWSPOWERSHELL\V1.0\;C:\PROGRAM FILES\CALIBRE2\;D:\INSTALLEDPROGRAMS\MATLAB\RUNTIME\WIN64;D:\INSTALLEDPROGRAMS\MATLAB\BIN;C:\GO\BIN;C:\TDM-GCC-64\BIN;C:\PROGRAM FILES\NODEJS\;C:\PROGRAM FILES (X86)\COMMON FILES\LENOVO\EASYPLUSSDK\BIN;C:\PROGRAM FILES (X86)\LENOVO\PASSWORD MANAGER\;C:\Program Files\ThinkPad\Bluetooth Software\;C:\Program Files\ThinkPad\Bluetooth Software\syswow64;C:\Program Files (x86)\Mercurial\;C:\HashiCorp\Vagrant\bin;C:\Program Files\Amazon\AWSCLI\;C:\texlive\2014\bin\win32;C:\Program Files (x86)\Latex\miktex\bin\;C:\mvn\apache-maven-3.2.5\bin;C:\Program Files (x86)\Java\jdk1.7.0_40\bin;C:\Users\KevinLubick\\Downloads\Misc Software\svn;C:\Python27;C:\Python27\Scripts;C:\Users\KevinLubick\AppData\Roaming\npm;C:\Users\KevinLubick\AppData\Local\GitHubC:\Users\KevinLubick\AppData\Local\GitHub\PortableGit_ed44d00daa128db527396557813e7b68709ed0e2\bin;C:\Program Files\Amazon\AWSCLI;;C:\Users\KevinLubick\Downloads\Misc Software\eclipse;;." />
+    <property name="java.specification.name" value="Java Platform API Specification" />
+    <property name="java.class.version" value="51.0" />
+    <property name="sun.management.compiler" value="HotSpot Client Compiler" />
+    <property name="os.version" value="6.3" />
+    <property name="user.home" value="C:\Users\KevinLubick" />
+    <property name="user.timezone" value="" />
+    <property name="java.awt.printerjob" value="sun.awt.windows.WPrinterJob" />
+    <property name="file.encoding" value="Cp1252" />
+    <property name="java.specification.version" value="1.7" />
+    <property name="java.class.path" value="C:\Users\KevinLubick\Documents\GitHub\fb-contrib-eclipse-quick-fixes\dist\fb-contrib-eclipse-plugin.jar;C:\vanillaeclipse\plugins\org.apache.ant_1.8.4.v201303080030\lib\ant-junit.jar;C:\vanillaeclipse\plugins\org.apache.ant_1.8.4.v201303080030\lib\ant.jar;C:\vanillaeclipse\plugins\org.eclipse.core.jobs_3.5.300.v20130429-1813.jar;C:\vanillaeclipse\plugins\org.eclipse.core.resources_3.8.101.v20130717-0806.jar;C:\vanillaeclipse\plugins\org.eclipse.core.runtime_3.9.100.v20131218-1515.jar;C:\vanillaeclipse\plugins\org.eclipse.debug.core_3.8.0.v20130514-0954.jar;C:\vanillaeclipse\plugins\org.eclipse.equinox.common_3.6.200.v20130402-1505.jar;C:\vanillaeclipse\plugins\org.eclipse.equinox.launcher_1.3.0.v20130327-1440.jar;C:\vanillaeclipse\plugins\org.eclipse.equinox.preferences_3.5.100.v20130422-1538.jar;C:\vanillaeclipse\plugins\org.eclipse.jdt.junit.core_3.7.200.v20130514-1154.jar;C:\vanillaeclipse\plugins\org.eclipse.jdt.junit_3.7.200.v20130514-0733.jar;C:\vanillaeclipse\plugins\org.eclipse.osgi_3.9.1.v20140110-1610.jar;C:\vanillaeclipse\plugins\org.eclipse.swt_3.102.1.v20140206-1334.jar;C:\vanillaeclipse\plugins\org.junit_4.11.0.v201303080030\junit.jar" />
+    <property name="user.name" value="KevinLubick" />
+    <property name="java.vm.specification.version" value="1.7" />
+    <property name="sun.java.command" value="utils.PDETestResultsCollector fb-contrib-eclipse-quick-fixes 53695" />
+    <property name="java.home" value="C:\Program Files (x86)\Java\jre7" />
+    <property name="sun.arch.data.model" value="32" />
+    <property name="user.language" value="en" />
+    <property name="java.specification.vendor" value="Oracle Corporation" />
+    <property name="awt.toolkit" value="sun.awt.windows.WToolkit" />
+    <property name="java.vm.info" value="mixed mode, sharing" />
+    <property name="java.version" value="1.7.0_75" />
+    <property name="java.ext.dirs" value="C:\Program Files (x86)\Java\jre7\lib\ext;C:\WINDOWS\Sun\Java\lib\ext" />
+    <property name="sun.boot.class.path" value="C:\Program Files (x86)\Java\jre7\lib\resources.jar;C:\Program Files (x86)\Java\jre7\lib\rt.jar;C:\Program Files (x86)\Java\jre7\lib\sunrsasign.jar;C:\Program Files (x86)\Java\jre7\lib\jsse.jar;C:\Program Files (x86)\Java\jre7\lib\jce.jar;C:\Program Files (x86)\Java\jre7\lib\charsets.jar;C:\Program Files (x86)\Java\jre7\lib\jfr.jar;C:\Program Files (x86)\Java\jre7\classes" />
+    <property name="java.vendor" value="Oracle Corporation" />
+    <property name="file.separator" value="\" />
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/" />
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle" />
+    <property name="sun.cpu.endian" value="little" />
+    <property name="sun.desktop" value="windows" />
+    <property name="sun.cpu.isalist" value="pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86" />
+  </properties>
+  <testcase classname="utils.PDETestListener$WrapperTestCase" name="warning(junit.framework.TestSuite$1)" time="0.034">
+    <failure message="junit.framework.AssertionFailedError: No tests found in tests.TestContributedQuickFixes&#xd;&#xa;&#x9;at junit.framework.Assert.fail(Assert.java:57)&#xd;&#xa;&#x9;at junit.framework.TestCase.fail(TestCase.java:227)&#xd;&#xa;&#x9;at junit.framework.TestSuite$1.runTest(TestSuite.java:100)&#xd;&#xa;&#x9;at junit.framework.TestCase.runBare(TestCase.java:141)&#xd;&#xa;&#x9;at junit.framework.TestResult$1.protect(TestResult.java:122)&#xd;&#xa;&#x9;at junit.framework.TestResult.runProtected(TestResult.java:142)&#xd;&#xa;&#x9;at junit.framework.TestResult.run(TestResult.java:125)&#xd;&#xa;&#x9;at junit.framework.TestCase.run(TestCase.java:129)&#xd;&#xa;&#x9;at junit.framework.TestSuite.runTest(TestSuite.java:255)&#xd;&#xa;&#x9;at junit.framework.TestSuite.run(TestSuite.java:250)&#xd;&#xa;&#x9;at org.eclipse.jdt.internal.junit.runner.junit3.JUnit3TestReference.run(JUnit3TestReference.java:131)&#xd;&#xa;&#x9;at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)&#xd;&#xa;&#x9;at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)&#xd;&#xa;&#x9;at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)&#xd;&#xa;&#x9;at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)&#xd;&#xa;&#x9;at org.eclipse.pde.internal.junit.runtime.RemotePluginTestRunner.main(RemotePluginTestRunner.java:62)&#xd;&#xa;&#x9;at org.eclipse.pde.internal.junit.runtime.PlatformUITestHarness$1.run(PlatformUITestHarness.java:47)&#xd;&#xa;&#x9;at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)&#xd;&#xa;&#x9;at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:135)&#xd;&#xa;&#x9;at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:4145)&#xd;&#xa;&#x9;at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3762)&#xd;&#xa;&#x9;at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$9.run(PartRenderingEngine.java:1113)&#xd;&#xa;&#x9;at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:332)&#xd;&#xa;&#x9;at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.run(PartRenderingEngine.java:997)&#xd;&#xa;&#x9;at org.eclipse.e4.ui.internal.workbench.E4Workbench.createAndRunUI(E4Workbench.java:140)&#xd;&#xa;&#x9;at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:611)&#xd;&#xa;&#x9;at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:332)&#xd;&#xa;&#x9;at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:567)&#xd;&#xa;&#x9;at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:150)&#xd;&#xa;&#x9;at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:124)&#xd;&#xa;&#x9;at org.eclipse.pde.internal.junit.runtime.NonUIThreadTestApplication.runApp(NonUIThreadTestApplication.java:54)&#xd;&#xa;&#x9;at org.eclipse.pde.internal.junit.runtime.UITestApplication.runApp(UITestApplication.java:47)&#xd;&#xa;&#x9;at org.eclipse.pde.internal.junit.runtime.NonUIThreadTestApplication.start(NonUIThreadTestApplication.java:48)&#xd;&#xa;&#x9;at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)&#xd;&#xa;&#x9;at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)&#xd;&#xa;&#x9;at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)&#xd;&#xa;&#x9;at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:354)&#xd;&#xa;&#x9;at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:181)&#xd;&#xa;&#x9;at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)&#xd;&#xa;&#x9;at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)&#xd;&#xa;&#x9;at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)&#xd;&#xa;&#x9;at java.lang.reflect.Method.invoke(Unknown Source)&#xd;&#xa;&#x9;at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:636)&#xd;&#xa;&#x9;at org.eclipse.equinox.launcher.Main.basicRun(Main.java:591)&#xd;&#xa;&#x9;at org.eclipse.equinox.launcher.Main.run(Main.java:1450)&#xd;&#xa;&#x9;at org.eclipse.equinox.launcher.Main.main(Main.java:1426)&#xd;&#xa;&#xd;&#xa;" type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: junit.framework.AssertionFailedError: No tests found in tests.TestContributedQuickFixes
+	at org.eclipse.jdt.internal.junit.runner.junit3.JUnit3TestReference.run(JUnit3TestReference.java:131)
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:38)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:467)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:683)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:390)
+	at org.eclipse.pde.internal.junit.runtime.RemotePluginTestRunner.main(RemotePluginTestRunner.java:62)
+	at org.eclipse.pde.internal.junit.runtime.PlatformUITestHarness$1.run(PlatformUITestHarness.java:47)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:135)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:4145)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3762)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$9.run(PartRenderingEngine.java:1113)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:332)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.run(PartRenderingEngine.java:997)
+	at org.eclipse.e4.ui.internal.workbench.E4Workbench.createAndRunUI(E4Workbench.java:140)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:611)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:332)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:567)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:150)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:124)
+	at org.eclipse.pde.internal.junit.runtime.NonUIThreadTestApplication.runApp(NonUIThreadTestApplication.java:54)
+	at org.eclipse.pde.internal.junit.runtime.UITestApplication.runApp(UITestApplication.java:47)
+	at org.eclipse.pde.internal.junit.runtime.NonUIThreadTestApplication.start(NonUIThreadTestApplication.java:48)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:110)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:79)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:354)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:181)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:636)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:591)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1450)
+	at org.eclipse.equinox.launcher.Main.main(Main.java:1426)
+
+
+	at utils.PDETestListener.testFailed(PDETestListener.java:132)
+	at org.eclipse.jdt.internal.junit.model.RemoteTestRunnerClient$7.run(RemoteTestRunnerClient.java:561)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:42)
+	at org.eclipse.jdt.internal.junit.model.RemoteTestRunnerClient.notifyTestFailed(RemoteTestRunnerClient.java:559)
+	at org.eclipse.jdt.internal.junit.model.RemoteTestRunnerClient.access$17(RemoteTestRunnerClient.java:554)
+	at org.eclipse.jdt.internal.junit.model.RemoteTestRunnerClient$TraceProcessingState.readMessage(RemoteTestRunnerClient.java:172)
+	at org.eclipse.jdt.internal.junit.model.RemoteTestRunnerClient.receiveMessage(RemoteTestRunnerClient.java:375)
+	at org.eclipse.jdt.internal.junit.model.RemoteTestRunnerClient.access$27(RemoteTestRunnerClient.java:374)
+	at org.eclipse.jdt.internal.junit.model.RemoteTestRunnerClient$ServerConnection.run(RemoteTestRunnerClient.java:272)
+</failure>
+  </testcase>
+</testsuite>
