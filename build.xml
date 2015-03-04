@@ -54,7 +54,7 @@
 	<!-- update site destination directory -->
 	<property name="site.dir" value="${bin.dir}/site" />
 	<property name="test-site.dir" value="${bin.dir}/test-site" />
-	
+	<property name="test.reports.dir" value="reports/" />
 	<!-- fb-contrib core package name in slashed notation -->
 	<property name="fbcontribpackage" value="com/mebigfatguy/fbcontrib" />
 	
@@ -493,6 +493,15 @@
 	    	<pathelement location="${dist.dir}/fb-contrib-eclipse-plugin.jar" />
 	        <fileset dir="${test.eclipse.dir}/plugins">
 	            <include name="org.junit_4.*/**/junit.jar"/>
+	        	<include name="org.apache.ant_*/**/ant.jar"/>
+	            <include name="org.apache.ant_*/**/ant-junit.jar"/>
+	            <include name="org.eclipse.jdt.junit_*.jar"/>
+	            <include name="org.eclipse.debug.core_*.jar"/>
+	            <include name="org.eclipse.osgi_*.jar"/>
+	            <include name="org.eclipse.core.resources_*.jar"/>
+	            <include name="org.eclipse.swt_*.jar"/>
+	            <include name="org.eclipse.equinox.preferences_*.jar"/>
+	        	<include name="org.eclipse.equinox.launcher_*.jar"/>
 	        </fileset>
 	    </path>
 		
@@ -504,6 +513,34 @@
 	   </waitfor>
 	   <property file="pde_test_port.properties"/>
 	   <echo message="Using port ${pde.test.port} for listening to PDE Test run"/>
+		
+		<parallel>
+           <daemons>
+            <antcall target="run_pde_test_listener"/>
+           </daemons>
+           <sequential>
+               <sleep seconds="5"/> <!-- Give the listener a few seconds to start up -->
+            <antcall target="run_pde_tests"/>
+           </sequential>
+       </parallel>
 	</target>
 
+	 <target name="run_pde_test_listener">
+       <java classname="utils.PDETestResultsCollector" fork="yes" classpathref="pde.test.port.locator.class.path">
+           <arg line="fb-contrib-eclipse-quick-fixes ${pde.test.port}"/>
+       </java>
+     </target>
+
+	 <target name="run_pde_tests">
+	       <property name="test.classes.list" value="tests.TestContributedQuickFixes"/>
+	       <mkdir dir="${test.reports.dir}/output/ws"/>
+	       <java dir="${plugin.dir}" classname="org.eclipse.equinox.launcher.Main" fork="yes" classpathref="pde.test.port.locator.class.path">
+			   <arg line="-application org.eclipse.pde.junit.runtime.uitestapplication"/>
+			   <arg line="-data ${test.reports.dir}/output/ws"/>
+			   <arg line="-dev bin -clean -port ${pde.test.port}"/>
+			   <arg line="-testpluginname fb-contrib-eclipse-quick-fixes"/>
+			   <arg line="-classnames ${test.classes.list}"/>
+	       </java>
+	    </target>
+	
 </project>
