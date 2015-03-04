@@ -493,6 +493,7 @@
 	    	<pathelement location="${dist.dir}/fb-contrib-eclipse-plugin.jar" />
 	        <fileset dir="${test.eclipse.dir}/plugins">
 	            <include name="org.junit_4.*/**/junit.jar"/>
+	        	<include name="org.hamcrest.core_*.jar"/>
 	        	<include name="org.apache.ant_*/**/ant.jar"/>
 	            <include name="org.apache.ant_*/**/ant-junit.jar"/>
 	            <include name="org.eclipse.jdt.junit_*.jar"/>
@@ -549,7 +550,9 @@
 			   <arg line="-data ${test.reports.dir}/output/ws"/>
 			   <arg line="-dev bin -clean -port ${pde.test.port}"/>
 			   <arg line="-testpluginname fb-contrib-eclipse-quick-fixes"/>
-			   <arg line="-classnames ${test.classes.list}"/>
+	       	   <arg line="-testLoaderClass org.eclipse.jdt.internal.junit4.runner.JUnit4TestLoader" /> 
+	       	<arg line="-loaderpluginname org.eclipse.jdt.junit4.runtime" />
+	       	<arg line="-classnames ${test.classes.list}"/>
 	       </java>
 	    </target>
 	
