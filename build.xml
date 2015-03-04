@@ -237,6 +237,12 @@
 			</fileset>
 		</copy>
 		
+		<jar destfile="${dist.dir}/utils.jar" >
+			<fileset dir="${bin.dir}">
+				<include name="utils/*.class"/>
+			</fileset>
+		</jar>
+		
 	</target>
 
 	<!-- Build source distribution. -->
@@ -492,7 +498,7 @@
 	
 	<target name="run-tests">
 		<path id="test.class.path">
-			    	<pathelement location="${dist.dir}/fb-contrib-eclipse-plugin.jar" />
+			    	<pathelement location="${dist.dir}/utils.jar" />
 			        <fileset dir="${test.eclipse.dir}/plugins">
 			            <include name="org.junit_4.*/**/junit.jar"/>
 			        	<include name="org.hamcrest.core_*.jar"/>
@@ -554,7 +560,7 @@
 	       <mkdir dir="${test.reports.dir}/output/ws"/>
 	       <java dir="${basedir}" classname="org.eclipse.equinox.launcher.Main" fork="yes" classpathref="test.class.path">
 			   <arg line="-application org.eclipse.pde.junit.runtime.uitestapplication"/>
-			   <arg line="-data ${test.reports.dir}/output/ws"/>
+			   <arg line="-data ${test.reports.dir}output/ws"/>
 			   <arg line="-dev bin -clean -port ${pde.test.port}"/>
 	       	   <arg line="-testApplication org.eclipse.ui.ide.workbench"/>
 			   <arg line="-testpluginname fb-contrib-eclipse-quick-fixes"/>
