@@ -565,7 +565,8 @@
 	 <target name="run-pde-tests">
 	       <property name="test.classes.list" value="tests.TestContributedQuickFixes"/>
 	       <mkdir dir="${test.reports.dir}/output/ws"/>
-	       <java dir="${basedir}" classname="org.eclipse.equinox.launcher.Main" fork="yes" classpathref="test.class.path">
+	       <java dir="${basedir}" classname="org.eclipse.equinox.launcher.Main" fork="yes" 
+	       	classpathref="test.class.path" failonerror="true">
 			   <arg line="-application org.eclipse.pde.junit.runtime.uitestapplication"/>
 			   <arg line="-data ${test.reports.dir}output/ws"/>
 			   <arg line="-dev bin -clean -port ${pde.test.port}"/>

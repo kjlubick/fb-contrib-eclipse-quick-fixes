@@ -51,3 +51,4 @@ output-test-site/
 version.txt
 reports/
 pde_test_port.properties
+TEST-fb-contrib-eclipse-quick-fixes.xml
