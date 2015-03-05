@@ -557,7 +557,7 @@
 	</target>
 
 	 <target name="run-pde-test-listener">
-       <java classname="utils.PDETestResultsCollector" fork="yes" classpathref="test.class.path">
+       <java classname="utils.PDETestResultsCollector" fork="yes" classpathref="test.class.path" failonerror="true">
            <arg line="fb-contrib-eclipse-quick-fixes ${pde.test.port}"/>
        </java>
      </target>
