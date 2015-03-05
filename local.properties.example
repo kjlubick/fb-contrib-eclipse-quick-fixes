@@ -1,3 +1,3 @@
-eclipsePlugin.dir=D:\\FindBugsEclipsePlugin\\FindBugsEclipseInstall\\plugins
+eclipse.install.dir=D:\\FindBugsEclipsePlugin\\FindBugsEclipseInstall
 git.full-path="C:\\path\\to\\git"
 test.eclipse.dir=C:/vanillaeclipse

@@ -21,7 +21,7 @@
 
 	<!--
     The local.properties file must contain the location of
-       - Eclipse platform (key is "eclipsePlugin.dir", value is the 3.3+ Eclipse plugins folder)
+       - Eclipse platform (key is "eclipse.install.dir", value is the 3.3+ Eclipse plugins folder)
        - a git installation (key is "git.full-path", value is the absolute path to the git executable)
     This values are likely to be different for each checkout of the plugin,
     so the local.properties file is not managed by version control.
@@ -32,9 +32,9 @@
 
 	<property file="build.properties" />
 	
-	<!-- Sets a default plugin location -->
-	<property name="eclipsePlugin.dir" value="./eclipse" />
-	<property name="test.eclipse.dir" value = "" />
+	<!-- Sets a default eclipse location -->
+	<property name="eclipse.install.dir" value="~/eclipse" />
+	<property name="test.eclipse.dir" value = "${eclipse.install.dir}" />
 	
 	<!-- Sets a default git location (for Ubuntu) -->
 	<property name="git.full-path" value="/usr/bin/git" />
@@ -64,7 +64,7 @@
 	<property name="fb-contrib.jar" value="${fb-contrib.dir}/fb-contrib-${fb-contrib.version}.jar" />
 
 	<path id="plugin.classpath">
-		<fileset dir="${eclipsePlugin.dir}">
+		<fileset dir="${eclipse.install.dir}">
 			<include name="**/*.jar"/>
 			<exclude name="**/datanucleus-enhancer*.jar"/>
 			<exclude name="fb-contrib-eclipse-quick-fixes/*.jar"/>
@@ -100,17 +100,17 @@
 	
 	<target name="eclipse-deps.check">
 	    <condition property="eclipse-deps.exists">
-	      <available file="${eclipsePlugin.dir}" type="dir"/>
+	      <available file="${eclipse.install.dir}/plugins" type="dir"/>
 	    </condition>
-		<echo message="Does the eclipse file exist?" />
+		<echo message="Is there an installation of Eclipse at ${eclipse.install.dir}? ${eclipse-deps.exists}" />
 		<echoproperties />
 	  </target>
 	
 	<target name="downloadEclipseDeps" depends="clean, eclipse-deps.check" unless="eclipse-deps.exists" description="download Eclipse if it doesn't exist">
 		<echo message="Downloading Eclipse" />
-		<mkdir dir="${eclipsePlugin.dir}"/>
+		<mkdir dir="${eclipse.install.dir}/plugins"/>
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/eclipse-dependencies.zip" dest="eclipse.zip"/>	<!--Eclipse-luna with findbugs 3.0.1 01/05/2015-->
-		<unzip src="eclipse.zip" dest="${eclipsePlugin.dir}"/>
+		<unzip src="eclipse.zip" dest="${eclipse.install.dir}/plugins"/>
 	</target>
 
 	<target name="extractJar" depends="init, downloadFB-contrib">
@@ -134,7 +134,7 @@
 				<equals arg1="1.8" arg2="${ant.java.version}"/>
 			</condition>
 		</fail>
-		<fail unless="eclipsePlugin.dir"
+		<fail unless="eclipse.install.dir"
             message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file.  See local.properties.example"/>
 		<!-- Compile Java source files. -->
 		<javac srcdir="${src.dir}"
@@ -406,7 +406,7 @@
 	</target>
 	
 	<target name="p2-headless-eclipse" unless="eclipse.running">
-		<java jar="../eclipse-relang/plugins/org.eclipse.equinox.launcher.jar" fork="true" failonerror="true">
+		<java jar="${eclipse.install.dir}/plugins/org.eclipse.equinox.launcher.jar" fork="true" failonerror="true">
 			<arg line="-application org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
 			<arg line="-metadataRepository file:${basedir}/output-site" />
 			<arg line="-artifactRepository file:${basedir}/output-site" />
