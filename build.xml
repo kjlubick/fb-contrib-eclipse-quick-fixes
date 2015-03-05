@@ -157,7 +157,7 @@
 			<compilerarg value="-Xlint:all,-path,-unchecked"/>
 		</javac>
 		
-		<antcall target="classes-test"/>
+		<antcall target="classes-test" inheritRefs="true"/>
 		
 	</target>
 	
@@ -423,9 +423,12 @@
 
 	</target>	
 	
-	<target name="build-test-plugin">
+	<target name="set-test-flag">
 		<property name="include.tests" value="true"/>
-		<antcall target="test-site"/>
+	</target>
+	
+	<target name="build-test-plugin" depends="set-test-flag, test-site">
+
 	</target>
 	
 	<target name="test-site" depends="dist">
@@ -540,13 +543,13 @@
 				
 				<parallel>
 		           <daemons>
-		            <antcall target="run_pde_test_listener">
+		            <antcall target="run-pde-test-listener">
 		            	<reference refid="test.class.path" torefid="test.class.path"/>
 		        	</antcall>
 		           </daemons>
 		           <sequential>
 		               <sleep seconds="5"/> <!-- Give the listener a few seconds to start up -->
-		            <antcall target="run_pde_tests">
+		            <antcall target="run-pde-tests">
 		            	<reference refid="test.class.path" torefid="test.class.path"/>
 		        	</antcall>
 		           </sequential>
