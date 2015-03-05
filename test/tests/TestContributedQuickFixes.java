@@ -2,8 +2,6 @@ package tests;
 
 import java.io.IOException;
 
-import junit.framework.JUnit4TestAdapter;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import org.eclipse.core.runtime.CoreException;
@@ -17,7 +15,6 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
 
 import quickfix.DeadShadowStoreResolution;
 import quickfix.InsecureRandomResolution;
