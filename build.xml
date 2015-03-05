@@ -415,12 +415,7 @@
 			<arg line="-publishArtifacts" />
 		</java>
 
-	</target>
-	
-	<target name="make-stable-p2" depends="stable-site, p2-eclipse, p2-headless-eclipse">
-		
-	</target>
-	
+	</target>	
 	
 	<target name="build-test-plugin">
 		<property name="include.tests" value="true"/>
@@ -504,7 +499,7 @@
 		   
 	</target>
 	
-	<target name="run-tests">
+	<target name="run-eclipse-with-tests">
 		<path id="test.class.path">
 			    	<pathelement location="${dist.dir}/utils.jar" />
 			        <fileset dir="${test.eclipse.dir}/plugins">
@@ -551,19 +546,14 @@
 		           </sequential>
 		       </parallel>
 	</target>
-	
-	<target name="test-headless" depends="build-test-plugin, install-test-plugin, run-tests">
-		
 
-	</target>
-
-	 <target name="run_pde_test_listener">
+	 <target name="run-pde-test-listener">
        <java classname="utils.PDETestResultsCollector" fork="yes" classpathref="test.class.path">
            <arg line="fb-contrib-eclipse-quick-fixes ${pde.test.port}"/>
        </java>
      </target>
 
-	 <target name="run_pde_tests">
+	 <target name="run-pde-tests">
 	       <property name="test.classes.list" value="tests.TestContributedQuickFixes"/>
 	       <mkdir dir="${test.reports.dir}/output/ws"/>
 	       <java dir="${basedir}" classname="org.eclipse.equinox.launcher.Main" fork="yes" classpathref="test.class.path">
@@ -577,5 +567,11 @@
 	       	   <arg line="-classnames ${test.classes.list}"/>
 	       </java>
 	    </target>
+	
+	<target name="make-stable-p2" depends="stable-site, p2-eclipse, p2-headless-eclipse">
+	</target>
+	
+	<target name="test-headless" depends="build-test-plugin, install-test-plugin, run-eclipse-with-tests">
+	</target>
 	
 </project>
