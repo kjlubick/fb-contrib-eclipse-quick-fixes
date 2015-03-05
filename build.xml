@@ -473,9 +473,11 @@
 			</and>
 	    </condition>
 		
-		<antcall target="download-findbugs-dev-plugin">
-			<param name="dl.loc" value="${test-site.dir}"/>
-		</antcall>
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}_fb_contrib.jar"
+			dest="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"
+				dest="${test-site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
+				
 		
 		<echo>Built site for test plugin site</echo>
 	</target>
@@ -492,8 +494,14 @@
 		    <copy todir="${test.eclipse.dir}/dropins">
 	           <fileset dir="${test-site.dir}">
 	           	  <include name="**/*.jar"/>
+	           	  <exclude name="plugins/edu*.jar"/>
 	           </fileset>
 	       </copy>
+		
+		<unzip src="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar" 
+			dest="${test.eclipse.dir}/dropins/plugins/edu.umd.cs.findbugs.plugin.eclipse_${find_bugs_dev_version}.jar"/>
+		
+		   
 	</target>
 	
 	<target name="run-tests">
