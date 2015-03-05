@@ -21,7 +21,7 @@
 
 	<!--
     The local.properties file must contain the location of
-       - Eclipse platform (key is "eclipse.install.dir", value is the 3.3+ Eclipse plugins folder)
+       - Eclipse platform (key is "build.eclipse.dir", value is the 3.3+ Eclipse plugins folder)
        - a git installation (key is "git.full-path", value is the absolute path to the git executable)
     This values are likely to be different for each checkout of the plugin,
     so the local.properties file is not managed by version control.
@@ -33,8 +33,8 @@
 	<property file="build.properties" />
 	
 	<!-- Sets a default eclipse location -->
-	<property name="eclipse.install.dir" value="~/eclipse" />
-	<property name="test.eclipse.dir" value = "${eclipse.install.dir}" />
+	<property name="build.eclipse.dir" value="~/eclipse" />
+	<property name="test.eclipse.dir" value = "${build.eclipse.dir}" />
 	
 	<!-- Sets a default git location (for Ubuntu) -->
 	<property name="git.full-path" value="/usr/bin/git" />
@@ -68,7 +68,7 @@
 		<fail message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file.  See local.properties.example">
 			<condition>
 				<not>
-					<available file="${eclipse.install.dir}/plugins" type="dir"/>
+					<available file="${build.eclipse.dir}/plugins" type="dir"/>
 				</not>
 			</condition>
 		</fail>
@@ -139,7 +139,7 @@
 		
 		<!-- Set up Classpath -->	
 		<path id="plugin.classpath">
-			<fileset dir="${eclipse.install.dir}/plugins">
+			<fileset dir="${build.eclipse.dir}/plugins">
 				<include name="**/*.jar"/>
 				<exclude name="**/datanucleus-enhancer*.jar"/>
 				<exclude name="fb-contrib-eclipse-quick-fixes/*.jar"/>
@@ -412,7 +412,7 @@
 	</target>
 	
 	<target name="p2-headless-eclipse" unless="eclipse.running">
-		<java jar="${eclipse.install.dir}/plugins/org.eclipse.equinox.launcher.jar" fork="true" failonerror="true">
+		<java jar="${build.eclipse.dir}/plugins/org.eclipse.equinox.launcher_1.3.0.v20140415-2008.jar" fork="true" failonerror="true">
 			<arg line="-application org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
 			<arg line="-metadataRepository file:${basedir}/output-site" />
 			<arg line="-artifactRepository file:${basedir}/output-site" />
