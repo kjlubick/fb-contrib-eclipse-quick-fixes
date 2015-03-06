@@ -575,6 +575,7 @@
 	       	   <arg line="-testLoaderClass org.eclipse.jdt.internal.junit4.runner.JUnit4TestLoader" /> 
 	       	   <arg line="-loaderpluginname org.eclipse.jdt.junit4.runtime" />
 	       	   <arg line="-classnames ${test.classes.list}"/>
+	       	   <jvmarg line="-Xms40m -Xmx1024m"/>
 	       </java>
 	    </target>
 	

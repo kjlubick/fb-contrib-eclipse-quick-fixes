@@ -12,6 +12,7 @@ cache:
     - '$HOME/eclipse-tar'
 
 before_install: 
+  - free -m
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - chmod +x './scripts/download_eclipse.sh'
@@ -20,6 +21,7 @@ before_install:
 install: ant make-stable-p2 -v
 
 script: 
+  - free -m
   - ant test-headless -v  
 
 before_deploy: './scripts/deploy.sh'
