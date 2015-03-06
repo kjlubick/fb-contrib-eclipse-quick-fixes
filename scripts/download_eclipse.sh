@@ -1,9 +1,10 @@
-if [ ! -d "../eclipse-relang/plugins" ]; then
-  echo "Blank eclipse-relang folder found... deleting"
-  rm -rf ../eclipse-relang
+
+if [ ! -f "$HOME/eclipse-tar/eclipse.tar.gz" ]; then
+  mkdir $HOME/eclipse-tar
+  wget https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/eclipse-luna-linux-with-build-plugins.tar.gz -O $HOME/eclipse-tar/eclipse.tar.gz
+  ls -lh $HOME/eclipse-tar
 fi
 
-if [ ! -d "../eclipse-relang" ]; then
-  wget http://git.eclipse.org/c/platform/eclipse.platform.releng.basebuilder.git/snapshot/R38M6PlusRC3G.tar.gz -O - | tar -xz --directory ../
-  mv ../R38M6PlusRC3G ../eclipse-relang
-fi
+gunzip -c $HOME/eclipse-tar/eclipse.tar.gz > $HOME
+ls -lh $HOME
+ls -lh $HOME/eclipse
