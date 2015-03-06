@@ -22,6 +22,8 @@ install: ant make-stable-p2
 script: 
   - ant test-headless  
 
-after_sucess: './scripts/deploy_to_bintray.sh'
+after_success: 
+  - './scripts/deploy_to_bintray.sh'
 
-after_failure: cat /home/travis/eclipse/configuration/*.log
+after_failure: 
+ - cat /home/travis/eclipse/configuration/*.log
