@@ -1,6 +1,6 @@
 
 if [ ! -f "$HOME/eclipse-tar/eclipse.tar.gz" ]; then
-  wget https://github.com/kjlubick/eclipse-wercker-box/releases/download/0.0.1/eclipse-luna.tar.gz -O $HOME/eclipse-tar/eclipse.tar.gz
+  wget 'https://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/luna/SR2/eclipse-java-luna-SR2-linux-gtk-x86_64.tar.gz&r=1' -O $HOME/eclipse-tar/eclipse.tar.gz
   ls -lh $HOME/eclipse-tar
 fi
 
