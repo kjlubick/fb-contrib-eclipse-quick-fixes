@@ -47,6 +47,7 @@
 	<property name="zip.dir" value="zips"/>
 	<property name="dist.dir" value="dist"/>
 	
+	<property name="jvm.args.test" value=""/>
 
 	<!-- the binaries/classes, built by javac -->
 	<property name="bin.dir" value="bin_build" />
@@ -575,7 +576,7 @@
 	       	   <arg line="-testLoaderClass org.eclipse.jdt.internal.junit4.runner.JUnit4TestLoader" /> 
 	       	   <arg line="-loaderpluginname org.eclipse.jdt.junit4.runtime" />
 	       	   <arg line="-classnames ${test.classes.list}"/>
-	       	   <jvmarg line="-Xms40m -Xmx1024m -XX:MaxPermSize=512m"/>
+	       	   <jvmarg line="${jvm.args.test}"/>
 	       </java>
 	    </target>
 	
