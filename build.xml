@@ -103,7 +103,7 @@
 	
 	<target name="downloadFB-contrib" depends="clean, fb-contrib.check" unless="fb-contrib.exists" description="download fb-contrib if it doesn't exist">
 		<echo message="Downloading fb-contrib" />
-		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/fb-contrib-6.1.0.jar" dest="${fb-contrib.jar}"/>
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/fb-contrib-6.1.0.jar" dest="${fb-contrib.jar}" verbose="true" />
 	</target>
 	
 	<target name="findbugs-installed-check">
@@ -112,13 +112,12 @@
 	      <available file="${findbugs.dev.dir}/findbugs-plugin.jar" type="file"/>
 	    </condition>
 		<echo message="Does ${findbugs.dev.dir}/findbugs-plugin.jar exist? ${findbugs.dev.exists}" />
-		<echoproperties />
 	  </target>
 	
 	<target name="download-dev-findbugs" depends="clean, findbugs-installed-check" unless="findbugs.dev.exists" description="download a dev version of eclipse">
 		<echo message="Downloading Dev version of findbugs" />
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" 
-			dest="${findbugs.dev.dir}/findbugs-dev.jar"/>
+			dest="${findbugs.dev.dir}/findbugs-dev.jar" verbose="true"/>
 		<unzip src="${findbugs.dev.dir}/findbugs-dev.jar" dest="${findbugs.dev.dir}"/>
 	</target>
 
@@ -324,9 +323,9 @@
 	<target name="download-findbugs-dev-plugin" unless="findbugs.alreadydownloaded">
 		<echo level="info" message="Downloading FindBugs dev version ${findbugs.dev.version}" />
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
-			dest="${dl.loc}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"/>
+			dest="${dl.loc}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
-			dest="${dl.loc}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"/>
+			dest="${dl.loc}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
 				
 	</target>
 	
@@ -352,7 +351,7 @@
 		
 		<!-- Download old site.xml (with normal version-->
 		<get src="http://dl.bintray.com/kjlubick/fb-contrib-eclipse-quickfixes/site.xml"
-					dest="${site.dir}/old_site.xml"/> 
+					dest="${site.dir}/old_site.xml" verbose="true"/> 
 		
 		<!-- Copy old_site.xml and remove anything starting with the dev prefix --> <!--dev-->
 		<!-- or </site --> 
@@ -405,7 +404,7 @@
 	</target>
 	
 	<target name="p2-eclipse" if="eclipse.running">
-		<echo>Using Eclipse's featuresAndBundles p2 output</echo>
+		<echo>Using Eclipse's featuresAndBundles p2 ant task</echo>
 		<p2.publish.featuresAndBundles repository="file://${basedir}/output-site" repositoryName="findbugs-eclipse-quickfixes" compress="true">
 			<features dir="${site.dir}/features"/>
 			<bundles dir="${site.dir}/plugins"/>
@@ -413,6 +412,7 @@
 	</target>
 	
 	<target name="p2-headless-eclipse" unless="eclipse.running">
+		<echo>Using Eclipse p2.publisher.FeaturesAndBundlesPublisher via java ant task </echo>
 		<java jar="${build.eclipse.dir}/plugins/org.eclipse.equinox.launcher_1.3.0.v20140415-2008.jar" fork="true" failonerror="true">
 			<arg line="-application org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
 			<arg line="-metadataRepository file:${basedir}/output-site" />
@@ -478,10 +478,11 @@
 			</and>
 	    </condition>
 		
+		<echo level="info" message="Downloading dev versions of findbugs"/>
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}_fb_contrib.jar"
-			dest="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"/>
+			dest="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
 		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
-				dest="${test-site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"/>
+				dest="${test-site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
 				
 		
 		<echo>Built site for test plugin site</echo>
@@ -489,11 +490,13 @@
 	
 	<target name="install-test-plugin">
 	<!--make temp copy of Eclipse or Eclipse-relang (actually in prescript probably)-->
-			
+		
 			<!-- uninstall old test plugins -->
 			<delete>
 	           <fileset dir="${test.eclipse.dir}/dropins" includes="**/*"/>
 	        </delete>
+		
+		<echo>Installing test plugin in dropins</echo>
 			
 			<!-- install my test plugin -->
 		    <copy todir="${test.eclipse.dir}/dropins">
@@ -535,6 +538,8 @@
 				
 			  <delete file="pde_test_port.properties"/> <!-- properties file generated by PDETestPortLocator class in pde.test.utils -->
 			  
+		<echo>Starting Test Port Locator</echo>
+		
 				<java classname="utils.PDETestPortLocator" fork="yes" classpathref="test.class.path"/>
 			   <waitfor maxwait="10" maxwaitunit="second" checkevery="100" checkeveryunit="millisecond">
 			      <available file="pde_test_port.properties"/>
@@ -564,6 +569,8 @@
      </target>
 
 	 <target name="run-pde-tests">
+	 	<echo>Firing up Test Eclipse workspace </echo>
+	 	
 	       <property name="test.classes.list" value="tests.TestContributedQuickFixes"/>
 	       <mkdir dir="${test.reports.dir}/output/ws"/>
 	       <java dir="${basedir}" classname="org.eclipse.equinox.launcher.Main" fork="yes" 
