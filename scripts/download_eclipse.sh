@@ -4,6 +4,6 @@ if [ ! -f "$HOME/eclipse-tar/eclipse.tar.gz" ]; then
   ls -lh $HOME/eclipse-tar
 fi
 
-tar -c $HOME -zxf $HOME/eclipse-tar/eclipse.tar.gz
+tar -C $HOME -zxf $HOME/eclipse-tar/eclipse.tar.gz
 ls -lh $HOME
 ls -lh $HOME/eclipse
