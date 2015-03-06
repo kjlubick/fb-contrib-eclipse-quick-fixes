@@ -7,3 +7,5 @@ fi
 tar -C $HOME -zxf $HOME/eclipse-tar/eclipse.tar.gz
 ls -lh $HOME
 ls -lh $HOME/eclipse
+
+mv ./scripts/travisci.properties ./local.properties

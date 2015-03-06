@@ -17,10 +17,9 @@ before_install:
   - chmod +x './scripts/download_eclipse.sh'
   - chmod +x './scripts/deploy.sh'
   - './scripts/download_eclipse.sh'
-install: ant make-stable-p2
+install: ant make-stable-p2 -v
 
 script: 
-#TODO Test
   - ant test-headless -v  
 
 before_deploy: './scripts/deploy.sh'
