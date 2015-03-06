@@ -5,6 +5,11 @@ if [ ! -f "$HOME/eclipse-tar/eclipse.tar.gz" ]; then
 fi
 
 tar -C $HOME -zxf $HOME/eclipse-tar/eclipse.tar.gz
+
+ls -lh $JAVA_HOME
+ls -lh $JAVA_HOME/jre/lib
+cp $JAVA_HOME/jre/lib/rt.jar ./testresources/rt17.jar
+
 ls -lh $HOME
 ls -lh $HOME/eclipse
 
@@ -16,5 +21,3 @@ $HOME/eclipse/eclipse -nosplash -application org.eclipse.equinox.p2.director  -r
 
 
 mv ./scripts/travisci.properties ./local.properties
-ls -rlh $JAVA_HOME
-cp $JAVA_HOME/lib/rt.jar ./testresources/rt17.jar
