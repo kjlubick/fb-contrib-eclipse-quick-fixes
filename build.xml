@@ -490,19 +490,20 @@
 	<!--make temp copy of Eclipse or Eclipse-relang (actually in prescript probably)-->
 			
 			<!-- uninstall old test plugins -->
-			<delete includeemptydirs="true">
-	           <fileset dir="${test.eclipse.dir}/plugins">
-	           		<include name="edu.umd.cs.*/**/*"/>
-	           		<include name="fb-contrib-eclipse-quick-fixes*.jar"/>
-	           	</fileset>
-	           	
+			<delete>
+	           <fileset dir="${test.eclipse.dir}/dropins" includes="**/*"/>
 	        </delete>
 			
 			<!-- install my test plugin -->
-		    <copy file="${test-site.dir}/plugins/${plugin.id}_${plugin.version}.jar" todir="${test.eclipse.dir}/plugins" />
+		    <copy todir="${test.eclipse.dir}/dropins">
+	           <fileset dir="${test-site.dir}">
+	           	  <include name="**/*.jar"/>
+	           	  <exclude name="plugins/edu*.jar"/>
+	           </fileset>
+	       </copy>
 		
 		<unzip src="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" 
-			dest="${test.eclipse.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}"/>
+			dest="${test.eclipse.dir}/dropins/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"/>
 		
 		   
 	</target>
