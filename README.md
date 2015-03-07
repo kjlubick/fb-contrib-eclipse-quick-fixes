@@ -1,4 +1,4 @@
-##fb-contrib Eclipse quick fix plugin (fb-contrib quickfixes, for short) [![Build Status](https://travis-ci.org/kjlubick/fb-contrib-eclipse-quick-fixes.svg?branch=testsFromAnt)](https://travis-ci.org/kjlubick/fb-contrib-eclipse-quick-fixes) ##
+##fb-contrib Eclipse quick fix plugin (fb-contrib quickfixes, for short) [![Build Status](https://travis-ci.org/kjlubick/fb-contrib-eclipse-quick-fixes.svg?branch=master)](https://travis-ci.org/kjlubick/fb-contrib-eclipse-quick-fixes) ##
 This repository extends the quick-fixes offered by the [FindBugs](http://findbugs.sourceforge.net/) [Eclipse Plugin](http://findbugs.sourceforge.net/downloads.html) to cover the bugs detected by [fb-contrib](http://fb-contrib.sourceforge.net/).
 
 ![quickfix-demo](https://cloud.githubusercontent.com/assets/6819944/4264324/b5e2f5ba-3c21-11e4-966b-3264f7e22dae.gif)
@@ -6,7 +6,22 @@ This repository extends the quick-fixes offered by the [FindBugs](http://findbug
 
 Currently, the FindBugs Eclipse Plugin only has support for extension in the nightly builds, but the public feature will be released soon.  Thus, I'm getting a head start on preparing custom quick-fixes.
 
-Because the aforementioned extension point is [only in dev](https://code.google.com/p/findbugs/source/detail?r=491d7f9cae6cef8919f0d76104dd567d8489db06), I've included an unofficial release of the plugin under [releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  I've dubbed this release 3.0.1, and it is the current minimum version required for fb-contrib quickfixes.  This prereq will be updated when the official release happens.
+
+##Installing the plugin##
+To install this project, open Eclipse, go to Help>Install New Software, and copy in the following link:
+
+`http://dl.bintray.com/kjlubick/fb-contrib-eclipse-quickfixes/`
+
+Uncheck "Group items by category" to see the plugin.
+
+![image](https://cloud.githubusercontent.com/assets/6819944/6541841/bd15e5b6-c4b3-11e4-9599-c84c4bc8a033.png)
+
+
+Because the aforementioned extension point is [only in dev](https://code.google.com/p/findbugs/source/detail?r=491d7f9cae6cef8919f0d76104dd567d8489db06), I have included an unofficial release of FindBugs called 3.0.1.
+This is the minimum version required for this plugin.
+
+Fb-contrib quickfixes has been tested on Eclipe Kepler and Luna.
+
 
 ##Supported quickfixes##
 See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb-contrib](http://fb-contrib.sourceforge.net/bugdescriptions.html) bug description pages for more info
@@ -57,14 +72,6 @@ See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb
 ##Simultaneous Quickfixes##
 Do you have many bugs detected with a quickfix? The base FindBugs plugin supports multiple fixes simultaneously:
 ![multiple-quickfixes](https://cloud.githubusercontent.com/assets/6819944/4324949/7e882a7c-3f5f-11e4-9170-bac5b24c2dbc.gif)
-
-
-##Installing the plugin##
-This project isn't quite ready for release yet.  But, if you really want, check out one of the [pre-releases](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases).  This works for Eclipse 3.6+.
-
-1. Extract both the fb-contrib-quick-fixes-eclipse-0.X.Y.zip and the findbugs-eclipse-plugin-3.0.1.zip to their own folders. 
-2. Open Eclipse.  Navigate to Help>Install New Software.  Add a repository, select Local and then navigate to the site folders that were extracted.  Install the FindBugs plugin and then the fb-contrib plugin, restarting in between.
-
 
 ##Setting up the project for development##
 1. Download/install [Eclipse](https://www.eclipse.org/home/index.php), ideally 4.3 (Kepler) or newer.  The Eclipse for RCP and RAP Developers will work fine.
