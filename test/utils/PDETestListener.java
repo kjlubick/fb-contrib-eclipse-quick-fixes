@@ -45,22 +45,22 @@ public class PDETestListener implements ITestRunListener2 {
         junitTestSuite.setProperties(System.getProperties());
     }
 
-    public void setOutputFile(String filename) {
+    private void setOutputFile(String filename) {
         outputFile = new File(filename);
     }
 
-    public File getOutputFile() {
+    private File getOutputFile() {
         if (outputFile == null) {
             setOutputFile("TEST-" + suiteName + ".xml");
         }
         return outputFile;
     }
 
-    public boolean failed() {
+    boolean failed() {
         return ((numberOfTestsFailed + numberOfTestsWithError) > 0) || (testRunEnded && (testsRunCount == 0));
     }
 
-    public int count() {
+    int count() {
         return testsRunCount;
     }
 
@@ -170,15 +170,10 @@ public class PDETestListener implements ITestRunListener2 {
         System.out.println("Test Tree Entry - Description: " + description);
     }
 
-	class WrapperTestCase extends TestCase {
+	static class WrapperTestCase extends TestCase {
 
         public WrapperTestCase(String name) {
             super(name);
-        }
-
-        @Override
-        public int countTestCases() {
-            return 1;
         }
 
         @Override

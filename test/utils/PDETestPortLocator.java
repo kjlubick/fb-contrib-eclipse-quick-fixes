@@ -16,6 +16,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
+import java.nio.charset.StandardCharsets;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 public class PDETestPortLocator {
 
@@ -23,14 +26,14 @@ public class PDETestPortLocator {
         new PDETestPortLocator().savePortToFile();
     }
 
-    public void savePortToFile() {
+    private void savePortToFile() {
         int port = locatePDETestPortNumber();
         File propsFile = new File("pde_test_port.properties");
         System.out.println("PDE Test port: " + port);
         OutputStream os = null;
         try {
             os = new FileOutputStream(propsFile);
-            os.write(new String("pde.test.port=" + port).getBytes());
+            os.write(("pde.test.port=" + port).getBytes(StandardCharsets.UTF_8));
             os.flush();
             System.out.println("PDE Test port saved to file " + propsFile.getAbsolutePath());
         } catch (IOException ioe) {
@@ -47,21 +50,14 @@ public class PDETestPortLocator {
         }
     }
 
+    @SuppressFBWarnings(value="MDM_PROMISCUOUS_SERVERSOCKET",
+            justification="This socket is quickly closed, no security vulnerability possible.")
     private int locatePDETestPortNumber() {
-        ServerSocket socket = null;
-        try {
-            socket = new ServerSocket(0);
+        //Simply finds an open port.  http://stackoverflow.com/a/2675416/1447621
+        try (ServerSocket socket = new ServerSocket(0)){
             return socket.getLocalPort();
         } catch (IOException e) {
-            // ignore
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    // ignore
-                }
-            }
+            e.printStackTrace();
         }
         return -1;
     }
