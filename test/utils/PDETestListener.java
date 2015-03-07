@@ -1,3 +1,14 @@
+/*******************************************************************************
+ * Copyright (c) 2000, 2008 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Originally from the Eclipse.org article Automating Eclipse PDE Unit Tests using Ant by Brian Joyce
+ *  https://www.eclipse.org/articles/article.php?file=Article-PDEJUnitAntAutomation/index.html
+ *  https://web.archive.org/web/20130924110132/http://www.eclipse.org/articles/article.php?file=Article-PDEJUnitAntAutomation/index.html
+ *******************************************************************************/
 package utils;
 
 import java.io.File;
