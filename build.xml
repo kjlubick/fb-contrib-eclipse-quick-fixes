@@ -6,7 +6,7 @@
     Use the site target to build an update site.
 -->
 
-<project name="fbcontribeclipse" default="stable-site">
+<project name="fbcontribeclipse" default="make-stable-p2">
 
 	<!-- Eclipse plugin id, will never change -->
 	<property name="plugin.id" value="fb-contrib-eclipse-quick-fixes" />
@@ -243,9 +243,9 @@
 			</fileset>
 		</copy>
 		
-		<jar destfile="${dist.dir}/utils.jar" >
+		<jar destfile="${dist.dir}/pde-test.jar" >
 			<fileset dir="${bin.dir}">
-				<include name="utils/*.class"/>
+				<include name="utils/PDE*.class"/>
 			</fileset>
 		</jar>
 		
@@ -514,7 +514,7 @@
 	
 	<target name="run-eclipse-with-tests">
 		<path id="test.class.path">
-			    	<pathelement location="${dist.dir}/utils.jar" />
+			    	<pathelement location="${dist.dir}/pde-test.jar" />
 			        <fileset dir="${test.eclipse.dir}/plugins">
 			            <include name="org.junit_4.*/**/junit.jar"/>
 			        	<include name="org.hamcrest.core_*.jar"/>
