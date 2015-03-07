@@ -60,10 +60,18 @@
 	<property name="fbcontribpackage" value="com/mebigfatguy/fbcontrib" />
 	
 	<property name="findbugs.dev.dir" value="../findbugs/" />
+	<!-- For building --> 
+	<property name="findbugs.dev.plugin.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" />
+	<!-- For Testing --> 
+	<property name="findbugs.dev.plugin.with.plugins.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-findbugs.plugin.eclipse_3.0.1.20150212-23b0732_fb_contrib_find_security_bugs.jar" />
+	<property name="findbugs.dev.feature.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" />
+	
 	<property name="findbugs.dev.version" value="3.0.1.20150212-23b0732" />
 	
 	<!-- Location of fb-contrib.jar to extract and include in this build -->
 	<property name="fb-contrib.jar" value="${fb-contrib.dir}/fb-contrib-${fb-contrib.version}.jar" />
+	
+	<property name="fb-contrib.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/fb-contrib-6.1.0.jar"/>
 
 	<target name="init">
 		<fail message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file.  See local.properties.example">
@@ -103,7 +111,7 @@
 	
 	<target name="downloadFB-contrib" depends="clean, fb-contrib.check" unless="fb-contrib.exists" description="download fb-contrib if it doesn't exist">
 		<echo message="Downloading fb-contrib" />
-		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/fb-contrib-6.1.0.jar" dest="${fb-contrib.jar}" verbose="true" />
+		<get src="${fb-contrib.url}" dest="${fb-contrib.jar}" verbose="true" />
 	</target>
 	
 	<target name="findbugs-installed-check">
@@ -116,7 +124,7 @@
 	
 	<target name="download-dev-findbugs" depends="clean, findbugs-installed-check" unless="findbugs.dev.exists" description="download a dev version of eclipse">
 		<echo message="Downloading Dev version of findbugs" />
-		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" 
+		<get src="${findbugs.dev.plugin.url}" 
 			dest="${findbugs.dev.dir}/findbugs-dev.jar" verbose="true"/>
 		<unzip src="${findbugs.dev.dir}/findbugs-dev.jar" dest="${findbugs.dev.dir}"/>
 	</target>
@@ -322,9 +330,9 @@
 	
 	<target name="download-findbugs-dev-plugin" unless="findbugs.alreadydownloaded">
 		<echo level="info" message="Downloading FindBugs dev version ${findbugs.dev.version}" />
-		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
+		<get src="${findbugs.dev.plugin.url"
 			dest="${dl.loc}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
-		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
+		<get src="${findbugs.dev.feature.url}"
 			dest="${dl.loc}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
 				
 	</target>
@@ -479,9 +487,9 @@
 	    </condition>
 		
 		<echo level="info" message="Downloading dev versions of findbugs"/>
-		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}_fb_contrib.jar"
+		<get src="${findbugs.dev.plugin.with.plugins.url}"
 			dest="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
-		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
+		<get src="${findbugs.dev.feature.url}"
 				dest="${test-site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
 				
 		
