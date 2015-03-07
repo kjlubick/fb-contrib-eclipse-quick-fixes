@@ -66,6 +66,7 @@ public class TestContributedQuickFixes extends TestHarness {
     @Test
     public void testCharsetIssuesResolution() throws Exception {
         needsFBContrib();
+        needsFindSecurityBugs(false);
         setPriority("Medium");
         setRank(15);
 
@@ -289,6 +290,7 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testReturnValueIgnoreResolution() throws Exception {
+        needsFindSecurityBugs(false);
         // No plugins needed because RV is in FindBugsProper
 
         setRank(19);
