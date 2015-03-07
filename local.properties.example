@@ -1,1 +1,4 @@
-eclipsePlugin.dir=D:\\FindBugsEclipsePlugin\\FindBugsEclipseInstall\\plugins
+build.eclipse.dir=D:\\FindBugsEclipsePlugin\\FindBugsEclipseInstall
+git.full-path="C:\\path\\to\\git"
+test.eclipse.dir=C:/vanillaeclipse
+jvm.args.test="-Xms40m -Xmx1024m -XX:MaxPermSize=256m"

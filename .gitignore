@@ -44,3 +44,11 @@ zips/
 local.properties
 *.log
 testresources/*.jar
+eclipse/
+eclipse.zip
+output-site/
+output-test-site/
+version.txt
+reports/
+pde_test_port.properties
+TEST-fb-contrib-eclipse-quick-fixes.xml

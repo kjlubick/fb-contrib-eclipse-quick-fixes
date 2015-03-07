@@ -1,0 +1,9 @@
+<!--dev--><category-def name="fb-contrib-quickfixes-dev" label="Additional FindBugs QuickFixes (Bleeding Edge)">
+<!--dev-->      <description>
+<!--dev-->         This adds bleeding-edge quickfix features to FindBugs (tm) for bug patterns, including those provided by fb-contrib.  This may be unstable.
+<!--dev-->      </description>
+<!--dev-->   </category-def>
+<!--dev-->   <feature url="dev-features/@FEATURE_ID@_@FEATURE_VERSION@.jar" id="@FEATURE_ID@" version="@FEATURE_VERSION@">
+<!--dev-->      <category name="fb-contrib-quickfixes-dev"/>
+<!--dev-->   </feature>
+</site>

@@ -6,7 +6,7 @@
     Use the site target to build an update site.
 -->
 
-<project name="fbcontribeclipse" default="site">
+<project name="fbcontribeclipse" default="stable-site">
 
 	<!-- Eclipse plugin id, will never change -->
 	<property name="plugin.id" value="fb-contrib-eclipse-quick-fixes" />
@@ -16,10 +16,13 @@
 	</tstamp>
 
 	<echo>"${plugin.date}"</echo>
+	
+	
 
 	<!--
     The local.properties file must contain the location of
-       - Eclipse platform (key is "eclipsePlugin.dir", value is the 3.3+ Eclipse plugins folder)
+       - Eclipse platform (key is "build.eclipse.dir", value is the 3.3+ Eclipse plugins folder)
+       - a git installation (key is "git.full-path", value is the absolute path to the git executable)
     This values are likely to be different for each checkout of the plugin,
     so the local.properties file is not managed by version control.
     
@@ -28,37 +31,56 @@
 	<property file="local.properties" />
 
 	<property file="build.properties" />
-
-	<property name="fbcontrib.dir" value="."/>
+	
+	<!-- Sets a default eclipse location -->
+	<property name="build.eclipse.dir" value="~/eclipse" />
+	<property name="test.eclipse.dir" value = "${build.eclipse.dir}" />
+	
+	<!-- Sets a default git location (for Ubuntu) -->
+	<property name="git.full-path" value="/usr/bin/git" />
+	
+	<property name="build.dir" value="."/>
 
 	<property name="src.dir" value="src"/>
+	<property name="test.dir" value="test"/>
+	
 	<property name="zip.dir" value="zips"/>
 	<property name="dist.dir" value="dist"/>
+	
+	<property name="jvm.args.test" value=""/>
 
 	<!-- the binaries/classes, built by javac -->
 	<property name="bin.dir" value="bin_build" />
 
-	<!-- the binaries/classes, built by eclipse -->
-	<property name="binEclipse.dir" value="bin_eclipse" />
-
 	<!-- update site destination directory -->
 	<property name="site.dir" value="${bin.dir}/site" />
-	
+	<property name="test-site.dir" value="${bin.dir}/test-site" />
+	<property name="test.reports.dir" value="reports/" />
 	<!-- fb-contrib core package name in slashed notation -->
 	<property name="fbcontribpackage" value="com/mebigfatguy/fbcontrib" />
+	
+	<property name="findbugs.dev.dir" value="../findbugs/" />
+	<property name="findbugs.dev.version" value="3.0.1.20150212-23b0732" />
 	
 	<!-- Location of fb-contrib.jar to extract and include in this build -->
 	<property name="fb-contrib.jar" value="${fb-contrib.dir}/fb-contrib-${fb-contrib.version}.jar" />
 
-	<path id="plugin.classpath">
-		<fileset dir="${eclipsePlugin.dir}">
-			<include name="**/*.jar"/>
-			<exclude name="**/datanucleus-enhancer*.jar"/>
-			<exclude name="fb-contrib-eclipse-quick-fixes/*.jar"/>
-		</fileset>
-	</path>
-
 	<target name="init">
+		<fail message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file.  See local.properties.example">
+			<condition>
+				<not>
+					<available file="${build.eclipse.dir}/plugins" type="dir"/>
+				</not>
+			</condition>
+		</fail>
+		<fail message="Requires JDK 7.x (not 8!), using: ${ant.java.version}">
+			<condition>
+				<equals arg1="1.8" arg2="${ant.java.version}"/>
+			</condition>
+		</fail>
+		
+		<mkdir dir="${fb-contrib.dir}"/>
+		<mkdir dir="${findbugs.dev.dir}"/>
 		<mkdir dir="${dist.dir}"/>
 		<mkdir dir="${bin.dir}"/>
 		<mkdir dir="${zip.dir}"/>
@@ -72,8 +94,34 @@
 			<fileset dir="${dist.dir}" includes="**/*" defaultexcludes="false"/>
 		</delete>
 	</target>
+	
+	<target name="fb-contrib.check">
+	    <condition property="fb-contrib.exists">
+	      <available file="${fb-contrib.jar}" type="file"/>
+	    </condition>
+	</target>
+	
+	<target name="downloadFB-contrib" depends="clean, fb-contrib.check" unless="fb-contrib.exists" description="download fb-contrib if it doesn't exist">
+		<echo message="Downloading fb-contrib" />
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/fb-contrib-6.1.0.jar" dest="${fb-contrib.jar}" verbose="true" />
+	</target>
+	
+	<target name="findbugs-installed-check">
+		
+	    <condition property="findbugs.dev.exists">
+	      <available file="${findbugs.dev.dir}/findbugs-plugin.jar" type="file"/>
+	    </condition>
+		<echo message="Does ${findbugs.dev.dir}/findbugs-plugin.jar exist? ${findbugs.dev.exists}" />
+	  </target>
+	
+	<target name="download-dev-findbugs" depends="clean, findbugs-installed-check" unless="findbugs.dev.exists" description="download a dev version of eclipse">
+		<echo message="Downloading Dev version of findbugs" />
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" 
+			dest="${findbugs.dev.dir}/findbugs-dev.jar" verbose="true"/>
+		<unzip src="${findbugs.dev.dir}/findbugs-dev.jar" dest="${findbugs.dev.dir}"/>
+	</target>
 
-	<target name="extractJar" depends="init">
+	<target name="extractJar" depends="init, downloadFB-contrib">
 		<echo message="Copying fb-contrib classes to Eclipse plugin"/>
 		<unzip src="${fb-contrib.jar}" dest="${bin.dir}">
 			<patternset>
@@ -86,39 +134,40 @@
 		</unzip>
 	</target>
 
-	<target name="classes" depends="init, extractJar" description="Compile java source files">
+	<target name="classes" depends="init, extractJar, download-dev-findbugs, downloadFB-contrib" description="Compile java source files">
 		<echo message="Compiling fb-contrib Eclipse quickfixes plugin" />
-		<echo>Requires JDK 1.7.x (not 1.8!), using: ${ant.java.version}</echo>
-		<fail message="Requires JDK 7.x (not 8!), using: ${ant.java.version}">
-			<condition>
-				<equals arg1="1.8" arg2="${ant.java.version}"/>
-			</condition>
-		</fail>
-		<fail unless="eclipsePlugin.dir"
-            message="Please specify path to the Eclipse 3.6+ plugins folder in local.properties file.  See local.properties.example"/>
+		
+		<!-- Set up Classpath -->	
+		<path id="plugin.classpath">
+			<fileset dir="${build.eclipse.dir}/plugins">
+				<include name="**/*.jar"/>
+				<exclude name="**/datanucleus-enhancer*.jar"/>
+				<exclude name="fb-contrib-eclipse-quick-fixes/*.jar"/>
+				<exclude name="edu.umd.cs.*"/>
+			</fileset>
+			<fileset dir="${findbugs.dev.dir}">
+				<include name="**/*.jar"/>
+			</fileset>
+		</path>
+		
 		<!-- Compile Java source files. -->
-		<javac srcdir="${src.dir}"
-                  includeantruntime="false"
-          destdir="${bin.dir}"
-                source="1.7"
-                target="1.7"
-                debug="on">
+		<javac srcdir="${src.dir}" includeantruntime="false"
+          destdir="${bin.dir}" source="1.7" target="1.7" debug="on" >
 			<classpath refid="plugin.classpath"/>
 			<compilerarg value="-Xlint:all,-path,-unchecked"/>
 		</javac>
-		<!-- Copy the .properties files from the source directory. -->
-		<copy todir="${bin.dir}">
-			<fileset dir="${src.dir}">
-				<include name="**/*.properties"/>
-				<include name="**/*.xml"/>
-			</fileset>
-		</copy>
-		<copy todir="${binEclipse.dir}">
-			<fileset dir="${src.dir}">
-				<include name="**/*.properties"/>
-				<include name="**/*.xml"/>
-			</fileset>
-		</copy>
+		
+		<antcall target="classes-test" inheritRefs="true"/>
+		
+	</target>
+	
+	<target name="classes-test" if="include.tests">
+		<!-- Compile test files. -->
+		<javac srcdir="${test.dir}" includeantruntime="false"
+          destdir="${bin.dir}" source="1.7" target="1.7" debug="on" >
+			<classpath refid="plugin.classpath"/>
+			<compilerarg value="-Xlint:all,-path,-unchecked"/>
+		</javac>
 	</target>
 
 	<target name="version" description="Extract the plugin id and version">
@@ -134,11 +183,13 @@
 			</filterchain>
 		</loadfile>
 
+		<echo message="${eclipse.release.base}" file="${basedir}/version.txt" />
+		
 		<!-- 1) set the values for plugin.version -->
 		<property name="plugin.qualifier" value="${plugin.date}" />
 		<property name="plugin.version" value="${eclipse.release.base}.${plugin.qualifier}" />
 
-		<echo>plugin version  ${plugin.version}</echo>
+		<echo>plugin version ${plugin.version}</echo>
 
 		<!-- 3) Copy META-INF/MANIFEST.MF to ${dist.dir}, update "qualifier" to current date/time -->
 		<copy file="META-INF/MANIFEST.MF" toFile="${dist.dir}/META-INF/MANIFEST.MF" overwrite="true">
@@ -153,18 +204,14 @@
         description="Build a plugin distributable">
 		<echo message="Creating fb-contrib Eclipse quickfixes plugin binary distribution"/>
 		<jar destfile="${dist.dir}/fb-contrib-eclipse-plugin.jar" >
-			<fileset dir="${bin.dir}" excludes="de/tobject/findbugs/tools/**" />
+			<fileset dir="${bin.dir}"/>
 		</jar>
 		<copy todir="${dist.dir}" >
-			<fileset dir="${fbcontrib.dir}" >
-				<!-- content is invalid right now
-                <include name="welcome.xml"/>
-                -->
+			<fileset dir="${build.dir}" >
 				<include name="RELEASENOTES"/>
 				<include name="plugin.xml"/>
 				<include name=".options"/>
 				<include name="plugin*.properties"/>
-				<!--match plugin.properties and plugin_ja.properties -->
 				<include name="about.*"/>
 				<include name="plugin/*.*" />
 				<!-- p2 installation instructions, added because of bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=265525#c18
@@ -173,11 +220,35 @@
 			</fileset>
 		</copy>
 
+		<antcall target="dist-test"/>
 
 		<!-- Create plugin zipfile. -->
 		<zip destfile="${zip.dir}/${plugin.id}_${plugin.version}.zip">
 			<zipfileset prefix="${plugin.id}_${plugin.version}" dir="${dist.dir}" includes="**"/>
 		</zip>
+	</target>
+	
+	<target name="dist-test" if="include.tests">
+		<mkdir dir="${dist.dir}/classesToFix"/>
+		<mkdir dir="${dist.dir}/fixedClasses"/>
+		
+		<copy todir="${dist.dir}/classesToFix" >
+			<fileset dir="${build.dir}/classesToFix" >
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist.dir}/fixedClasses" >
+			<fileset dir="${build.dir}/fixedClasses" >
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+		
+		<jar destfile="${dist.dir}/utils.jar" >
+			<fileset dir="${bin.dir}">
+				<include name="utils/*.class"/>
+			</fileset>
+		</jar>
+		
 	</target>
 
 	<!-- Build source distribution. -->
@@ -189,7 +260,7 @@
 		<mkdir dir="${dist.dir}/src"/>
 		<delete dir="${dist.dir}/src/eclipsePlugin-${plugin.version}"/>
 
-		<exec executable="git" spawn="false" dir="${basedir}"  failonerror="true">
+		<exec executable="${git.full-path}" spawn="false" dir="${basedir}"  failonerror="true">
 			<arg value="archive"/>
 			<arg value="-o"/>
 			<arg value="${zip.dir}/${plugin.id}_${plugin.version}-source.zip"/>
@@ -197,7 +268,7 @@
 		</exec>
 	</target>
 
-	<target name="site" depends="srcdist" description="create files for eclipse auto-update site">
+	<target name="stable-site" depends="srcdist" description="Creates Eclipse update site with this version as the primary version">
 		<echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
 
 		<filterset id="sitevars">
@@ -205,6 +276,7 @@
 			<filter token="PLUGIN_VERSION" value="${plugin.version}"/>
 			<filter token="FEATURE_ID" value="${plugin.id}"/>
 			<filter token="FEATURE_VERSION" value="${plugin.version}"/>
+			<filter token="FINDBUGS_VERSION" value="${findbugs.dev.version}"/>
 		</filterset>
 
 		<mkdir dir="${site.dir}"/>
@@ -217,7 +289,7 @@
 		</zip>
 
 		<!-- feature.jar -->
-		<copy file="${fbcontrib.dir}/plugin_feature.xml" toFile="${site.dir}/feature.xml">
+		<copy file="${build.dir}/plugin_feature.xml" toFile="${site.dir}/feature.xml">
 			<filterset refid="sitevars"/>
 		</copy>
 		<!-- use zip task, not jar task, since we don't want a manifest -->
@@ -230,11 +302,295 @@
 		<!-- site.xml -->
 		<echo level="info" message="copying site.xml to ${site.dir}"/>
 
-		<copy file="${fbcontrib.dir}/plugin_site.xml" toFile="${site.dir}/site.xml">
+		<copy file="${build.dir}/plugin_site_stable.xml" toFile="${site.dir}/site.xml">
 			<filterset refid="sitevars"/>
 		</copy>
+		
+		<condition property="findbugs.alreadydownloaded">
+			<and>
+	      		<available file="${site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" type="file"/>
+				<available file="${site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" type="file"/>
+			</and>
+	    </condition>
+		
+		<antcall target="download-findbugs-dev-plugin">
+			<param name="dl.loc" value="${site.dir}"/>
+		</antcall>
+		
+		<echo>Built site for stable plugin version ${plugin.version}</echo>
+	</target>
+	
+	<target name="download-findbugs-dev-plugin" unless="findbugs.alreadydownloaded">
+		<echo level="info" message="Downloading FindBugs dev version ${findbugs.dev.version}" />
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
+			dest="${dl.loc}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
+			dest="${dl.loc}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
+				
+	</target>
+	
+	
+	<target name="dev-site" depends="srcdist" description="Creates Eclipse update site with this version added as a dev version">
+		<echo message="Creating fb-contrib Eclipse quickfixes plugin update sites"/>
+		
+		<filterset id="sitevars">
+			<filter token="PLUGIN_ID" value="${plugin.id}"/>
+			<filter token="PLUGIN_VERSION" value="${plugin.version}"/>
+			<filter token="FEATURE_ID" value="${plugin.id}"/>
+			<filter token="FEATURE_VERSION" value="${plugin.version}"/>
+			<filter token="FINDBUGS_VERSION" value="${findbugs.dev.version}"/>
+		</filterset>
+		
+		<mkdir dir="${site.dir}"/>
+		<mkdir dir="${site.dir}/dev-features"/>
+		<mkdir dir="${site.dir}/plugins"/>
 
-		<echo>Built site for plugin version ${plugin.version}</echo>
+		<!-- for debugging 
+		<copy file="${build.dir}/old_site.xml" toFile="${site.dir}/old_site.xml" overwrite="true"></copy>
+		-->
+		
+		<!-- Download old site.xml (with normal version-->
+		<get src="http://dl.bintray.com/kjlubick/fb-contrib-eclipse-quickfixes/site.xml"
+					dest="${site.dir}/old_site.xml" verbose="true"/> 
+		
+		<!-- Copy old_site.xml and remove anything starting with the dev prefix --> <!--dev-->
+		<!-- or </site --> 
+		<copy file="${site.dir}/old_site.xml" 
+			toFile="${site.dir}/site.xml" overwrite="true">
+			<filterchain>
+				<linecontains negate="true">
+				  <contains value="&lt;!--dev--&gt;"/>
+				</linecontains>
+				<linecontains negate="true">
+				  <contains value="&lt;/site&gt;"/>
+				</linecontains>
+			</filterchain>
+		</copy>
+		
+		<!-- load the dev portions (Bleeding edge category and our new feature) and fill with 
+		Appropriate version details -->
+		<loadfile srcFile="${build.dir}/plugin_site_dev.xml" 
+			property="dev.release.xml">
+			<filterchain>
+				<replacetokens>
+			        <token key="FEATURE_ID" value="${plugin.id}"/>
+					<token key="FEATURE_VERSION" value="${plugin.version}"/>
+			    </replacetokens>
+			</filterchain>
+		</loadfile>
+		
+		<!-- combine the two above steps to make a new site.xml -->
+		<concat destfile="${site.dir}/site.xml" append="yes">${dev.release.xml}</concat>	
+		<delete file="${site.dir}/old_site.xml" />
+		
+		<!-- use zip task, not jar task, since we don't want a manifest -->
+		<zip destfile="${site.dir}/plugins/dev_${plugin.id}_${plugin.version}.jar">
+			<fileset dir="${dist.dir}" includes="**"/>
+		</zip>
+	
+		<!-- feature.jar -->
+		<copy file="${build.dir}/plugin_feature.xml" toFile="${site.dir}/feature.xml">
+			<filterset refid="sitevars"/>
+		</copy>
+		<!-- use zip task, not jar task, since we don't want a manifest -->
+		<zip destfile="${site.dir}/dev-features/${plugin.id}_${plugin.version}.jar" compress="false">
+			<fileset file="${site.dir}/feature.xml"/>
+		</zip>
+		
+		<delete file="${site.dir}/feature.xml"/>
+		<!-- add dev feature to dev-features and put jar in plugins/ with a dev_ prefix-->
+		<!-- Deploy script will clear out dev-features folder, delete all dev_ prefix files in plugins
+		 and then upload new plugin/feature/site.xml-->
+	</target>
+	
+	<target name="p2-eclipse" if="eclipse.running">
+		<echo>Using Eclipse's featuresAndBundles p2 ant task</echo>
+		<p2.publish.featuresAndBundles repository="file://${basedir}/output-site" repositoryName="findbugs-eclipse-quickfixes" compress="true">
+			<features dir="${site.dir}/features"/>
+			<bundles dir="${site.dir}/plugins"/>
+		</p2.publish.featuresAndBundles>
+	</target>
+	
+	<target name="p2-headless-eclipse" unless="eclipse.running">
+		<echo>Using Eclipse p2.publisher.FeaturesAndBundlesPublisher via java ant task </echo>
+		<java jar="${build.eclipse.dir}/plugins/org.eclipse.equinox.launcher_1.3.0.v20140415-2008.jar" fork="true" failonerror="true">
+			<arg line="-application org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
+			<arg line="-metadataRepository file:${basedir}/output-site" />
+			<arg line="-artifactRepository file:${basedir}/output-site" />
+			<arg line="-source ${basedir}/${site.dir}" />
+			<arg line="-compress" />
+			<arg line="-publishArtifacts" />
+		</java>
+
+	</target>	
+	
+	<target name="set-test-flag">
+		<property name="include.tests" value="true"/>
+	</target>
+	
+	<target name="build-test-plugin" depends="set-test-flag, test-site">
+
+	</target>
+	
+	<target name="test-site" depends="dist">
+		<echo message="Creating test update sites ${plugin.version}"/>
+
+		<filterset id="sitevars">
+			<filter token="PLUGIN_ID" value="${plugin.id}"/>
+			<filter token="PLUGIN_VERSION" value="${plugin.version}"/>
+			<filter token="FEATURE_ID" value="${plugin.id}"/>
+			<filter token="FEATURE_VERSION" value="${plugin.version}"/>
+			<filter token="FINDBUGS_VERSION" value="${findbugs.dev.version}"/>
+		</filterset>
+
+		<mkdir dir="${test-site.dir}"/>
+		<mkdir dir="${test-site.dir}/features"/>
+		<mkdir dir="${test-site.dir}/plugins"/>
+
+		<echo message="zipping up test-site"/>
+		<!-- plugin.jar: can't rename the .zip file from the 'dist' target because of the prefix -->
+		<zip destfile="${test-site.dir}/plugins/${plugin.id}_${plugin.version}.jar">
+			<fileset dir="${dist.dir}" includes="**"/>
+		</zip>
+
+		<!-- feature.jar -->
+		<copy file="${build.dir}/plugin_feature.xml" toFile="${test-site.dir}/feature.xml">
+			<filterset refid="sitevars"/>
+		</copy>
+		<!-- use zip task, not jar task, since we don't want a manifest -->
+		<zip destfile="${test-site.dir}/features/${plugin.id}_${plugin.version}.jar" compress="false">
+			<fileset file="${test-site.dir}/feature.xml"/>
+		</zip>
+		<move file="${test-site.dir}/feature.xml" tofile="${test-site.dir}/.feature.xml"/>
+
+
+		<!-- site.xml -->
+		<echo level="info" message="copying site.xml to ${test-site.dir}"/>
+
+		<copy file="${build.dir}/plugin_site_stable.xml" toFile="${test-site.dir}/site.xml">
+			<filterset refid="sitevars"/>
+		</copy>
+		
+		<condition property="findbugs.alreadydownloaded">
+			<and>
+	      		<available file="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" type="file"/>
+				<available file="${test-site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" type="file"/>
+			</and>
+	    </condition>
+		
+		<echo level="info" message="Downloading dev versions of findbugs"/>
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}_fb_contrib.jar"
+			dest="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
+		<get src="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"
+				dest="${test-site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
+				
+		
+		<echo>Built site for test plugin site</echo>
+	</target>
+	
+	<target name="install-test-plugin">
+	<!--make temp copy of Eclipse or Eclipse-relang (actually in prescript probably)-->
+		
+			<!-- uninstall old test plugins -->
+			<delete>
+	           <fileset dir="${test.eclipse.dir}/dropins" includes="**/*"/>
+	        </delete>
+		
+		<echo>Installing test plugin in dropins</echo>
+			
+			<!-- install my test plugin -->
+		    <copy todir="${test.eclipse.dir}/dropins">
+	           <fileset dir="${test-site.dir}">
+	           	  <include name="**/*.jar"/>
+	           	  <exclude name="plugins/edu*.jar"/>
+	           </fileset>
+	       </copy>
+		
+		<unzip src="${test-site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" 
+			dest="${test.eclipse.dir}/dropins/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar"/>
+		
+		   
+	</target>
+	
+	<target name="run-eclipse-with-tests">
+		<path id="test.class.path">
+			    	<pathelement location="${dist.dir}/utils.jar" />
+			        <fileset dir="${test.eclipse.dir}/plugins">
+			            <include name="org.junit_4.*/**/junit.jar"/>
+			        	<include name="org.hamcrest.core_*.jar"/>
+			        	<include name="org.apache.ant_*/**/ant.jar"/>
+			            <include name="org.apache.ant_*/**/ant-junit.jar"/>
+			        	<include name="org.eclipse.jdt.core_*.jar"/>
+			            <include name="org.eclipse.jdt.junit_*.jar"/>
+			        	<include name="org.eclipse.jdt.junit.core_*.jar"/>
+			        	<include name="org.eclipse.equinox.common_*.jar"/>
+			            <include name="org.eclipse.debug.core_*.jar"/>
+			            <include name="org.eclipse.osgi_*.jar"/>
+			            <include name="org.eclipse.core.resources_*.jar"/>
+			        	<include name="org.eclipse.core.runtime_*.jar"/>
+			        	<include name="org.eclipse.core.jobs_*.jar"/>
+			        	<include name="org.eclipse.ui.workbench_*.jar"/>
+			            <include name="org.eclipse.swt_*.jar"/>
+			            <include name="org.eclipse.equinox.preferences_*.jar"/>
+			        	<include name="org.eclipse.equinox.launcher_*.jar"/>
+			        </fileset>
+			    </path>
+				
+			  <delete file="pde_test_port.properties"/> <!-- properties file generated by PDETestPortLocator class in pde.test.utils -->
+			  
+		<echo>Starting Test Port Locator</echo>
+		
+				<java classname="utils.PDETestPortLocator" fork="yes" classpathref="test.class.path"/>
+			   <waitfor maxwait="10" maxwaitunit="second" checkevery="100" checkeveryunit="millisecond">
+			      <available file="pde_test_port.properties"/>
+			   </waitfor>
+			   <property file="pde_test_port.properties"/>
+			   <echo message="Using port ${pde.test.port} for listening to PDE Test run"/>
+				
+				<parallel>
+		           <daemons>
+		            <antcall target="run-pde-test-listener">
+		            	<reference refid="test.class.path" torefid="test.class.path"/>
+		        	</antcall>
+		           </daemons>
+		           <sequential>
+		               <sleep seconds="5"/> <!-- Give the listener a few seconds to start up -->
+		            <antcall target="run-pde-tests">
+		            	<reference refid="test.class.path" torefid="test.class.path"/>
+		        	</antcall>
+		           </sequential>
+		       </parallel>
 	</target>
 
+	 <target name="run-pde-test-listener">
+       <java classname="utils.PDETestResultsCollector" fork="yes" classpathref="test.class.path" failonerror="true">
+           <arg line="fb-contrib-eclipse-quick-fixes ${pde.test.port}"/>
+       </java>
+     </target>
+
+	 <target name="run-pde-tests">
+	 	<echo>Firing up Test Eclipse workspace </echo>
+	 	
+	       <property name="test.classes.list" value="tests.TestContributedQuickFixes"/>
+	       <mkdir dir="${test.reports.dir}/output/ws"/>
+	       <java dir="${basedir}" classname="org.eclipse.equinox.launcher.Main" fork="yes" 
+	       	classpathref="test.class.path" failonerror="true">
+			   <arg line="-application org.eclipse.pde.junit.runtime.uitestapplication"/>
+			   <arg line="-data ${test.reports.dir}output/ws"/>
+			   <arg line="-dev bin -clean -port ${pde.test.port}"/>
+	       	   <arg line="-testApplication org.eclipse.ui.ide.workbench"/>
+			   <arg line="-testpluginname fb-contrib-eclipse-quick-fixes"/>
+	       	   <arg line="-testLoaderClass org.eclipse.jdt.internal.junit4.runner.JUnit4TestLoader" /> 
+	       	   <arg line="-loaderpluginname org.eclipse.jdt.junit4.runtime" />
+	       	   <arg line="-classnames ${test.classes.list}"/>
+	       	   <jvmarg line="${jvm.args.test}"/>
+	       </java>
+	    </target>
+	
+	<target name="make-stable-p2" depends="stable-site, p2-eclipse, p2-headless-eclipse">
+	</target>
+	
+	<target name="test-headless" depends="build-test-plugin, install-test-plugin, run-eclipse-with-tests">
+	</target>
+	
 </project>

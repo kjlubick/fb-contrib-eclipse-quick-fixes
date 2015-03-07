@@ -1,0 +1,29 @@
+# Use docker-based build environment (http://docs.travis-ci.com/user/workers/container-based-infrastructure/)
+sudo: false
+
+language: java
+
+env:
+ - secure: "GyDtVM1CGcvV43kUjB1F32EHtYLwPt6DqnuSZVGPBBdBTI3BF3/Gg02r6vttCAv11HSBeIbHApU/tlVAbfOR07tK+ph45KmNha8an2qI5UrR6ptTPVN6RIzvR+RzbMJ17dXtC0nwLCe/nXsScpUmAXoEtoqC+S33LX02lsx/8ds="
+
+# Cache eclipse
+cache:
+  directories:
+    - '$HOME/eclipse-tar'
+
+before_install: 
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - chmod +x './scripts/download_eclipse.sh'
+  - chmod +x './scripts/deploy_to_bintray.sh'
+  - './scripts/download_eclipse.sh'
+install: ant make-stable-p2
+
+script: 
+  - ant test-headless  
+
+after_success: 
+  - './scripts/deploy_to_bintray.sh'
+
+after_failure: 
+ - cat /home/travis/eclipse/configuration/*.log

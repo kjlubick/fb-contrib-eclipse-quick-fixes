@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -268,9 +269,9 @@ public abstract class TestHarness {
     }
 
     private void assertOutputAndInputFilesMatch(String testResource) throws JavaModelException, IOException {
-        File expectedFile = new File("fixedClasses", testResource);
+        URL expectedFile = getClass().getResource("/fixedClasses/"+testResource);
         IJavaElement actualFile = TestingUtils.elementFromProject(testProject, testResource);
-        TestingUtils.assertOutputAndInputFilesMatch(expectedFile.toURI().toURL(), actualFile);
+        TestingUtils.assertOutputAndInputFilesMatch(expectedFile, actualFile);
     }
 
     /**

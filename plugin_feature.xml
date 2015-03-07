@@ -42,7 +42,7 @@ SOFTWARE.
    </license>
 
    <url>
-      <update label="fb-contrib Eclipse update site" url="http://kjlubick.github.io/fb-contrib-eclipse/"/>
+      <update label="fb-contrib Eclipse update site" url="http://dl.bintray.com/kjlubick/fb-contrib-eclipse-quickfixes/"/>
    </url>
 
    <requires>
@@ -60,7 +60,6 @@ SOFTWARE.
 	  <import plugin="edu.umd.cs.findbugs.plugin.eclipse" version="3.0.1" match="greaterOrEqual" />
    </requires>
 
-   <!--TODO update -->
    <plugin
          id="@PLUGIN_ID@"
          install-size="580"

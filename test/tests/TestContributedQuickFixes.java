@@ -14,6 +14,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.Suite;
 
 import quickfix.DeadShadowStoreResolution;
 import quickfix.InsecureRandomResolution;
@@ -23,9 +24,9 @@ import quickfix.SwitchFallThroughResolution;
 import quickfix.UseVarArgsResolution;
 import utils.QuickFixTestPackage;
 import utils.QuickFixTestPackager;
-import utils.TestingUtils;
 
 @RunWith(JUnit4.class)
+@Suite.SuiteClasses( { TestContributedQuickFixes.class})
 public class TestContributedQuickFixes extends TestHarness {
 
     @Rule
@@ -36,7 +37,7 @@ public class TestContributedQuickFixes extends TestHarness {
         @Override
         protected void failed(Throwable e, Description description) {
             System.out.println("Failed");
-            // TestingUtils.waitForUiEvents(20_000);
+            // TestingUtils.waitForUiEvents(40_000);
         }
 
         @Override
@@ -63,7 +64,7 @@ public class TestContributedQuickFixes extends TestHarness {
     }
 
     @Test
-    public void testCharsetIssuesResolution() throws Exception {
+    public void testCharsetIssuesResolution() {
         setPriority("Medium");
         setRank(15);
 
@@ -182,8 +183,8 @@ public class TestContributedQuickFixes extends TestHarness {
     @Test
     public void testLiteralStringComparisonResolution() throws Exception {
         // LiteralStringComparisonResolution.java
-        setPriority("Medium");
-        setRank(10);
+        setPriority("High");
+        setRank(17);
 
         QuickFixTestPackager packager = new QuickFixTestPackager();
 
@@ -383,9 +384,10 @@ public class TestContributedQuickFixes extends TestHarness {
 
     @Test
     public void testCopyOverridenMethodResolution() throws Exception {
-        setRank(10);
+        setRank(17);
         setPriority("Medium");
-
+        setDetector("com.mebigfatguy.fbcontrib.detect.OverlyPermissiveMethod", false);
+        
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(7, 16, 22);
 
@@ -415,7 +417,8 @@ public class TestContributedQuickFixes extends TestHarness {
         setRank(20);
         setPriority("Low");
         setDetector("com.mebigfatguy.fbcontrib.detect.FinalParameters", false);
-
+        setDetector("edu.umd.cs.findbugs.detect.InefficientToArray", true);
+        
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(14, 21);
 
@@ -644,7 +647,7 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testEmptyAbstractResolution() throws Exception {
-        setRank(17);
+        setRank(19);
         setPriority("Medium");
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
@@ -658,8 +661,9 @@ public class TestContributedQuickFixes extends TestHarness {
     
     @Test
     public void testFloatingCompareToResolution() throws Exception {
-        setRank(10);
+        setRank(17);
         setPriority("Medium");
+        setDetector("edu.umd.cs.findbugs.detect.FindHEmismatch", false);
         
         QuickFixTestPackager packager = new QuickFixTestPackager();
         packager.setExpectedLines(15, 29, 44);
