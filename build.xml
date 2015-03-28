@@ -61,12 +61,12 @@
 	
 	<property name="findbugs.dev.dir" value="../findbugs/" />
 	<!-- For building --> 
-	<property name="findbugs.dev.plugin.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" />
+	<property name="findbugs.dev.plugin.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.5.2/plugins-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150306-5afe4d1.jar" />
 	<!-- For Testing --> 
-	<property name="findbugs.dev.plugin.with.plugins.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/plugins-findbugs.plugin.eclipse_3.0.1.20150212-23b0732_fb_contrib_find_security_bugs.jar" />
-	<property name="findbugs.dev.feature.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.4.0/features-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150212-23b0732.jar" />
+	<property name="findbugs.dev.plugin.with.plugins.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.5.2/plugins-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150306-5afe4d1_fb_contrib_find_security_bugs.jar" />
+	<property name="findbugs.dev.feature.url" value="https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/releases/download/0.5.2/features-edu.umd.cs.findbugs.plugin.eclipse_3.0.1.20150306-5afe4d1.jar" />
 	
-	<property name="findbugs.dev.version" value="3.0.1.20150212-23b0732" />
+	<property name="findbugs.dev.version" value="3.0.1.20150306-5afe4d1" />
 	
 	<!-- Location of fb-contrib.jar to extract and include in this build -->
 	<property name="fb-contrib.jar" value="${fb-contrib.dir}/fb-contrib-${fb-contrib.version}.jar" />
@@ -411,18 +411,10 @@
 		 and then upload new plugin/feature/site.xml-->
 	</target>
 	
-	<target name="p2-eclipse" if="eclipse.running">
-		<echo>Using Eclipse's featuresAndBundles p2 ant task</echo>
-		<p2.publish.featuresAndBundles repository="file://${basedir}/output-site" repositoryName="findbugs-eclipse-quickfixes" compress="true">
-			<features dir="${site.dir}/features"/>
-			<bundles dir="${site.dir}/plugins"/>
-		</p2.publish.featuresAndBundles>
-	</target>
-	
-	<target name="p2-headless-eclipse" unless="eclipse.running">
-		<echo>Using Eclipse p2.publisher.FeaturesAndBundlesPublisher via java ant task </echo>
+	<target name="p2-headless-eclipse">
+		<echo>Using Eclipse p2.publisher.UpdateSitePublisher via java ant task </echo>
 		<java jar="${build.eclipse.dir}/plugins/org.eclipse.equinox.launcher_1.3.0.v20140415-2008.jar" fork="true" failonerror="true">
-			<arg line="-application org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
+			<arg line="-application org.eclipse.equinox.p2.publisher.UpdateSitePublisher" />
 			<arg line="-metadataRepository file:${basedir}/output-site" />
 			<arg line="-artifactRepository file:${basedir}/output-site" />
 			<arg line="-source ${basedir}/${site.dir}" />
@@ -595,7 +587,7 @@
 	       </java>
 	    </target>
 	
-	<target name="make-stable-p2" depends="stable-site, p2-eclipse, p2-headless-eclipse">
+	<target name="make-stable-p2" depends="stable-site, p2-headless-eclipse">
 	</target>
 	
 	<target name="test-headless" depends="build-test-plugin, install-test-plugin, run-eclipse-with-tests">
