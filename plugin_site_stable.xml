@@ -6,10 +6,6 @@
    <feature url="features/@FEATURE_ID@_@FEATURE_VERSION@.jar" id="@FEATURE_ID@" version="@FEATURE_VERSION@">
       <category name="fb-contrib-quickfixes"/>
    </feature>
-   <feature url="features/edu.umd.cs.findbugs.plugin.eclipse_@FINDBUGS_VERSION@.jar" id="edu.umd.cs.findbugs.plugin.eclipse" version="@FINDBUGS_VERSION@">
-      <category name="FindBugs-dev"/>
-   </feature>
-   <category-def name="FindBugs-dev" label="FindBugs-dev (required)"/>
    <category-def name="fb-contrib-quickfixes" label="Additional FindBugs QuickFixes">
       <description>
          This adds additional quickfix features to FindBugs (tm) for bug patterns, including those provided by fb-contrib.
