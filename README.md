@@ -3,22 +3,16 @@ This repository extends the quick-fixes offered by the [FindBugs](http://findbug
 
 ![quickfix-demo](https://cloud.githubusercontent.com/assets/6819944/4264324/b5e2f5ba-3c21-11e4-966b-3264f7e22dae.gif)
 
-
-Currently, the FindBugs Eclipse Plugin only has support for extension in the nightly builds, but the public feature will be released soon.  Thus, I'm getting a head start on preparing custom quick-fixes.
-
-
 ##Installing the plugin##
 To install this project, open Eclipse, go to Help>Install New Software, and copy in the following link:
 
 `http://dl.bintray.com/kjlubick/fb-contrib-eclipse-quickfixes/`
 
-Uncheck "Group items by category" to see the plugin.
-
-![image](https://cloud.githubusercontent.com/assets/6819944/6541841/bd15e5b6-c4b3-11e4-9599-c84c4bc8a033.png)
+![image](https://cloud.githubusercontent.com/assets/6819944/6881876/7c1bb44c-d547-11e4-9b54-04ad5c100ecb.png)
 
 
-Because the aforementioned extension point is [only in dev](https://code.google.com/p/findbugs/source/detail?r=491d7f9cae6cef8919f0d76104dd567d8489db06), I have included an unofficial release of FindBugs called 3.0.1.
-This is the minimum version required for this plugin.
+You must have Findbugs Eclipse Plugin version 3.0.1 (released March 6, 2015) or newer. 
+If you don't, the Eclipse installer will try to install it for you.
 
 Fb-contrib quickfixes has been tested on Eclipe Kepler and Luna.
 
@@ -78,7 +72,7 @@ Do you have many bugs detected with a quickfix? The base FindBugs plugin support
 
 ##Setting up the project for development##
 1. Download/install [Eclipse](https://www.eclipse.org/home/index.php) Luna (4.4) or newer.  The Eclipse for RCP and RAP Developers will work fine.
-2. **Install** findbugs-eclipse-plugin-3.0.1 from bintray, following the above instructions.
+2. **Install** findbugs-eclipse-plugin-3.0.1 from [the main FindBugs page](http://findbugs.cs.umd.edu/eclipse/).  You may also just install fb-contrib-eclipse-quickfixes and have the findbugs plugin be auto-installed.  
 3. Clone findbugs : `git clone https://code.google.com/p/findbugs/`  [GitHub for Windows](https://windows.github.com/) or [GitHub for Mac](https://mac.github.com/) are good clients if you don't already have one.  There are a lot of folders and projects associated with the root project, but you only need the `findbugs`.  You may optionally include the `findBugsEclipsePlugin` project.
 4. Open Eclipse.  File>Import and then choose "Existing projects into workspace", and find the `findbugs` project (not the root project) you just cloned.  You may have to run the build.xml in `findbugs` and `findBugsEclipsePlugin` to get the lib jars copied over, if you imported that project as well.
 5. Clone and import [fb-contrib](https://github.com/mebigfatguy/fb-contrib) into Eclipse.  Follow the readme to get it setup to build.
