@@ -330,7 +330,7 @@
 	
 	<target name="download-findbugs-dev-plugin" unless="findbugs.alreadydownloaded">
 		<echo level="info" message="Downloading FindBugs dev version ${findbugs.dev.version}" />
-		<get src="${findbugs.dev.plugin.url"
+		<get src="${findbugs.dev.plugin.url}"
 			dest="${dl.loc}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
 		<get src="${findbugs.dev.feature.url}"
 			dest="${dl.loc}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
