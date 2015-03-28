@@ -26,7 +26,7 @@ if [ "$build_version" != "$current_version" ]; then
       exit 12
    fi
    
-   findbugs_plugin_jar=`ls -1 output-site/features/edu.umd.cs.findbugs.plugin.eclipse* | grep -o edu.*`
+   findbugs_plugin_jar=`ls -1 output-site/plugins/edu.umd.cs.findbugs.plugin.eclipse* | grep -o edu.*`
    eclipse_plugin_jar=`ls -1 output-site/features/fb-contrib-eclipse-quick-fixes* | grep -o fb-contrib.*`
    echo $findbugs_plugin_jar
    echo $eclipse_plugin_jar
