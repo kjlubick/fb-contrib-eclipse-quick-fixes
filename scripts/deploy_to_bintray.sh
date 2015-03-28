@@ -32,8 +32,9 @@ if [ "$build_version" != "$current_version" ]; then
    echo $eclipse_plugin_jar
    
    #pushes findbugs plugin - probably already exists, but that's okay
-   curl -X PUT -u kjlubick:$API_KEY --data-binary @output-site/features/$findbugs_plugin_jar https://api.bintray.com/content/kjlubick/fb-contrib-eclipse-quickfixes/features/$findbugs_plugin_jar -H "X-Bintray-Package: fb-contrib-eclipse-quickfixes" -H "X-Bintray-Version: $build_version"
-   curl -X PUT -u kjlubick:$API_KEY --data-binary @output-site/plugins/$findbugs_plugin_jar https://api.bintray.com/content/kjlubick/fb-contrib-eclipse-quickfixes/plugins/$findbugs_plugin_jar -H "X-Bintray-Package: fb-contrib-eclipse-quickfixes" -H "X-Bintray-Version: $build_version"
+   #curl -X PUT -u kjlubick:$API_KEY --data-binary @output-site/features/$findbugs_plugin_jar https://api.bintray.com/content/kjlubick/fb-contrib-eclipse-quickfixes/features/$findbugs_plugin_jar -H "X-Bintray-Package: fb-contrib-eclipse-quickfixes" -H "X-Bintray-Version: $build_version"
+   response= `curl -X PUT -u kjlubick:$API_KEY --data-binary @output-site/plugins/$findbugs_plugin_jar https://api.bintray.com/content/kjlubick/fb-contrib-eclipse-quickfixes/plugins/$findbugs_plugin_jar -H "X-Bintray-Package: fb-contrib-eclipse-quickfixes" -H "X-Bintray-Version: $build_version"`
+   echo $response
    
    #pushes fb-contrib-eclipse-quickfixes plugin - fail if it doesn't exist
    response=`curl -X PUT -u kjlubick:$API_KEY --data-binary @output-site/features/$eclipse_plugin_jar https://api.bintray.com/content/kjlubick/fb-contrib-eclipse-quickfixes/features/$eclipse_plugin_jar -H "X-Bintray-Package: fb-contrib-eclipse-quickfixes" -H "X-Bintray-Version: $build_version"`
