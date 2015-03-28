@@ -315,10 +315,7 @@
 		</copy>
 		
 		<condition property="findbugs.alreadydownloaded">
-			<and>
-	      		<available file="${site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" type="file"/>
-				<available file="${site.dir}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" type="file"/>
-			</and>
+			<available file="${site.dir}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" type="file"/>
 	    </condition>
 		
 		<antcall target="download-findbugs-dev-plugin">
@@ -332,8 +329,6 @@
 		<echo level="info" message="Downloading FindBugs dev version ${findbugs.dev.version}" />
 		<get src="${findbugs.dev.plugin.url}"
 			dest="${dl.loc}/plugins/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
-		<get src="${findbugs.dev.feature.url}"
-			dest="${dl.loc}/features/edu.umd.cs.findbugs.plugin.eclipse_${findbugs.dev.version}.jar" verbose="true"/>
 				
 	</target>
 	
