@@ -363,6 +363,12 @@
             pattern="CO_COMPARETO_INCORRECT_FLOATING">
     </quickFix>
     
+    <quickFix
+            class="quickfix.UseAssertEqualsResolution"
+            label="Replace with YYY"
+            pattern="JAO_JUNIT_ASSERTION_ODDITIES_USE_ASSERT_EQUALS">
+    </quickFix>
+    
    
    </extension>
 
