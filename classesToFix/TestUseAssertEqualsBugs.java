@@ -1,4 +1,4 @@
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 
-public class TestUseAssertEquals {
+public class TestUseAssertEqualsBugs {
 
     @Test
     public void test() {
@@ -16,9 +16,10 @@ public class TestUseAssertEquals {
         assertTrue(2 == list.size());
     }
 
+    @Test
     public void testUseAssertEquals(String s, String s2) {
         Assert.assertTrue(s.equals(s2));
-        Assert.assertTrue(s.length() == s.length());
+        Assert.assertTrue(s.length() == s2.length());
     }
 
 }

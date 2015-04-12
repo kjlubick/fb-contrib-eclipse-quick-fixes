@@ -722,13 +722,18 @@ public class TestContributedQuickFixes extends TestHarness {
     public void testUseAssertEqualsResolution() throws Exception {
         needsFBContrib();
         
-        QuickFixTestPackager packager = new QuickFixTestPackager();
-        packager.setExpectedLines(15, 29, 44, 46);
-        packager.fillExpectedBugPatterns("CO_COMPARETO_INCORRECT_FLOATING");
-        packager.fillExpectedLabels("Replace with Float.compare(d1, d2)");
+        setRank(8);
+        setPriority("Medium");
         
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(15, 16, 21, 22);
+        packager.fillExpectedBugPatterns("JAO_JUNIT_ASSERTION_ODDITIES_USE_ASSERT_EQUALS");
+        packager.setExpectedLabels(0, "Replace with assertEquals(2,list.size())");
+        packager.setExpectedLabels(1, "Replace with assertEquals(2,list.size())");
+        packager.setExpectedLabels(2, "Replace with assertEquals(s,s2)");
+        packager.setExpectedLabels(3, "Replace with assertEquals(s.length(),s2.length())");
 
-        checkBugsAndPerformResolution(packager.asList(), "TestUseAssertEquals.java");
+        checkBugsAndPerformResolution(packager.asList(), "TestUseAssertEqualsBugs.java");
         
     }
 
