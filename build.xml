@@ -239,6 +239,7 @@
 	<target name="dist-test" if="include.tests">
 		<mkdir dir="${dist.dir}/classesToFix"/>
 		<mkdir dir="${dist.dir}/fixedClasses"/>
+		<mkdir dir="${dist.dir}/mockLibraries"/>
 		
 		<copy todir="${dist.dir}/classesToFix" >
 			<fileset dir="${build.dir}/classesToFix" >
@@ -247,6 +248,11 @@
 		</copy>
 		<copy todir="${dist.dir}/fixedClasses" >
 			<fileset dir="${build.dir}/fixedClasses" >
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist.dir}/mockLibraries" >
+			<fileset dir="${build.dir}/mockLibraries" >
 				<include name="**/*.java"/>
 			</fileset>
 		</copy>
