@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -36,9 +37,17 @@ public class TestingUtils {
         // private constructor, static utils
     }
 
-    public static void copyBrokenFiles(File dirOfBrokenClasses, IFolder targetFolder) throws CoreException, IOException {
-
-        for (File fileToCopy : dirOfBrokenClasses.listFiles()) {
+    public static void copyBrokenFiles(IFolder targetFolder, File... foldersToCopy) throws CoreException, IOException {
+        List<File> filesToCopy = new ArrayList<>();
+        
+        for(File folder : foldersToCopy) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                filesToCopy.addAll(Arrays.asList(files));
+            }
+        }
+        
+        for (File fileToCopy : filesToCopy) {
             if (fileToCopy.isFile()) {
                 URL url = fileToCopy.getAbsoluteFile().toURI().toURL();
                 IFile file = targetFolder.getFile(new Path(fileToCopy.getName()));
@@ -55,7 +64,7 @@ public class TestingUtils {
                     }
                     newFolder.create(true, true, null); // force a local folder
 
-                    copyBrokenFiles(fileToCopy, newFolder);
+                    copyBrokenFiles(newFolder, fileToCopy);
                 } else {
                     System.out.println("Skipping hidden folder " + fileToCopy);
                 }

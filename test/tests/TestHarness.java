@@ -67,7 +67,7 @@ public abstract class TestHarness {
     public static void loadFilesThatNeedFixing() throws CoreException, IOException {
         makeJavaProject();
 
-        TestingUtils.copyBrokenFiles(new File("classesToFix/"), testIProject.getFolder(SRC_FOLDER_NAME));
+        TestingUtils.copyBrokenFiles(testIProject.getFolder(SRC_FOLDER_NAME), new File("classesToFix/"), new File("mockLibraries/"));
 
         // Compiles the code
         testIProject.refreshLocal(IResource.DEPTH_INFINITE, null);

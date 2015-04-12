@@ -718,5 +718,18 @@ public class TestContributedQuickFixes extends TestHarness {
         checkBugsAndPerformResolution(packager.asList(), "FloatingCompareToBugs.java");
     }    
      
+    @Test
+    public void testUseAssertEqualsResolution() throws Exception {
+        needsFBContrib();
+        
+        QuickFixTestPackager packager = new QuickFixTestPackager();
+        packager.setExpectedLines(15, 29, 44, 46);
+        packager.fillExpectedBugPatterns("CO_COMPARETO_INCORRECT_FLOATING");
+        packager.fillExpectedLabels("Replace with Float.compare(d1, d2)");
+        
+
+        checkBugsAndPerformResolution(packager.asList(), "TestUseAssertEquals.java");
+        
+    }
 
 }
