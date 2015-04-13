@@ -26,6 +26,7 @@ See the [FindBugs](http://findbugs.sourceforge.net/bugDescriptions.html) and [fb
 - CSI_CHAR_SET_ISSUES_USE_STANDARD_CHARSET_NAME
 - COM_COPIED_OVERRIDDEN_METHOD
 - HCP_HTTP_REQUEST_RESOURCES_NOT_FREED_LOCAL
+- JAO_JUNIT_ASSERTION_ODDITIES_USE_ASSERT_EQUALS
 - LO_SUSPECT_LOG_CLASS
 - LSC_LITERAL_STRING_COMPARISON
 - MDM_RANDOM_SEED
@@ -109,7 +110,7 @@ Unit tests are encouraged.  Write some buggy code (preferably sticking to one fa
 
 To run the tests, you'll need to find rt.jar from your JAVA_HOME/lib and copy it to [testResources](https://github.com/kjlubick/fb-contrib-eclipse-quick-fixes/tree/master/testresources).  For Java 1.7, name it rt17.jar, for Java 1.8, rt18.jar, and so on.  This allows the test code to compile.
 
-Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/blog/post/3?building-your-first-eclipse-quick-fix) and [its follow up tutorial](http://kjlubick.github.io/blog/post/4?a-slightly-more-advanced-quickfix)?
+Not sure where to start?  How about [this tutorial on making a quickfix](http://kjlubick.github.io/2014/09/first-eclipse-quickfix) and [its follow up tutorial](http://kjlubick.github.io/2014/11/second-eclipse-quickfix)?
 
 ##License##
 [FindBugs](http://findbugs.sourceforge.net/downloads.html), the [FindBugs Eclipse plugin](http://findbugs.sourceforge.net/downloads.html), [fb-contrib](https://github.com/mebigfatguy/fb-contrib), [Find Security Bugs](https://github.com/h3xstream/find-sec-bugs), are all released under the [LGPL license](https://tldrlegal.com/license/gnu-lesser-general-public-license-v2.1-(lgpl-2.1)#fulltext).  This project relies on the compiled, released versions of each of those libraries.  These libraries, and their source code, can be found by following the links provided.
